@@ -65,7 +65,7 @@ internal static partial class SourcePatcher
         var end = Math.Min(lines.Length - 1, index + 3);
         var oldCount = end - start + 1;
         var sb = new StringBuilder();
-        var name = path.Replace('\\', '/').TrimStart('/');
+        var name = RepositoryRelativePath(path);
         sb.Append("--- a/").Append(name).Append('\n');
         sb.Append("+++ b/").Append(name).Append('\n');
         sb.Append("@@ -").Append(start + 1).Append(',').Append(oldCount).Append(" +").Append(start + 1).Append(',').Append(oldCount).Append(" @@\n");
@@ -83,6 +83,31 @@ internal static partial class SourcePatcher
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>Path relative to the enclosing git repository (so <c>git apply</c> works from the root), else the full path without a leading slash.</summary>
+    internal static string RepositoryRelativePath(string path)
+    {
+        try
+        {
+            var full = Path.GetFullPath(path);
+            var dir = Path.GetDirectoryName(full);
+            while (dir is not null)
+            {
+                if (Directory.Exists(Path.Combine(dir, ".git")) || File.Exists(Path.Combine(dir, ".git")))
+                {
+                    return Path.GetRelativePath(dir, full).Replace('\\', '/');
+                }
+
+                dir = Path.GetDirectoryName(dir);
+            }
+        }
+        catch
+        {
+            // Fall through to the plain path.
+        }
+
+        return path.Replace('\\', '/').TrimStart('/');
     }
 
     [GeneratedRegex(@"\.(ToListAsync|ToList|ToArrayAsync|ToArray|ToDictionaryAsync|ToDictionary|FirstOrDefaultAsync|FirstOrDefault|FirstAsync|First|SingleOrDefaultAsync|SingleOrDefault|SingleAsync|Single|AsAsyncEnumerable|AsEnumerable|ToHashSetAsync|ToHashSet)\s*\(")]

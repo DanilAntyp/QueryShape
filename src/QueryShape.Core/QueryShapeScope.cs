@@ -165,7 +165,7 @@ public sealed class QueryShapeScope : IDisposable
             s_current.Value = _parent;
         }
 
-        if (Options.Listeners.Count == 0)
+        if (Options.Listeners.Count == 0 && !Reporting.ScopeReportWriter.IsEnabled)
         {
             return;
         }
@@ -180,6 +180,8 @@ public sealed class QueryShapeScope : IDisposable
             Internal.Log.Swallowed(Options, "scope analysis", ex);
             diagnoses = [];
         }
+
+        Reporting.ScopeReportWriter.TryWrite(this, diagnoses);
 
         foreach (var listener in Options.Listeners)
         {

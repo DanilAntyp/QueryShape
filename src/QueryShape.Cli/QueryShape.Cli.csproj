@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <AssemblyName>QueryShape.Cli</AssemblyName>
+    <PackageId>QueryShape.Cli</PackageId>
+    <RootNamespace>QueryShape.Cli</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>queryshape</ToolCommandName>
+    <Description>dotnet queryshape: verify a fix with before/after numbers, print QueryShape reports, update query snapshots, and (opt-in) explain diagnoses with an LLM.</Description>
+    <RollForward>Major</RollForward>
+    <NoWarn>$(NoWarn);CA1303;CA1848;CA2007;CA1031;CA1515;CA1812</NoWarn>
+    <IsCliTool>true</IsCliTool>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Core/QueryShape.Core.csproj" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Anthropic" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="QueryShape.Cli.Tests" />
+  </ItemGroup>
+</Project>

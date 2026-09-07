@@ -296,6 +296,83 @@ QueryShape.QuerySource.Other = 3 -> QueryShape.QuerySource
 QueryShape.QuerySource.Raw = 1 -> QueryShape.QuerySource
 QueryShape.QuerySource.SaveChanges = 2 -> QueryShape.QuerySource
 QueryShape.Reporting.DiagnosisFormatter
+QueryShape.Reporting.ScopeReport
+QueryShape.Reporting.ScopeReport.<Clone>$() -> QueryShape.Reporting.ScopeReport!
+QueryShape.Reporting.ScopeReport.CommandDurationMs.get -> double
+QueryShape.Reporting.ScopeReport.CommandDurationMs.init -> void
+QueryShape.Reporting.ScopeReport.Deconstruct(out int Version, out string? Scope, out System.DateTimeOffset StartedAt, out double ElapsedMs, out int QueryCount, out double CommandDurationMs, out bool Overflowed, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics) -> void
+QueryShape.Reporting.ScopeReport.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>!
+QueryShape.Reporting.ScopeReport.Diagnostics.init -> void
+QueryShape.Reporting.ScopeReport.ElapsedMs.get -> double
+QueryShape.Reporting.ScopeReport.ElapsedMs.init -> void
+QueryShape.Reporting.ScopeReport.Equals(QueryShape.Reporting.ScopeReport? other) -> bool
+QueryShape.Reporting.ScopeReport.Overflowed.get -> bool
+QueryShape.Reporting.ScopeReport.Overflowed.init -> void
+QueryShape.Reporting.ScopeReport.Queries.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>!
+QueryShape.Reporting.ScopeReport.Queries.init -> void
+QueryShape.Reporting.ScopeReport.QueryCount.get -> int
+QueryShape.Reporting.ScopeReport.QueryCount.init -> void
+QueryShape.Reporting.ScopeReport.Scope.get -> string?
+QueryShape.Reporting.ScopeReport.Scope.init -> void
+QueryShape.Reporting.ScopeReport.ScopeReport(int Version, string? Scope, System.DateTimeOffset StartedAt, double ElapsedMs, int QueryCount, double CommandDurationMs, bool Overflowed, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics) -> void
+QueryShape.Reporting.ScopeReport.StartedAt.get -> System.DateTimeOffset
+QueryShape.Reporting.ScopeReport.StartedAt.init -> void
+QueryShape.Reporting.ScopeReport.ToJson() -> string!
+QueryShape.Reporting.ScopeReport.Version.get -> int
+QueryShape.Reporting.ScopeReport.Version.init -> void
+QueryShape.Reporting.ScopeReport.WriteTo(string! directory) -> string!
+QueryShape.Reporting.ScopeReportDiagnosis
+QueryShape.Reporting.ScopeReportDiagnosis.<Clone>$() -> QueryShape.Reporting.ScopeReportDiagnosis!
+QueryShape.Reporting.ScopeReportDiagnosis.CallSite.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallSite.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.get -> int
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Deconstruct(out string! RuleId, out string! Severity, out string! Title, out string! Explanation, out string? CallSite, out string? CallSiteFile, out int CallSiteLine, out System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, out string? SampleSql, out string? SampleExpression, out string? FixSummary, out string? FixRationale, out string? FixBefore, out string? FixAfter, out string? UnifiedDiff, out string? DocsUrl) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Equals(QueryShape.Reporting.ScopeReportDiagnosis? other) -> bool
+QueryShape.Reporting.ScopeReportDiagnosis.Explanation.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Explanation.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Fingerprints.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Reporting.ScopeReportDiagnosis.Fingerprints.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.RuleId.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.RuleId.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.ScopeReportDiagnosis(string! RuleId, string! Severity, string! Title, string! Explanation, string? CallSite, string? CallSiteFile, int CallSiteLine, System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, string? SampleSql, string? SampleExpression, string? FixSummary, string? FixRationale, string? FixBefore, string? FixAfter, string? UnifiedDiff, string? DocsUrl) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Severity.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Severity.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Title.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Title.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.init -> void
+QueryShape.Reporting.ScopeReportQuery
+QueryShape.Reporting.ScopeReportQuery.<Clone>$() -> QueryShape.Reporting.ScopeReportQuery!
+QueryShape.Reporting.ScopeReportQuery.Count.get -> int
+QueryShape.Reporting.ScopeReportQuery.Count.init -> void
+QueryShape.Reporting.ScopeReportQuery.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out int Count, out double DurationMs) -> void
+QueryShape.Reporting.ScopeReportQuery.DurationMs.get -> double
+QueryShape.Reporting.ScopeReportQuery.DurationMs.init -> void
+QueryShape.Reporting.ScopeReportQuery.Equals(QueryShape.Reporting.ScopeReportQuery? other) -> bool
+QueryShape.Reporting.ScopeReportQuery.Fingerprint.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Fingerprint.init -> void
+QueryShape.Reporting.ScopeReportQuery.ScopeReportQuery(string! Fingerprint, string! Shape, string! Source, int Count, double DurationMs) -> void
+QueryShape.Reporting.ScopeReportQuery.Shape.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Shape.init -> void
+QueryShape.Reporting.ScopeReportQuery.Source.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Source.init -> void
 QueryShape.Rules.BuiltInRules
 QueryShape.Rules.CartesianExplosionRule
 QueryShape.Rules.CartesianExplosionRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
@@ -374,6 +451,8 @@ QueryShape.Severity.Info = 0 -> QueryShape.Severity
 QueryShape.Severity.Warning = 1 -> QueryShape.Severity
 const QueryShape.Normalization.Fingerprint.Length = 12 -> int
 const QueryShape.QueryShapeScope.OverflowRuleId = "QS_OVERFLOW" -> string!
+const QueryShape.Reporting.ScopeReport.CurrentVersion = 1 -> int
+const QueryShape.Reporting.ScopeReport.DirectoryEnvironmentVariable = "QUERYSHAPE_REPORT_DIR" -> string!
 const QueryShape.Rules.CartesianExplosionRule.RuleId = "QS002" -> string!
 const QueryShape.Rules.ClientEvaluationRule.RuleId = "QS003" -> string!
 const QueryShape.Rules.ContainsLargeCollectionRule.RuleId = "QS007" -> string!
@@ -427,6 +506,15 @@ override QueryShape.Normalization.NormalizedSql.Equals(object? obj) -> bool
 override QueryShape.Normalization.NormalizedSql.GetHashCode() -> int
 override QueryShape.Normalization.NormalizedSql.ToString() -> string!
 override QueryShape.QueryInfo.ToString() -> string!
+override QueryShape.Reporting.ScopeReport.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReport.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReport.ToString() -> string!
+override QueryShape.Reporting.ScopeReportDiagnosis.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReportDiagnosis.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReportDiagnosis.ToString() -> string!
+override QueryShape.Reporting.ScopeReportQuery.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReportQuery.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReportQuery.ToString() -> string!
 override QueryShape.SaveChangesRecord.Equals(object? obj) -> bool
 override QueryShape.SaveChangesRecord.GetHashCode() -> int
 override QueryShape.SaveChangesRecord.ToString() -> string!
@@ -458,6 +546,14 @@ static QueryShape.QueryShapeScope.Current.get -> QueryShape.QueryShapeScope?
 static QueryShape.QueryShapeServiceCollectionExtensions.AddQueryShape(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<QueryShape.QueryShapeOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static QueryShape.Reporting.DiagnosisFormatter.Format(QueryShape.Diagnosis! diagnosis, string! indent = "") -> string!
 static QueryShape.Reporting.DiagnosisFormatter.Format(System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>! diagnoses, string! indent = "") -> string!
+static QueryShape.Reporting.ScopeReport.FromJson(string! json) -> QueryShape.Reporting.ScopeReport?
+static QueryShape.Reporting.ScopeReport.FromScope(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses) -> QueryShape.Reporting.ScopeReport!
+static QueryShape.Reporting.ScopeReport.operator !=(QueryShape.Reporting.ScopeReport? left, QueryShape.Reporting.ScopeReport? right) -> bool
+static QueryShape.Reporting.ScopeReport.operator ==(QueryShape.Reporting.ScopeReport? left, QueryShape.Reporting.ScopeReport? right) -> bool
+static QueryShape.Reporting.ScopeReportDiagnosis.operator !=(QueryShape.Reporting.ScopeReportDiagnosis? left, QueryShape.Reporting.ScopeReportDiagnosis? right) -> bool
+static QueryShape.Reporting.ScopeReportDiagnosis.operator ==(QueryShape.Reporting.ScopeReportDiagnosis? left, QueryShape.Reporting.ScopeReportDiagnosis? right) -> bool
+static QueryShape.Reporting.ScopeReportQuery.operator !=(QueryShape.Reporting.ScopeReportQuery? left, QueryShape.Reporting.ScopeReportQuery? right) -> bool
+static QueryShape.Reporting.ScopeReportQuery.operator ==(QueryShape.Reporting.ScopeReportQuery? left, QueryShape.Reporting.ScopeReportQuery? right) -> bool
 static QueryShape.Rules.BuiltInRules.CreateAll() -> System.Collections.Generic.IReadOnlyList<QueryShape.IRule!>!
 static QueryShape.SaveChangesRecord.operator !=(QueryShape.SaveChangesRecord? left, QueryShape.SaveChangesRecord? right) -> bool
 static QueryShape.SaveChangesRecord.operator ==(QueryShape.SaveChangesRecord? left, QueryShape.SaveChangesRecord? right) -> bool

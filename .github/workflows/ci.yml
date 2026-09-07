@@ -35,10 +35,14 @@ jobs:
         run: dotnet build QueryShape.slnx --configuration Release --no-restore
 
       - name: Test (net8.0 on the .NET 8 runtime)
-        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net8.0 --logger "trx;LogFileName=net8.trx" --results-directory TestResults
+        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net8.0 --filter "Category!=Slow" --logger "trx;LogFileName=net8.trx" --results-directory TestResults
 
       - name: Test (net10.0 on the .NET 10 runtime)
-        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net10.0 --logger "trx;LogFileName=net10.trx" --results-directory TestResults
+        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net10.0 --filter "Category!=Slow" --logger "trx;LogFileName=net10.trx" --results-directory TestResults
+
+      - name: End-to-end `queryshape verify` (builds a worktree; runs alone so nothing else holds the sample app's binaries)
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test tests/QueryShape.Cli.Tests --configuration Release --no-build --framework net10.0 --filter "Category=Slow" --logger "trx;LogFileName=e2e.trx" --results-directory TestResults
 
       - name: Upload test results
         if: always()
