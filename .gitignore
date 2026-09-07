@@ -1,0 +1,15 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+*.swp
+.DS_Store
+TestResults/
+BenchmarkDotNet.Artifacts/
+artifacts/
+*.nupkg
+*.snupkg
+coverage*/
+.env

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/QueryShape.Core/QueryShape.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />
+  </Folder>
+</Solution>
