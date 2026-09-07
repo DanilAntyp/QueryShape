@@ -19,6 +19,17 @@ public static class QueryBudgetEnforcer
         return scope;
     }
 
+    /// <summary>Closes the scope begun for <paramref name="method"/> without checking the budget (the test already failed).</summary>
+    public static void Discard(MethodInfo method)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        var scope = s_current.Value;
+        s_byMethod.TryRemove(method, out var registered);
+        scope ??= registered;
+        s_current.Value = null;
+        scope?.Dispose();
+    }
+
     /// <summary>Ends the scope begun for <paramref name="method"/> and throws <see cref="QueryBudgetExceededException"/> when the budget is exceeded.</summary>
     public static void End(MethodInfo method, QueryBudget budget)
     {

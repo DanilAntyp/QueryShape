@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Testing.NUnit</AssemblyName>
+    <PackageId>QueryShape.Testing.NUnit</PackageId>
+    <RootNamespace>QueryShape.Testing.NUnit</RootNamespace>
+    <Description>NUnit adapter for QueryShape.Testing: [QueryBudget(MaxQueries = 2, MaxDurationMs = 200)] on a test method or fixture.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Testing/QueryShape.Testing.csproj" />
+    <PackageReference Include="NUnit" />
+  </ItemGroup>
+</Project>

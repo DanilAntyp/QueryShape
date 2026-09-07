@@ -7,7 +7,7 @@ import re, subprocess, sys, pathlib
 
 proj = pathlib.Path(sys.argv[1])
 api = proj.parent / "PublicAPI.Unshipped.txt"
-out = subprocess.run(["dotnet", "build", str(proj), "-p:TreatWarningsAsErrors=false", "--nologo", "-v", "q"], capture_output=True, text=True).stdout
+out = subprocess.run(["dotnet", "build", str(proj), "--no-incremental", "-p:TreatWarningsAsErrors=false", "--nologo", "-v", "q"], capture_output=True, text=True).stdout
 missing = set(re.findall(r"RS0016: Symbol '(.+?)' is not part of the declared public API", out))
 stale = set(re.findall(r"RS0017: Symbol '(.+?)' is part of the declared API, but is either not public or could not be found", out))
 lines = [l.rstrip("\n") for l in api.read_text(encoding="utf-8-sig").splitlines()] if api.exists() else []

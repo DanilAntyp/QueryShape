@@ -37,6 +37,11 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     {
         try
         {
+            if (!_capturer.OptionsFor(eventData.Context).Enabled)
+            {
+                return queryExpression;
+            }
+
             var info = QueryExpressionAnalyzer.Analyze(queryExpression, eventData.Context, eventData.ExpressionPrinter);
             _capturer.Correlator.OnCompiled(eventData.Context, info);
         }
@@ -81,6 +86,11 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     /// <summary>Row counts come from our own wrapper: EF Core's <c>ReadCount</c> counts calls, including the final <c>false</c>.</summary>
     private DbDataReader Wrap(DbDataReader reader, Guid commandId, CapturedCommand? captured)
     {
+        if (captured is null)
+        {
+            return reader; // disabled or capture failed: never wrap for nothing
+        }
+
         try
         {
             var trackRoots = captured?.Query is { CollectionIncludes.Count: >= 2, SplittingBehavior: "SingleQuery" };
@@ -155,7 +165,7 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
         try
         {
             var scope = QueryShapeScope.Current;
-            if (scope is null || context is null)
+            if (scope is null || context is null || !_capturer.OptionsFor(context).Enabled)
             {
                 return;
             }

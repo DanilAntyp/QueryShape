@@ -41,6 +41,12 @@ public sealed class QueryShapeMiddleware
     {
         ArgumentNullException.ThrowIfNull(context);
 
+        if (!_options.Enabled)
+        {
+            await _next(context).ConfigureAwait(false);
+            return;
+        }
+
         var path = context.Request.Path.Value ?? string.Empty;
         foreach (var prefix in _middlewareOptions.ExcludedPathPrefixes)
         {

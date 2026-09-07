@@ -261,6 +261,8 @@ QueryShape.QueryShapeOptions.CreateActivitiesWhenNoneExist.set -> void
 QueryShape.QueryShapeOptions.DocsBaseUrl.get -> string!
 QueryShape.QueryShapeOptions.DocsBaseUrl.set -> void
 QueryShape.QueryShapeOptions.DocsUrlFor(string! ruleId) -> string!
+QueryShape.QueryShapeOptions.Enabled.get -> bool
+QueryShape.QueryShapeOptions.Enabled.set -> void
 QueryShape.QueryShapeOptions.IncludeParameterValues.get -> bool
 QueryShape.QueryShapeOptions.IncludeParameterValues.set -> void
 QueryShape.QueryShapeOptions.Listeners.get -> System.Collections.Generic.IList<QueryShape.IQueryShapeListener!>!

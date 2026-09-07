@@ -44,7 +44,7 @@ public sealed class CapturedCommand
     /// <summary>Parameters as sent. Values are stripped unless opted in.</summary>
     public IReadOnlyList<CapturedParameter> Parameters { get; init; } = [];
 
-    /// <summary>SHA-256 over parameter names and values, first 12 hex characters. Lets rules tell "same arguments" from "different arguments" without keeping the values.</summary>
+    /// <summary>Stable 64-bit hash (12 hex characters) over parameter names and values. Lets rules tell "same arguments" from "different arguments" without keeping the values; never persisted.</summary>
     public required string ParameterHash { get; init; }
 
     /// <summary>Wall-clock time from execute to first result (EF Core's <c>Duration</c>).</summary>

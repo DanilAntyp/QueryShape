@@ -1,19 +1,4 @@
 #nullable enable
-const QueryShape.Testing.QuerySnapshot.CurrentVersion = 1 -> int
-const QueryShape.Testing.SnapshotOptions.CiEnvironmentVariable = "CI" -> string!
-const QueryShape.Testing.SnapshotOptions.UpdateEnvironmentVariable = "QUERYSHAPE_UPDATE_SNAPSHOTS" -> string!
-override QueryShape.Testing.QueryDelta.Equals(object? obj) -> bool
-override QueryShape.Testing.QueryDelta.GetHashCode() -> int
-override QueryShape.Testing.QueryDelta.ToString() -> string!
-override QueryShape.Testing.SnapshotDiagnostic.Equals(object? obj) -> bool
-override QueryShape.Testing.SnapshotDiagnostic.GetHashCode() -> int
-override QueryShape.Testing.SnapshotDiagnostic.ToString() -> string!
-override QueryShape.Testing.SnapshotQuery.Equals(object? obj) -> bool
-override QueryShape.Testing.SnapshotQuery.GetHashCode() -> int
-override QueryShape.Testing.SnapshotQuery.ToString() -> string!
-override QueryShape.Testing.SnapshotResult.Equals(object? obj) -> bool
-override QueryShape.Testing.SnapshotResult.GetHashCode() -> int
-override QueryShape.Testing.SnapshotResult.ToString() -> string!
 QueryShape.Testing.QueryBudget
 QueryShape.Testing.QueryBudget.BuildMessage(string! testName, QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<string!>! violations, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> string!
 QueryShape.Testing.QueryBudget.Evaluate(QueryShape.QueryShapeScope! scope, out System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -143,7 +128,23 @@ QueryShape.Testing.SnapshotResult.Snapshot.get -> QueryShape.Testing.QuerySnapsh
 QueryShape.Testing.SnapshotResult.Snapshot.init -> void
 QueryShape.Testing.SnapshotResult.SnapshotResult(QueryShape.Testing.SnapshotOutcome Outcome, string! Path, QueryShape.Testing.QuerySnapshot! Snapshot, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! Diagnoses) -> void
 QueryShape.Testing.SnapshotSerializer
+const QueryShape.Testing.QuerySnapshot.CurrentVersion = 1 -> int
+const QueryShape.Testing.SnapshotOptions.CiEnvironmentVariable = "CI" -> string!
+const QueryShape.Testing.SnapshotOptions.UpdateEnvironmentVariable = "QUERYSHAPE_UPDATE_SNAPSHOTS" -> string!
+override QueryShape.Testing.QueryDelta.Equals(object? obj) -> bool
+override QueryShape.Testing.QueryDelta.GetHashCode() -> int
+override QueryShape.Testing.QueryDelta.ToString() -> string!
+override QueryShape.Testing.SnapshotDiagnostic.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotDiagnostic.GetHashCode() -> int
+override QueryShape.Testing.SnapshotDiagnostic.ToString() -> string!
+override QueryShape.Testing.SnapshotQuery.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotQuery.GetHashCode() -> int
+override QueryShape.Testing.SnapshotQuery.ToString() -> string!
+override QueryShape.Testing.SnapshotResult.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotResult.GetHashCode() -> int
+override QueryShape.Testing.SnapshotResult.ToString() -> string!
 static QueryShape.Testing.QueryBudgetEnforcer.Begin(System.Reflection.MethodInfo! method, QueryShape.QueryShapeOptions? options = null) -> QueryShape.QueryShapeScope!
+static QueryShape.Testing.QueryBudgetEnforcer.Discard(System.Reflection.MethodInfo! method) -> void
 static QueryShape.Testing.QueryBudgetEnforcer.End(System.Reflection.MethodInfo! method, QueryShape.Testing.QueryBudget! budget) -> void
 static QueryShape.Testing.QueryBudgetExtensions.AssertBudget(this QueryShape.QueryShapeScope! scope, QueryShape.Testing.QueryBudget! budget, string? testName = null) -> void
 static QueryShape.Testing.QueryDelta.operator !=(QueryShape.Testing.QueryDelta? left, QueryShape.Testing.QueryDelta? right) -> bool

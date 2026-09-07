@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Testing.MSTest</AssemblyName>
+    <PackageId>QueryShape.Testing.MSTest</PackageId>
+    <RootNamespace>QueryShape.Testing.MSTest</RootNamespace>
+    <Description>MSTest adapter for QueryShape.Testing: [QueryBudgetTestMethod(MaxQueries = 2, MaxDurationMs = 200)] instead of [TestMethod].</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Testing/QueryShape.Testing.csproj" />
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+</Project>

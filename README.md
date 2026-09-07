@@ -74,6 +74,47 @@ New diagnostics (severity >= Warning):
 If this change is intended, update the snapshot: QUERYSHAPE_UPDATE_SNAPSHOTS=1 dotnet test, or `dotnet queryshape snapshots update`.
 ```
 
+## Prove the fix: `dotnet queryshape verify`
+
+The CLI runs the named test before and after a patch (applied in a clean git worktree, never your working copy), measures both with QueryShape, and prints the proof. Exit code 0 means improved with no new Error-level diagnosis.
+
+```
+dotnet queryshape verify --project tests/QueryShape.SampleApp.Tests \
+    --test BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix --patch n-plus-one-fix.diff
+```
+
+```
+Fix: n-plus-one-fix.diff
+
+                        before     after         Δ
+queries                     41         1       -40
+duration (ms)              1.4       0.9      -32%
+QS001 N+1 query              1         0         ✓
+QS004 Unbounded query        1         1         =
+QS005 Tracked read-on…       2         1        -1
+new diagnostics              -         0         ✓
+
+after = median of 3 runs (spread 0.2 ms)
+note: the duration delta is within run-to-run noise; judge by queries and diagnostics
+
+verdict: improved
+```
+
+`--patch-from-diagnosis` uses the patch QueryShape itself proposed in the baseline run. Other commands: `queryshape report` (print every diagnosis of a test run), `queryshape snapshots update`, and `queryshape explain [--llm --show-prompt]`. The `--llm` path is off by default, needs `ANTHROPIC_API_KEY`, sends only the diagnosis JSON and the enclosing source method (printed verbatim with `--show-prompt`), and labels its output as generated; detection never depends on it.
+
+Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is set, every completed scope writes a JSON summary (shapes, counts, timings, diagnoses; never parameter values).
+
+## Packages
+
+| Package | What |
+|---|---|
+| `QueryShape.Core` | capture, normalization, rules, diagnoses |
+| `QueryShape.Testing` | snapshot testing and `QueryBudget` (framework-agnostic) |
+| `QueryShape.Testing.Xunit` / `.NUnit` / `.MSTest` | `[QueryBudget]` attributes for each framework |
+| `QueryShape.AspNetCore` | `app.UseQueryShape()` request scopes |
+| `QueryShape.OpenTelemetry` | span enrichment and metrics |
+| `QueryShape.Cli` | `dotnet queryshape` tool |
+
 ## Rules
 
 | Id | Name | Severity | Status |
@@ -101,9 +142,11 @@ curl -sD - -o /dev/null http://localhost:5000/bad/n-plus-one | grep X-QueryShape
 # X-QueryShape: 41 queries; QS001 Error, QS004 Warning
 ```
 
-## Safety
+## Safety and performance
 
-QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, and never walks stack traces unless `CaptureCallSites` is on (tests turn it on; production leaves it off and can use EF Core's `TagWithCallSite()` instead).
+QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, never walks stack traces unless `CaptureCallSites` is on (tests turn it on; production leaves it off and can use EF Core's `TagWithCallSite()` instead), and has a kill switch (`QueryShapeOptions.Enabled = false`).
+
+Capture costs about 4 µs and 3 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
 
 ## Building
 

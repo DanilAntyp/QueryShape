@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -15,9 +16,13 @@ namespace QueryShape.Capture;
 /// <summary>Shared capture pipeline for EF Core commands and wrapped raw commands. Never throws.</summary>
 internal sealed class CommandCapturer
 {
+    private const int NormalizationCacheLimit = 2048;
+
     private readonly object _gate = new();
     private readonly Queue<CapturedCommand> _unscoped = new();
     private readonly ConditionalWeakTable<DbContext, QueryShapeOptions> _optionsByContext = new();
+    private readonly ConcurrentDictionary<string, NormalizedSql> _normalized = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
     private int _unscopedSequence;
 
     public ExpressionCorrelator Correlator { get; } = new();
@@ -70,9 +75,14 @@ internal sealed class CommandCapturer
         object? result,
         Exception? error)
     {
+        if (!options.Enabled)
+        {
+            return null;
+        }
+
         try
         {
-            var normalized = SqlNormalizer.Normalize(command.CommandText ?? string.Empty);
+            var normalized = Normalize(command.CommandText ?? string.Empty);
             var scope = QueryShapeScope.Current;
 
             QueryInfo? query = null;
@@ -121,6 +131,16 @@ internal sealed class CommandCapturer
                 captured.RowsAffected = affected;
             }
 
+            if (executeMethod == DbCommandMethod.ExecuteReader && error is null)
+            {
+                if (_openReaders.Count > 10_000)
+                {
+                    _openReaders.Clear(); // readers that were never closed; keep memory bounded
+                }
+
+                _openReaders[commandId] = captured;
+            }
+
             var listeners = scope?.Options.Listeners.Count > 0 && !ReferenceEquals(scope.Options, options)
                 ? options.Listeners.Concat(scope.Options.Listeners).Distinct()
                 : options.Listeners;
@@ -166,17 +186,7 @@ internal sealed class CommandCapturer
     {
         try
         {
-            var scope = QueryShapeScope.Current;
-            var command = scope?.FindByCommandId(commandId);
-            if (command is null)
-            {
-                lock (_gate)
-                {
-                    command = _unscoped.LastOrDefault(c => c.CommandId == commandId);
-                }
-            }
-
-            if (command is null)
+            if (!_openReaders.TryRemove(commandId, out var command))
             {
                 return;
             }
@@ -188,12 +198,30 @@ internal sealed class CommandCapturer
                 command.RowsAffected = recordsAffected;
             }
 
-            scope?.InvalidateAnalysis();
+            QueryShapeScope.Current?.InvalidateAnalysis();
         }
         catch (Exception ex)
         {
             Log.Swallowed(null, "reader closed", ex);
         }
+    }
+
+    /// <summary>The same SQL text is executed over and over (compiled query cache); normalize each distinct text once.</summary>
+    private NormalizedSql Normalize(string commandText)
+    {
+        if (_normalized.TryGetValue(commandText, out var cached))
+        {
+            return cached;
+        }
+
+        var normalized = SqlNormalizer.Normalize(commandText);
+        if (_normalized.Count >= NormalizationCacheLimit)
+        {
+            _normalized.Clear();
+        }
+
+        _normalized[commandText] = normalized;
+        return normalized;
     }
 
     private static string? SafeProviderName(DbContext? context)
@@ -219,14 +247,14 @@ internal sealed class CommandCapturer
         }
 
         var list = new CapturedParameter[count];
-        var hashInput = new StringBuilder();
+        var hash = Fnv.Offset;
         for (var i = 0; i < count; i++)
         {
             var p = command.Parameters[i];
             var value = p.Value;
             var isNull = value is null || value is DBNull;
-            var text = isNull ? "NULL" : ValueToString(value!);
-            hashInput.Append(p.ParameterName).Append('=').Append(text).Append(';');
+            hash = Fnv.Add(hash, p.ParameterName);
+            hash = Fnv.Add(hash, isNull ? "NULL" : ValueToString(value!));
             list[i] = new CapturedParameter(p.ParameterName, p.DbType, p.Direction, includeValues && !isNull ? value : null, isNull);
 
             var elements = CollectionElementCount(value);
@@ -236,10 +264,25 @@ internal sealed class CommandCapturer
             }
         }
 
-        Span<byte> hash = stackalloc byte[32];
-        SHA256.HashData(Encoding.UTF8.GetBytes(hashInput.ToString()), hash);
-        parameterHash = Convert.ToHexString(hash[..6]).ToLowerInvariant();
+        parameterHash = hash.ToString("x12", CultureInfo.InvariantCulture)[..12];
         return list;
+    }
+
+    /// <summary>64-bit FNV-1a over UTF-16 code units: deterministic, allocation-free, fast. Only ever compared within a process.</summary>
+    private static class Fnv
+    {
+        public const ulong Offset = 14695981039346656037UL;
+        private const ulong Prime = 1099511628211UL;
+
+        public static ulong Add(ulong hash, string text)
+        {
+            foreach (var ch in text)
+            {
+                hash = (hash ^ ch) * Prime;
+            }
+
+            return (hash ^ 0x1F) * Prime; // separator
+        }
     }
 
     /// <summary>Elements in a collection parameter: provider arrays (Npgsql) or the JSON array EF Core 8+ sends for OPENJSON/json_each.</summary>

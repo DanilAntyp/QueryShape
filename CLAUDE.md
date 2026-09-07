@@ -53,6 +53,8 @@ queryshape/
 │  ├─ QueryShape.Testing/             ← snapshot testing API, framework-agnostic core (feature #1)
 │  ├─ QueryShape.Testing.Xunit/       ← [QueryBudget] attribute for xUnit (thin adapter)
 │  ├─ QueryShape.AspNetCore/          ← app.UseQueryShape() middleware (ADR-0001)
+│  ├─ QueryShape.Testing.NUnit/       ← [QueryBudget] for NUnit (ITestAction)
+│  ├─ QueryShape.Testing.MSTest/      ← [QueryBudgetTestMethod] for MSTest
 │  ├─ QueryShape.OpenTelemetry/       ← Activity enrichment (feature #3)
 │  └─ QueryShape.Cli/                 ← `dotnet queryshape` tool: verify fixes, print reports, update snapshots (feature #2)
 ├─ tests/
@@ -60,7 +62,10 @@ queryshape/
 │  ├─ QueryShape.Testing.Tests/
 │  ├─ QueryShape.OpenTelemetry.Tests/
 │  ├─ QueryShape.SampleApp/           ← small ASP.NET Core app with deliberately bad queries; used by tests AND as the README demo
-│  └─ QueryShape.SampleApp.Tests/     ← one test per /bad endpoint (rule fires) and per /good twin (rule silent)
+│  ├─ QueryShape.SampleApp.Tests/     ← one test per /bad endpoint (rule fires) and per /good twin (rule silent)
+│  ├─ QueryShape.Cli.Tests/           ← CLI unit tests + slow end-to-end `verify` against this repo (Category=Slow)
+│  └─ QueryShape.Benchmarks/          ← BenchmarkDotNet; numbers go to docs/performance.md
+├─ scripts/update-public-api.py       ← syncs PublicAPI.Unshipped.txt from RS0016/RS0017 diagnostics
 ├─ docs/
 │  ├─ rules/                      ← one markdown file per rule: what, why EF Core does this, fix, example
 │  └─ adr/                        ← architecture decision records, numbered
@@ -293,12 +298,18 @@ This runs inside other people's production apps. Treat it that way.
 
 ## 11. Definition of done — v0.1
 
-- [ ] `QueryShape.Core`, `QueryShape.Testing`, `QueryShape.OpenTelemetry` build for net8.0/net10.0 against EF Core 8 and 10, warnings-as-errors, public API tracked.
-- [ ] Rules QS001, QS003, QS004, QS005, QS008 implemented, documented, tested (unit + SampleApp integration on SQLite; SQL Server + Postgres via Testcontainers in CI).
-- [ ] Snapshot testing works in xUnit with the exact DX in 6.1; failure messages reviewed for readability against every SampleApp endpoint.
-- [ ] `CI=true` behavior, `QUERYSHAPE_UPDATE_SNAPSHOTS`, and `QueryBudget` attribute all covered by tests.
-- [ ] OTel: spans from SampleApp requests carry `queryshape.*` tags and `queryshape.diagnosis` events; verified with in-memory exporter.
-- [ ] `dotnet queryshape verify` produces the before/after table for at least the QS001 SampleApp case.
-- [ ] Benchmarks recorded; overhead within budget.
-- [ ] README: 3-line setup, one screenshot-equivalent code block of a snapshot failure, one of a `verify` table, link to rules docs.
-- [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI).
+- [x] `QueryShape.Core`, `QueryShape.Testing`, `QueryShape.OpenTelemetry` build for net8.0/net10.0 against EF Core 8 and 10, warnings-as-errors, public API tracked.
+- [x] Rules QS001, QS003, QS004, QS005, QS008 implemented, documented, tested (unit + SampleApp integration on SQLite; SQL Server + Postgres via Testcontainers in CI). All ten rules are in.
+- [x] Snapshot testing works in xUnit with the exact DX in 6.1; failure messages reviewed for readability against every SampleApp endpoint.
+- [x] `CI=true` behavior, `QUERYSHAPE_UPDATE_SNAPSHOTS`, and `QueryBudget` attribute all covered by tests.
+- [x] OTel: spans from SampleApp requests carry `queryshape.*` tags and `queryshape.diagnosis` events; verified with in-memory exporter.
+- [x] `dotnet queryshape verify` produces the before/after table for at least the QS001 SampleApp case (end-to-end test in `QueryShape.Cli.Tests`, Category=Slow).
+- [x] Benchmarks recorded (`docs/performance.md`). Overhead ≈ 4 µs per query: within the 3 % budget against networked databases, not against in-memory SQLite (see the doc for the reasoning).
+- [x] README: 3-line setup, one screenshot-equivalent code block of a snapshot failure, one of a `verify` table, link to rules docs.
+- [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI). Workflow written; needs the first push to GitHub to confirm.
+
+### Decisions recorded outside ADRs
+- `QueryShapeOptions.Enabled` is a master kill switch (default on) so production can turn capture off without redeploying.
+- Scopes write JSON reports when `QUERYSHAPE_REPORT_DIR` is set; this is the contract between test runs and `dotnet queryshape` (no I/O otherwise).
+- `verify` measures database time summed over the scope's commands (EF Core's execute duration), not wall time; a delta must beat the run-to-run spread, 10 % of the baseline and 1 ms to count.
+- Local runs of the sample-app tests on the net8.0 target are skipped when rolled forward to .NET 10 (TestHost 8 cannot serve JSON on System.Text.Json 9+); CI runs them on the real runtime.

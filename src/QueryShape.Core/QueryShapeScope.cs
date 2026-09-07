@@ -231,23 +231,6 @@ public sealed class QueryShapeScope : IDisposable
         }
     }
 
-    /// <summary>Finds a recorded command by EF Core command id (used to attach the row count when the reader closes).</summary>
-    internal CapturedCommand? FindByCommandId(Guid commandId)
-    {
-        lock (_gate)
-        {
-            for (var i = _commands.Count - 1; i >= 0; i--)
-            {
-                if (_commands[i].CommandId == commandId)
-                {
-                    return _commands[i];
-                }
-            }
-        }
-
-        return null;
-    }
-
     internal void InvalidateAnalysis()
     {
         lock (_gate)

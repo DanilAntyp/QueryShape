@@ -4,10 +4,13 @@
     <Project Path="src/QueryShape.Cli/QueryShape.Cli.csproj" />
     <Project Path="src/QueryShape.Core/QueryShape.Core.csproj" />
     <Project Path="src/QueryShape.OpenTelemetry/QueryShape.OpenTelemetry.csproj" />
+    <Project Path="src/QueryShape.Testing.MSTest/QueryShape.Testing.MSTest.csproj" />
+    <Project Path="src/QueryShape.Testing.NUnit/QueryShape.Testing.NUnit.csproj" />
     <Project Path="src/QueryShape.Testing.Xunit/QueryShape.Testing.Xunit.csproj" />
     <Project Path="src/QueryShape.Testing/QueryShape.Testing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/QueryShape.Benchmarks/QueryShape.Benchmarks.csproj" />
     <Project Path="tests/QueryShape.Cli.Tests/QueryShape.Cli.Tests.csproj" />
     <Project Path="tests/QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />
     <Project Path="tests/QueryShape.OpenTelemetry.Tests/QueryShape.OpenTelemetry.Tests.csproj" />

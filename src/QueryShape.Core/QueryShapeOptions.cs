@@ -9,6 +9,9 @@ public sealed class QueryShapeOptions
     /// <summary>Process-wide defaults used when no options are supplied. Mutating this instance affects every scope begun without explicit options.</summary>
     public static QueryShapeOptions Default { get; } = new();
 
+    /// <summary>Master switch. When <c>false</c> the interceptor and middleware do nothing beyond a boolean check. Default on.</summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>Same shape executed at least this many times in one scope with varying parameters is an N+1 (QS001). Default 5.</summary>
     public int NPlusOneThreshold { get; set; } = 5;
 
