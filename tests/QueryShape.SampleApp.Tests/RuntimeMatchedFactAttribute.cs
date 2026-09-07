@@ -7,7 +7,7 @@ namespace QueryShape.SampleApp.Tests;
 /// The in-process test host from Microsoft.AspNetCore.TestHost 8.x cannot serve JSON on a rolled-forward .NET 10 runtime
 /// (System.Text.Json 9+ needs PipeWriter.UnflushedBytes). CI runs each target on its real runtime; locally these tests are skipped for a mismatched runtime.
 /// </summary>
-internal static class RuntimeMatch
+public static class RuntimeMatch
 {
     public static string? SkipReason { get; } = Compute();
 

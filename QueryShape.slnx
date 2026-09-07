@@ -2,11 +2,13 @@
   <Folder Name="/src/">
     <Project Path="src/QueryShape.AspNetCore/QueryShape.AspNetCore.csproj" />
     <Project Path="src/QueryShape.Core/QueryShape.Core.csproj" />
+    <Project Path="src/QueryShape.OpenTelemetry/QueryShape.OpenTelemetry.csproj" />
     <Project Path="src/QueryShape.Testing.Xunit/QueryShape.Testing.Xunit.csproj" />
     <Project Path="src/QueryShape.Testing/QueryShape.Testing.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />
+    <Project Path="tests/QueryShape.OpenTelemetry.Tests/QueryShape.OpenTelemetry.Tests.csproj" />
     <Project Path="tests/QueryShape.SampleApp.Tests/QueryShape.SampleApp.Tests.csproj" />
     <Project Path="tests/QueryShape.SampleApp/QueryShape.SampleApp.csproj" />
     <Project Path="tests/QueryShape.Testing.Tests/QueryShape.Testing.Tests.csproj" />

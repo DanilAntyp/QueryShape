@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.OpenTelemetry</AssemblyName>
+    <PackageId>QueryShape.OpenTelemetry</PackageId>
+    <RootNamespace>QueryShape.OpenTelemetry</RootNamespace>
+    <Description>Adds QueryShape findings (queryshape.* tags, queryshape.diagnosis events, QueryShape meter) to the OpenTelemetry spans your app already emits. No dependency on the OpenTelemetry SDK.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Core/QueryShape.Core.csproj" />
+  </ItemGroup>
+</Project>

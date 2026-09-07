@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/QueryShape.OpenTelemetry/QueryShape.OpenTelemetry.csproj" />
+    <ProjectReference Include="../QueryShape.SampleApp/QueryShape.SampleApp.csproj" />
+    <ProjectReference Include="../QueryShape.SampleApp.Tests/QueryShape.SampleApp.Tests.csproj" />
+    <ProjectReference Include="../QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+  </ItemGroup>
+</Project>
