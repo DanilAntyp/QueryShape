@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Testing.Xunit</AssemblyName>
+    <PackageId>QueryShape.Testing.Xunit</PackageId>
+    <RootNamespace>QueryShape.Testing.Xunit</RootNamespace>
+    <Description>xUnit adapter for QueryShape.Testing: [QueryBudget(MaxQueries = 2, MaxDurationMs = 200)] on a test method.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Testing/QueryShape.Testing.csproj" />
+    <PackageReference Include="xunit.extensibility.core" />
+  </ItemGroup>
+</Project>

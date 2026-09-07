@@ -48,7 +48,7 @@ public class RawConnectionTests
         scope.Commands.Should().OnlyContain(c => c.Source == QuerySource.Raw && c.Query == null);
         scope.Commands[1].RowsReturned.Should().Be(2);
         scope.Commands[1].Parameters.Should().ContainSingle().Which.Name.Should().Be("@min");
-        scope.Commands[1].Shape.Should().Be("SELECT Id, Name FROM T WHERE Id > @min");
+        scope.Commands[1].Shape.Should().Be("SELECT Id, Name FROM T WHERE Id > @p0");
         scope.Commands[2].IsAsync.Should().BeFalse();
     }
 }

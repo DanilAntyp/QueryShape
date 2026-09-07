@@ -71,7 +71,7 @@ public class NPlusOneRuleTests
         }
 
         var d = new NPlusOneRule().Analyze(scope).Should().ContainSingle().Subject;
-        d.Title.Should().StartWith("N+1 query: SELECT * FROM Orders WHERE CustomerId = @p executed 3 times");
+        d.Title.Should().StartWith("N+1 query: SELECT * FROM Orders WHERE CustomerId = @p0 executed 3 times");
         d.Explanation.Should().Contain("raw SQL");
         d.SuggestedFix!.BeforeSnippet.Should().BeNull();
     }

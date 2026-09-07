@@ -144,7 +144,7 @@ public class RuleIntegrationTests : IDisposable
         text.Should().Contain("       after:  DbSet<Customer>()\n                   .Include(c => c.Orders)\n");
         text.Should().Contain("       patch:\n");
         text.Should().Contain("\n  data 10 queries, ");
-        text.Should().Contain("\n  sql  SELECT \"t0\".\"Id\", \"t0\".\"CustomerId\"");
+        text.Should().Contain("\n  sql  SELECT \"t0\".\"Id\", \"t0\".\"CustomerId\"").And.Contain("WHERE \"t0\".\"CustomerId\" = @p0\n");
         text.Should().Contain("\n  docs https://");
         text.Should().Contain("QS004 WARNING  Unbounded query: loads every Customer row (10 rows)");
     }

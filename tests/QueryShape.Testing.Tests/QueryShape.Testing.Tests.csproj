@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
+    <ProjectReference Include="../../src/QueryShape.Testing.Xunit/QueryShape.Testing.Xunit.csproj" />
+    <ProjectReference Include="../QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,168 @@
+#nullable enable
+const QueryShape.Testing.QuerySnapshot.CurrentVersion = 1 -> int
+const QueryShape.Testing.SnapshotOptions.CiEnvironmentVariable = "CI" -> string!
+const QueryShape.Testing.SnapshotOptions.UpdateEnvironmentVariable = "QUERYSHAPE_UPDATE_SNAPSHOTS" -> string!
+override QueryShape.Testing.QueryDelta.Equals(object? obj) -> bool
+override QueryShape.Testing.QueryDelta.GetHashCode() -> int
+override QueryShape.Testing.QueryDelta.ToString() -> string!
+override QueryShape.Testing.SnapshotDiagnostic.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotDiagnostic.GetHashCode() -> int
+override QueryShape.Testing.SnapshotDiagnostic.ToString() -> string!
+override QueryShape.Testing.SnapshotQuery.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotQuery.GetHashCode() -> int
+override QueryShape.Testing.SnapshotQuery.ToString() -> string!
+override QueryShape.Testing.SnapshotResult.Equals(object? obj) -> bool
+override QueryShape.Testing.SnapshotResult.GetHashCode() -> int
+override QueryShape.Testing.SnapshotResult.ToString() -> string!
+QueryShape.Testing.QueryBudget
+QueryShape.Testing.QueryBudget.BuildMessage(string! testName, QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<string!>! violations, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> string!
+QueryShape.Testing.QueryBudget.Evaluate(QueryShape.QueryShapeScope! scope, out System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.QueryBudget.FailOn.get -> QueryShape.Severity?
+QueryShape.Testing.QueryBudget.FailOn.init -> void
+QueryShape.Testing.QueryBudget.MaxDurationMs.get -> double?
+QueryShape.Testing.QueryBudget.MaxDurationMs.init -> void
+QueryShape.Testing.QueryBudget.MaxQueries.get -> int?
+QueryShape.Testing.QueryBudget.MaxQueries.init -> void
+QueryShape.Testing.QueryBudget.QueryBudget() -> void
+QueryShape.Testing.QueryBudgetEnforcer
+QueryShape.Testing.QueryBudgetExceededException
+QueryShape.Testing.QueryBudgetExceededException.QueryBudgetExceededException(string! message, System.Collections.Generic.IReadOnlyList<string!>! violations) -> void
+QueryShape.Testing.QueryBudgetExceededException.Violations.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.QueryBudgetExtensions
+QueryShape.Testing.QueryDelta
+QueryShape.Testing.QueryDelta.<Clone>$() -> QueryShape.Testing.QueryDelta!
+QueryShape.Testing.QueryDelta.ActualCount.get -> int
+QueryShape.Testing.QueryDelta.ActualCount.init -> void
+QueryShape.Testing.QueryDelta.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out int ExpectedCount, out int ActualCount, out QueryShape.CapturedCommand? Sample) -> void
+QueryShape.Testing.QueryDelta.Equals(QueryShape.Testing.QueryDelta? other) -> bool
+QueryShape.Testing.QueryDelta.ExpectedCount.get -> int
+QueryShape.Testing.QueryDelta.ExpectedCount.init -> void
+QueryShape.Testing.QueryDelta.Fingerprint.get -> string!
+QueryShape.Testing.QueryDelta.Fingerprint.init -> void
+QueryShape.Testing.QueryDelta.QueryDelta(string! Fingerprint, string! Shape, string! Source, int ExpectedCount, int ActualCount, QueryShape.CapturedCommand? Sample) -> void
+QueryShape.Testing.QueryDelta.Sample.get -> QueryShape.CapturedCommand?
+QueryShape.Testing.QueryDelta.Sample.init -> void
+QueryShape.Testing.QueryDelta.Shape.get -> string!
+QueryShape.Testing.QueryDelta.Shape.init -> void
+QueryShape.Testing.QueryDelta.Source.get -> string!
+QueryShape.Testing.QueryDelta.Source.init -> void
+QueryShape.Testing.QueryShapeScopeSnapshotExtensions
+QueryShape.Testing.QueryShapeTest
+QueryShape.Testing.QueryShapeTestScope
+QueryShape.Testing.QueryShapeTestScope.Analyze() -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.Testing.QueryShapeTestScope.AssertBudget(QueryShape.Testing.QueryBudget! budget) -> void
+QueryShape.Testing.QueryShapeTestScope.Dispose() -> void
+QueryShape.Testing.QueryShapeTestScope.MatchSnapshotAsync() -> System.Threading.Tasks.Task<QueryShape.Testing.SnapshotResult!>!
+QueryShape.Testing.QueryShapeTestScope.Scope.get -> QueryShape.QueryShapeScope!
+QueryShape.Testing.QueryShapeTestScope.SnapshotOptions.get -> QueryShape.Testing.SnapshotOptions!
+QueryShape.Testing.QueryShapeTestScope.SnapshotPath.get -> string?
+QueryShape.Testing.QueryShapeTestScope.TestName.get -> string!
+QueryShape.Testing.QuerySnapshot
+QueryShape.Testing.QuerySnapshot.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.SnapshotDiagnostic!>!
+QueryShape.Testing.QuerySnapshot.Diagnostics.init -> void
+QueryShape.Testing.QuerySnapshot.Queries.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.SnapshotQuery!>!
+QueryShape.Testing.QuerySnapshot.Queries.init -> void
+QueryShape.Testing.QuerySnapshot.QueryCount.get -> int
+QueryShape.Testing.QuerySnapshot.QueryCount.init -> void
+QueryShape.Testing.QuerySnapshot.QuerySnapshot() -> void
+QueryShape.Testing.QuerySnapshot.Version.get -> int
+QueryShape.Testing.QuerySnapshot.Version.init -> void
+QueryShape.Testing.QuerySnapshotMismatchException
+QueryShape.Testing.QuerySnapshotMismatchException.Comparison.get -> QueryShape.Testing.SnapshotComparison!
+QueryShape.Testing.QuerySnapshotMismatchException.QuerySnapshotMismatchException(string! message, QueryShape.Testing.SnapshotComparison! comparison, string! snapshotPath) -> void
+QueryShape.Testing.QuerySnapshotMismatchException.SnapshotPath.get -> string!
+QueryShape.Testing.QuerySnapshotMissingException
+QueryShape.Testing.QuerySnapshotMissingException.QuerySnapshotMissingException(string! message, string! snapshotPath) -> void
+QueryShape.Testing.QuerySnapshotMissingException.SnapshotPath.get -> string!
+QueryShape.Testing.SnapshotComparison
+QueryShape.Testing.SnapshotComparison.ActualQueryCount.get -> int
+QueryShape.Testing.SnapshotComparison.ActualQueryCount.init -> void
+QueryShape.Testing.SnapshotComparison.Added.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.QueryDelta!>!
+QueryShape.Testing.SnapshotComparison.Added.init -> void
+QueryShape.Testing.SnapshotComparison.ExpectedQueryCount.get -> int
+QueryShape.Testing.SnapshotComparison.ExpectedQueryCount.init -> void
+QueryShape.Testing.SnapshotComparison.IsMatch.get -> bool
+QueryShape.Testing.SnapshotComparison.KnownDiagnoses.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.Testing.SnapshotComparison.KnownDiagnoses.init -> void
+QueryShape.Testing.SnapshotComparison.NewDiagnoses.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.Testing.SnapshotComparison.NewDiagnoses.init -> void
+QueryShape.Testing.SnapshotComparison.Removed.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.QueryDelta!>!
+QueryShape.Testing.SnapshotComparison.Removed.init -> void
+QueryShape.Testing.SnapshotComparison.SnapshotComparison() -> void
+QueryShape.Testing.SnapshotDiagnostic
+QueryShape.Testing.SnapshotDiagnostic.<Clone>$() -> QueryShape.Testing.SnapshotDiagnostic!
+QueryShape.Testing.SnapshotDiagnostic.Deconstruct(out string! RuleId, out string! Severity) -> void
+QueryShape.Testing.SnapshotDiagnostic.Equals(QueryShape.Testing.SnapshotDiagnostic? other) -> bool
+QueryShape.Testing.SnapshotDiagnostic.RuleId.get -> string!
+QueryShape.Testing.SnapshotDiagnostic.RuleId.init -> void
+QueryShape.Testing.SnapshotDiagnostic.Severity.get -> string!
+QueryShape.Testing.SnapshotDiagnostic.Severity.init -> void
+QueryShape.Testing.SnapshotDiagnostic.SnapshotDiagnostic(string! RuleId, string! Severity) -> void
+QueryShape.Testing.SnapshotOptions
+QueryShape.Testing.SnapshotOptions.CiMode.get -> bool?
+QueryShape.Testing.SnapshotOptions.CiMode.set -> void
+QueryShape.Testing.SnapshotOptions.DirectoryName.get -> string!
+QueryShape.Testing.SnapshotOptions.DirectoryName.set -> void
+QueryShape.Testing.SnapshotOptions.Environment.get -> System.Func<string!, string?>!
+QueryShape.Testing.SnapshotOptions.Environment.set -> void
+QueryShape.Testing.SnapshotOptions.FailOn.get -> QueryShape.Severity
+QueryShape.Testing.SnapshotOptions.FailOn.set -> void
+QueryShape.Testing.SnapshotOptions.Log.get -> System.Action<string!>?
+QueryShape.Testing.SnapshotOptions.Log.set -> void
+QueryShape.Testing.SnapshotOptions.SnapshotOptions() -> void
+QueryShape.Testing.SnapshotOptions.UpdateSnapshots.get -> bool?
+QueryShape.Testing.SnapshotOptions.UpdateSnapshots.set -> void
+QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotOutcome.Created = 1 -> QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotOutcome.Matched = 0 -> QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotOutcome.Updated = 2 -> QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotQuery
+QueryShape.Testing.SnapshotQuery.<Clone>$() -> QueryShape.Testing.SnapshotQuery!
+QueryShape.Testing.SnapshotQuery.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out System.Collections.Generic.IReadOnlyList<string!>! Tags) -> void
+QueryShape.Testing.SnapshotQuery.Equals(QueryShape.Testing.SnapshotQuery? other) -> bool
+QueryShape.Testing.SnapshotQuery.Fingerprint.get -> string!
+QueryShape.Testing.SnapshotQuery.Fingerprint.init -> void
+QueryShape.Testing.SnapshotQuery.Shape.get -> string!
+QueryShape.Testing.SnapshotQuery.Shape.init -> void
+QueryShape.Testing.SnapshotQuery.SnapshotQuery(string! Fingerprint, string! Shape, string! Source, System.Collections.Generic.IReadOnlyList<string!>! Tags) -> void
+QueryShape.Testing.SnapshotQuery.Source.get -> string!
+QueryShape.Testing.SnapshotQuery.Source.init -> void
+QueryShape.Testing.SnapshotQuery.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.SnapshotQuery.Tags.init -> void
+QueryShape.Testing.SnapshotResult
+QueryShape.Testing.SnapshotResult.<Clone>$() -> QueryShape.Testing.SnapshotResult!
+QueryShape.Testing.SnapshotResult.Deconstruct(out QueryShape.Testing.SnapshotOutcome Outcome, out string! Path, out QueryShape.Testing.QuerySnapshot! Snapshot, out System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! Diagnoses) -> void
+QueryShape.Testing.SnapshotResult.Diagnoses.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.Testing.SnapshotResult.Diagnoses.init -> void
+QueryShape.Testing.SnapshotResult.Equals(QueryShape.Testing.SnapshotResult? other) -> bool
+QueryShape.Testing.SnapshotResult.Outcome.get -> QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotResult.Outcome.init -> void
+QueryShape.Testing.SnapshotResult.Path.get -> string!
+QueryShape.Testing.SnapshotResult.Path.init -> void
+QueryShape.Testing.SnapshotResult.Snapshot.get -> QueryShape.Testing.QuerySnapshot!
+QueryShape.Testing.SnapshotResult.Snapshot.init -> void
+QueryShape.Testing.SnapshotResult.SnapshotResult(QueryShape.Testing.SnapshotOutcome Outcome, string! Path, QueryShape.Testing.QuerySnapshot! Snapshot, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! Diagnoses) -> void
+QueryShape.Testing.SnapshotSerializer
+static QueryShape.Testing.QueryBudgetEnforcer.Begin(System.Reflection.MethodInfo! method, QueryShape.QueryShapeOptions? options = null) -> QueryShape.QueryShapeScope!
+static QueryShape.Testing.QueryBudgetEnforcer.End(System.Reflection.MethodInfo! method, QueryShape.Testing.QueryBudget! budget) -> void
+static QueryShape.Testing.QueryBudgetExtensions.AssertBudget(this QueryShape.QueryShapeScope! scope, QueryShape.Testing.QueryBudget! budget, string? testName = null) -> void
+static QueryShape.Testing.QueryDelta.operator !=(QueryShape.Testing.QueryDelta? left, QueryShape.Testing.QueryDelta? right) -> bool
+static QueryShape.Testing.QueryDelta.operator ==(QueryShape.Testing.QueryDelta? left, QueryShape.Testing.QueryDelta? right) -> bool
+static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshot(this QueryShape.QueryShapeScope! scope, string? name = null, QueryShape.Testing.SnapshotOptions? options = null, string! callerFilePath = "", string! callerMemberName = "") -> QueryShape.Testing.SnapshotResult!
+static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshotAsync(this QueryShape.QueryShapeScope! scope, string? name = null, QueryShape.Testing.SnapshotOptions? options = null, string! callerFilePath = "", string! callerMemberName = "") -> System.Threading.Tasks.Task<QueryShape.Testing.SnapshotResult!>!
+static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshotFileAsync(this QueryShape.QueryShapeScope! scope, string! snapshotPath, string! testName, QueryShape.Testing.SnapshotOptions? options = null) -> System.Threading.Tasks.Task<QueryShape.Testing.SnapshotResult!>!
+static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.ResolvePath(string! callerFilePath, string! testName, QueryShape.Testing.SnapshotOptions? options = null) -> string!
+static QueryShape.Testing.QueryShapeTest.Begin(string? name = null, QueryShape.QueryShapeOptions? options = null, QueryShape.Testing.SnapshotOptions? snapshotOptions = null, string! callerFilePath = "", string! callerMemberName = "") -> QueryShape.Testing.QueryShapeTestScope!
+static QueryShape.Testing.QueryShapeTest.DefaultOptions.get -> QueryShape.QueryShapeOptions!
+static QueryShape.Testing.QueryShapeTest.DefaultOptions.set -> void
+static QueryShape.Testing.QuerySnapshot.FromScope(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>? diagnoses = null) -> QueryShape.Testing.QuerySnapshot!
+static QueryShape.Testing.SnapshotComparison.Compare(QueryShape.Testing.QuerySnapshot! expected, QueryShape.Testing.QuerySnapshot! actual, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses, System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>! commands, QueryShape.Severity failOn) -> QueryShape.Testing.SnapshotComparison!
+static QueryShape.Testing.SnapshotDiagnostic.operator !=(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool
+static QueryShape.Testing.SnapshotDiagnostic.operator ==(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool
+static QueryShape.Testing.SnapshotOptions.Default.get -> QueryShape.Testing.SnapshotOptions!
+static QueryShape.Testing.SnapshotQuery.operator !=(QueryShape.Testing.SnapshotQuery? left, QueryShape.Testing.SnapshotQuery? right) -> bool
+static QueryShape.Testing.SnapshotQuery.operator ==(QueryShape.Testing.SnapshotQuery? left, QueryShape.Testing.SnapshotQuery? right) -> bool
+static QueryShape.Testing.SnapshotResult.operator !=(QueryShape.Testing.SnapshotResult? left, QueryShape.Testing.SnapshotResult? right) -> bool
+static QueryShape.Testing.SnapshotResult.operator ==(QueryShape.Testing.SnapshotResult? left, QueryShape.Testing.SnapshotResult? right) -> bool
+static QueryShape.Testing.SnapshotSerializer.Deserialize(string! json) -> QueryShape.Testing.QuerySnapshot!
+static QueryShape.Testing.SnapshotSerializer.Serialize(QueryShape.Testing.QuerySnapshot! snapshot) -> string!

@@ -9,7 +9,7 @@ public class SqlNormalizerTests
     {
         var sql = "SELECT   [c].[Id],\n    [c].[Name] /* hi */\r\nFROM [Customers] AS [c]  -- trailing\nWHERE [c].[Id] = @__id_0";
         var result = SqlNormalizer.Normalize(sql);
-        result.Shape.Should().Be("SELECT [t0].[Id], [t0].[Name] FROM [Customers] AS [t0] WHERE [t0].[Id] = @__id_0");
+        result.Shape.Should().Be("SELECT [t0].[Id], [t0].[Name] FROM [Customers] AS [t0] WHERE [t0].[Id] = @p0");
         result.Tags.Should().BeEmpty();
     }
 
@@ -67,6 +67,16 @@ public class SqlNormalizerTests
     {
         var sql = "SELECT [c].[Name] AS [CustomerName], COUNT(*) AS [Count] FROM [Customers] AS [c] GROUP BY [c].[Name]";
         SqlNormalizer.Shape(sql).Should().Be("SELECT [t0].[Name] AS [CustomerName], COUNT(*) AS [Count] FROM [Customers] AS [t0] GROUP BY [t0].[Name]");
+    }
+
+    [Fact]
+    public void Parameter_names_are_canonicalized_positionally()
+    {
+        var ef8 = SqlNormalizer.Shape("SELECT * FROM [O] AS [o] WHERE [o].[A] = @__customerId_0 AND [o].[B] > @__min_1 OR [o].[A] = @__customerId_0");
+        var ef10 = SqlNormalizer.Shape("SELECT * FROM [O] AS [o] WHERE [o].[A] = @customerId AND [o].[B] > @min OR [o].[A] = @customerId");
+        ef8.Should().Be("SELECT * FROM [O] AS [t0] WHERE [t0].[A] = @p0 AND [t0].[B] > @p1 OR [t0].[A] = @p0");
+        ef10.Should().Be(ef8, "renaming a C# variable must not change the shape");
+        SqlNormalizer.Shape("SELECT @@ROWCOUNT, 'a@b'").Should().Be("SELECT @@ROWCOUNT, 'a@b'");
     }
 
     [Fact]

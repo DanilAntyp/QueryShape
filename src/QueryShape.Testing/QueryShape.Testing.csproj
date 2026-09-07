@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Testing</AssemblyName>
+    <PackageId>QueryShape.Testing</PackageId>
+    <RootNamespace>QueryShape.Testing</RootNamespace>
+    <Description>Query snapshot testing for EF Core: fail the build when a code change makes EF Core issue more or different queries. Framework-agnostic core; see QueryShape.Testing.Xunit for the [QueryBudget] attribute.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Core/QueryShape.Core.csproj" />
+  </ItemGroup>
+</Project>

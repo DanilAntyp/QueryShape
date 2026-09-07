@@ -47,10 +47,12 @@ Three features, in this order. Each must be independently shippable and useful o
 queryshape/
 ├─ CLAUDE.md                      ← this file
 ├─ Directory.Build.props          ← shared: nullable, warnings-as-errors, versioning
-├─ QueryShape.sln
+├─ QueryShape.slnx                ← .NET 10 SDK solution format
 ├─ src/
 │  ├─ QueryShape.Core/                ← capture, normalization, rules engine, diagnosis model. No test/OTel deps.
-│  ├─ QueryShape.Testing/             ← snapshot testing API for xUnit/NUnit/MSTest (feature #1)
+│  ├─ QueryShape.Testing/             ← snapshot testing API, framework-agnostic core (feature #1)
+│  ├─ QueryShape.Testing.Xunit/       ← [QueryBudget] attribute for xUnit (thin adapter)
+│  ├─ QueryShape.AspNetCore/          ← app.UseQueryShape() middleware (ADR-0001)
 │  ├─ QueryShape.OpenTelemetry/       ← Activity enrichment (feature #3)
 │  └─ QueryShape.Cli/                 ← `dotnet queryshape` tool: verify fixes, print reports, update snapshots (feature #2)
 ├─ tests/
@@ -94,7 +96,7 @@ Provide ASP.NET Core middleware (`app.UseQueryShape()`) that opens a scope per r
 ### 4.3 Normalization
 
 Two normalized forms of every SQL command, both deterministic:
-- **Shape**: SQL with parameter *values* stripped (keep parameter names), whitespace collapsed, EF Core's auto-generated aliases (`[t]`, `[o0]`…) canonicalized to positional aliases, tags/comments removed. Two queries with the same shape are "the same query with different arguments."
+- **Shape**: SQL with parameter *values* stripped and parameter *names* canonicalized positionally (`@p0`, `@p1`… — EF Core derives names from C# variables, see ADR-0006), whitespace collapsed, EF Core's auto-generated aliases (`[t]`, `[o0]`…) canonicalized to positional aliases, tags/comments removed. Two queries with the same shape are "the same query with different arguments."
 - **Fingerprint**: SHA-256 of the shape, first 12 hex chars. Used in snapshots and OTel attributes.
 
 Also record: provider name, `CommandType`, rows affected/returned where available, duration, whether tracking was on, `QuerySplittingBehavior`.

@@ -1,0 +1,117 @@
+using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+
+namespace QueryShape.Testing;
+
+/// <summary><c>await scope.MatchSnapshotAsync();</c> — compare the queries this scope captured against <c>__querysnapshots__/{TestClass}.{TestName}.json</c>.</summary>
+public static class QueryShapeScopeSnapshotExtensions
+{
+    /// <summary>
+    /// Compares the scope against its snapshot. Missing snapshot: written and the test passes (fails in CI mode). Mismatch: throws
+    /// <see cref="QuerySnapshotMismatchException"/> with a readable diff. Test class is the caller's file name, test name the caller's member name;
+    /// pass <paramref name="name"/> to override the test name.
+    /// </summary>
+    public static Task<SnapshotResult> MatchSnapshotAsync(
+        this QueryShapeScope scope,
+        string? name = null,
+        SnapshotOptions? options = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerMemberName] string callerMemberName = "")
+        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default);
+
+    /// <summary>Synchronous variant of <see cref="MatchSnapshotAsync"/>.</summary>
+    public static SnapshotResult MatchSnapshot(
+        this QueryShapeScope scope,
+        string? name = null,
+        SnapshotOptions? options = null,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerMemberName] string callerMemberName = "")
+        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default)
+            .GetAwaiter().GetResult();
+
+    /// <summary>Compares against an explicit snapshot file path (for adapters and tools).</summary>
+    public static Task<SnapshotResult> MatchSnapshotFileAsync(this QueryShapeScope scope, string snapshotPath, string testName, SnapshotOptions? options = null)
+        => SnapshotEngine.MatchAsync(scope, snapshotPath, testName, options ?? SnapshotOptions.Default);
+
+    /// <summary>The snapshot path for a test source file and test name.</summary>
+    public static string ResolvePath(string callerFilePath, string testName, SnapshotOptions? options = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(callerFilePath);
+        ArgumentException.ThrowIfNullOrEmpty(testName);
+        var dir = Path.GetDirectoryName(callerFilePath) ?? ".";
+        var testClass = Path.GetFileNameWithoutExtension(callerFilePath);
+        var safe = string.Concat((testClass + "." + testName).Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch));
+        return Path.Combine(dir, (options ?? SnapshotOptions.Default).DirectoryName, safe + ".json");
+    }
+}
+
+internal static class SnapshotEngine
+{
+    public static async Task<SnapshotResult> MatchAsync(QueryShapeScope scope, string snapshotPath, string testName, SnapshotOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+
+        var diagnoses = scope.Analyze();
+        var actual = QuerySnapshot.FromScope(scope, diagnoses);
+
+        if (options.ShouldUpdate())
+        {
+            await WriteAsync(snapshotPath, actual).ConfigureAwait(false);
+            Emit(scope, options, $"QueryShape: snapshot updated for {testName} -> {snapshotPath}");
+            return new SnapshotResult(SnapshotOutcome.Updated, snapshotPath, actual, diagnoses);
+        }
+
+        if (!File.Exists(snapshotPath))
+        {
+            if (options.IsCi())
+            {
+                throw new QuerySnapshotMissingException(SnapshotMessageBuilder.Missing(testName, snapshotPath), snapshotPath);
+            }
+
+            await WriteAsync(snapshotPath, actual).ConfigureAwait(false);
+            Emit(scope, options, $"QueryShape: snapshot created for {testName} ({actual.QueryCount} queries, {actual.Diagnostics.Count} diagnostics) -> {snapshotPath}");
+            return new SnapshotResult(SnapshotOutcome.Created, snapshotPath, actual, diagnoses);
+        }
+
+        var expected = SnapshotSerializer.Deserialize(await File.ReadAllTextAsync(snapshotPath).ConfigureAwait(false));
+        var comparison = SnapshotComparison.Compare(expected, actual, diagnoses, scope.Commands, options.FailOn);
+        if (!comparison.IsMatch)
+        {
+            throw new QuerySnapshotMismatchException(SnapshotMessageBuilder.Mismatch(testName, snapshotPath, comparison, options.FailOn), comparison, snapshotPath);
+        }
+
+        return new SnapshotResult(SnapshotOutcome.Matched, snapshotPath, actual, diagnoses);
+    }
+
+    private static async Task WriteAsync(string path, QuerySnapshot snapshot)
+    {
+        var dir = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        await File.WriteAllTextAsync(path, SnapshotSerializer.Serialize(snapshot), new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false)).ConfigureAwait(false);
+    }
+
+    private static void Emit(QueryShapeScope scope, SnapshotOptions options, string message)
+    {
+        try
+        {
+            if (options.Log is { } log)
+            {
+                log(message);
+            }
+            else
+            {
+                System.Diagnostics.Trace.WriteLine(message);
+            }
+
+            scope.Options.LoggerFactory?.CreateLogger("QueryShape").LogInformation("{Message}", message);
+        }
+        catch
+        {
+            // Never fail a test because a log sink is broken.
+        }
+    }
+}

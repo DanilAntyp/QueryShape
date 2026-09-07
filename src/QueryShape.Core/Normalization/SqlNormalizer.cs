@@ -5,9 +5,10 @@ namespace QueryShape.Normalization;
 
 /// <summary>
 /// Turns provider SQL into a deterministic <em>shape</em>: comments removed, whitespace collapsed,
-/// EF Core's generated table aliases (<c>[c]</c>, <c>"o0"</c>, <c>t</c>) renamed positionally to <c>t0</c>, <c>t1</c>…
-/// Parameter names are kept; parameter values never appear in SQL text so nothing has to be stripped.
-/// Two commands with the same shape are "the same query with different arguments".
+/// EF Core's generated table aliases (<c>[c]</c>, <c>"o0"</c>, <c>t</c>) renamed positionally to <c>t0</c>, <c>t1</c>…,
+/// and parameter names (<c>@__customerId_0</c> in EF Core 8, <c>@customerId</c> in EF Core 10) renamed positionally to <c>@p0</c>, <c>@p1</c>…
+/// Parameter values never appear in SQL text so nothing has to be stripped.
+/// Two commands with the same shape are "the same query with different arguments". See ADR-0006.
 /// </summary>
 public static partial class SqlNormalizer
 {
@@ -21,6 +22,7 @@ public static partial class SqlNormalizer
         body = LineComment().Replace(body, " ");
         body = Whitespace().Replace(body, " ").Trim();
         body = CanonicalizeAliases(body);
+        body = CanonicalizeParameters(body);
         return new NormalizedSql(body, tags);
     }
 
@@ -102,6 +104,22 @@ public static partial class SqlNormalizer
         });
     }
 
+    private static string CanonicalizeParameters(string sql)
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        return Parameter().Replace(sql, m =>
+        {
+            var name = m.Groups["name"].Value;
+            if (!map.TryGetValue(name, out var canonical))
+            {
+                canonical = "@p" + map.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                map[name] = canonical;
+            }
+
+            return canonical;
+        });
+    }
+
     private static bool LooksGenerated(string alias)
         // EF Core generates short lowercase aliases: c, o, o0, t, t1, s, e...
         => alias.Length is >= 1 and <= 4 && char.IsAsciiLetterLower(alias[0]) && alias.Skip(1).All(char.IsAsciiLetterOrDigit) && alias.Skip(1).Where(char.IsLetter).All(char.IsAsciiLetterLower);
@@ -119,6 +137,10 @@ public static partial class SqlNormalizer
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
+
+    // "@name" parameters (SQL Server, SQLite, Npgsql, MySQL); "@@" server variables are left alone.
+    [GeneratedRegex(@"(?<![@\w])@(?<name>\w+)")]
+    private static partial Regex Parameter();
 
     // "FROM [Customers] AS [c]", "JOIN "Orders" AS o", ") AS [t0]", "APPLY (...) AS [t]"
     [GeneratedRegex(@"(?:\b(?:FROM|JOIN)\s+(?:\[[^\]]+\]|""[^""]+""|`[^`]+`|[\w.]+)|\))\s+AS\s+(?<alias>\[[^\]]+\]|""[^""]+""|`[^`]+`|\w+)", RegexOptions.IgnoreCase)]

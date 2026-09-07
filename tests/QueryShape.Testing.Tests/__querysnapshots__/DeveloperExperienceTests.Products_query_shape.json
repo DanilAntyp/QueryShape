@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "queryCount": 2,
+  "queries": [
+    {
+      "fingerprint": "736ec43e65da",
+      "shape": "SELECT COUNT(*) FROM \u0022Customers\u0022 AS \u0022t0\u0022",
+      "source": "Linq",
+      "tags": []
+    },
+    {
+      "fingerprint": "7b49c74e9726",
+      "shape": "SELECT \u0022t0\u0022.\u0022Id\u0022, \u0022t0\u0022.\u0022Price\u0022, \u0022t0\u0022.\u0022Sku\u0022 FROM \u0022Products\u0022 AS \u0022t0\u0022 ORDER BY \u0022t0\u0022.\u0022Sku\u0022",
+      "source": "Linq",
+      "tags": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "ruleId": "QS004",
+      "severity": "Warning"
+    }
+  ]
+}
