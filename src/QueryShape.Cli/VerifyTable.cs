@@ -8,7 +8,7 @@ internal static class VerifyTable
 {
     public sealed record Result(string Text, bool Improved, int NewErrors, bool BelowNoise);
 
-    public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns)
+    public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns, IReadOnlyList<string>? notes = null)
     {
         var rows = new List<(string Label, string Before, string After, string Delta)>();
 
@@ -56,8 +56,10 @@ internal static class VerifyTable
         var newErrors = CountNewErrors(before, after);
         rows.Add(("new diagnostics", "-", N(newErrors), newErrors == 0 ? "✓" : "✗"));
 
+        // Database time is noisy: a delta must beat the run-to-run spread, 10% of the baseline and 1 ms to count as a change.
         var spread = afterRuns.Count > 1 ? afterRuns.Max(r => r.DurationMs) - afterRuns.Min(r => r.DurationMs) : 0;
-        var belowNoise = afterRuns.Count > 1 && Math.Abs(durationDelta) <= spread;
+        var noiseFloor = Math.Max(Math.Max(spread, before.DurationMs * 0.10), 1.0);
+        var belowNoise = Math.Abs(durationDelta) <= noiseFloor;
 
         var improved = newErrors == 0 && !anyRuleWorse && queryDelta <= 0
                        && (queryDelta < 0 || anyRuleImproved || (durationDelta < 0 && !belowNoise));
@@ -74,12 +76,17 @@ internal static class VerifyTable
         if (afterRuns.Count > 1)
         {
             sb.Append('\n').Append(CultureInfo.InvariantCulture, $"after = median of {afterRuns.Count} runs (spread {Ms(spread)} ms)");
-            if (belowNoise)
-            {
-                sb.Append("; note: the duration delta is within run-to-run noise, judge by queries and diagnostics");
-            }
-
             sb.Append('\n');
+        }
+
+        if (belowNoise && durationDelta != 0)
+        {
+            sb.Append("note: the duration delta is within run-to-run noise; judge by queries and diagnostics\n");
+        }
+
+        foreach (var note in notes ?? [])
+        {
+            sb.Append("note: ").Append(note).Append('\n');
         }
 
         sb.Append('\n').Append(improved ? "verdict: improved" : "verdict: not improved").Append('\n');

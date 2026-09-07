@@ -49,9 +49,24 @@ public sealed class SpanEnrichmentTests : IDisposable
     {
         var response = await _client.GetAsync(new Uri(path, UriKind.Relative));
         response.EnsureSuccessStatusCode();
-        _tracerProvider.ForceFlush();
+
+        // The hosting span stops after the response is handed to the client, so poll briefly for the export.
         // The built-in hosting span (ActivitySource "Microsoft.AspNetCore") carries few tags of its own; ours mark it.
-        var candidates = _exported.Where(a => a.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.QueryCount) is not null).ToList();
+        List<Activity> candidates = [];
+        for (var attempt = 0; attempt < 50 && candidates.Count == 0; attempt++)
+        {
+            _tracerProvider.ForceFlush();
+            lock (_exported)
+            {
+                candidates = _exported.Where(a => a.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.QueryCount) is not null).ToList();
+            }
+
+            if (candidates.Count == 0)
+            {
+                await Task.Delay(50);
+            }
+        }
+
         candidates.Should().NotBeEmpty($"the request span for {path} should have been exported; exported: {string.Join(", ", _exported.Select(a => a.DisplayName))}");
         return candidates[^1];
     }

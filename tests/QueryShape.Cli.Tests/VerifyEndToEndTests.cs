@@ -35,11 +35,11 @@ public class VerifyEndToEndTests
     {
         var repo = ScopeReportTests.FindRepoRoot();
         var patch = Path.Combine(Path.GetTempPath(), $"qs-fix-{Guid.NewGuid():N}.diff");
-        // The fix the README promises: add .Include(c => c.Orders) to the customers query of /bad/n-plus-one.
+        // The fix the README promises: Include the orders on the customers query and read the navigation in the loop.
         await File.WriteAllTextAsync(patch,
             "--- a/tests/QueryShape.SampleApp/BadEndpoints.cs\n" +
             "+++ b/tests/QueryShape.SampleApp/BadEndpoints.cs\n" +
-            "@@ -11,7 +11,7 @@\n" +
+            "@@ -11,11 +11,11 @@\n" +
             "         // QS001: one query per customer.\n" +
             "         app.MapGet(\"/bad/n-plus-one\", async (ShopDbContext db) =>\n" +
             "         {\n" +
@@ -47,7 +47,12 @@ public class VerifyEndToEndTests
             "+            var customers = await db.Customers.Include(c => c.Orders).ToListAsync();\n" +
             "             var result = new List<object>();\n" +
             "             foreach (var customer in customers)\n" +
-            "             {\n");
+            "             {\n" +
+            "-                var orders = await db.Orders.Where(o => o.CustomerId == customer.Id).ToListAsync();\n" +
+            "+                var orders = customer.Orders;\n" +
+            "                 result.Add(new { customer.Name, Orders = orders.Count });\n" +
+            "             }\n" +
+            "\n");
 
         var previousDir = Directory.GetCurrentDirectory();
         Directory.SetCurrentDirectory(repo);
@@ -61,13 +66,16 @@ public class VerifyEndToEndTests
                 TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix",
                 PatchPath = patch,
                 Runs = 3,
+                AllowDirty = true,   // local dev loops have uncommitted work; tracked changes are carried into the worktree
             }.ExecuteAsync(out_, err, CancellationToken.None);
 
             var text = out_.ToString();
-            text.Should().Contain("Fix: " + Path.GetFileName(patch));
-            text.Should().MatchRegex(@"queries\s+\d+\s+\d+\s+-\d+");
-            text.Should().Contain("QS001");
-            text.Should().Contain("new diagnostics");
+            text.Should().Contain("Fix: " + Path.GetFileName(patch), "stderr: " + err);
+            var compact = System.Text.RegularExpressions.Regex.Replace(text, " +", " ");
+            compact.Should().Contain("\nqueries 41 1 -40\n");
+            compact.Should().Contain("\nQS001 N+1 query 1 0 ✓\n");
+            compact.Should().Contain("\nnew diagnostics - 0 ✓\n");
+            text.Should().Contain("note: dotnet test exited with code 1 after the patch");
             text.Should().Contain("verdict: improved", err.ToString());
             code.Should().Be(0, err.ToString());
         }

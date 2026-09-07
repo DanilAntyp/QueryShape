@@ -130,9 +130,15 @@ internal sealed class VerifyCommand
             out_.WriteLine();
             out_.WriteLine($"[3/3] after ({Runs} runs, median)");
             var afterRuns = new List<RunMetrics>();
+            var notes = new List<string>();
             for (var i = 0; i < Math.Max(1, Runs); i++)
             {
                 var (after, afterProcess) = await TestRun.RunAsync(worktree, projectRelative, TestFilter, Path.Combine(work, $"after-{i}"), noBuild: i > 0, null, out_, ct);
+                if (!afterProcess.Success && i == 0)
+                {
+                    notes.Add($"dotnet test exited with code {afterProcess.ExitCode} after the patch; expected when the test asserts the old query count or a snapshot, otherwise check the test output");
+                }
+
                 if (after.Scopes == 0)
                 {
                     err.WriteLine("verify: the patched run produced no QueryShape scope reports (did the test fail to build or run?). dotnet test exit code: " + afterProcess.ExitCode);
@@ -144,7 +150,12 @@ internal sealed class VerifyCommand
             }
 
             var median = RunMetrics.Median(afterRuns);
-            var table = VerifyTable.Render(fixTitle, before, median, afterRuns);
+            if (!baselineProcess.Success)
+            {
+                notes.Add($"dotnet test exited with code {baselineProcess.ExitCode} in the baseline run");
+            }
+
+            var table = VerifyTable.Render(fixTitle, before, median, afterRuns, notes);
             out_.WriteLine();
             out_.Write(table.Text);
             return table.Improved ? 0 : 1;

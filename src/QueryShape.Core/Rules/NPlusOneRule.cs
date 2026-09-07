@@ -119,7 +119,8 @@ public sealed class NPlusOneRule : IRule
                 var p = RuleHelpers.LambdaName(kf.RelatedEntityType);
                 var include = $"Include({p} => {p}.{kf.NavigationOnRelated})";
                 var where = parent?.CallSite is { } cs ? $" at {cs}" : parent is not null ? $" (query #{parent.Sequence})" : string.Empty;
-                var summary = $"Add .{include} to the {kf.RelatedEntityType} query{where}";
+                var nav = RuleHelpers.LambdaName(kf.RelatedEntityType) + "." + kf.NavigationOnRelated;
+                var summary = $"Add .{include} to the {kf.RelatedEntityType} query{where}, then read {nav} in the loop instead of querying";
 
                 string? before = parent?.Query?.Expression;
                 string? after = before is null ? null : RuleHelpers.InsertAfterRoot(before, include);
@@ -130,8 +131,8 @@ public sealed class NPlusOneRule : IRule
                 var rationale = kf.IsPrimaryKey
                     ? $"With .{include}, EF Core joins {kf.RelatedEntityType} to {root} in the same SQL statement (or a second statement with AsSplitQuery), " +
                       $"so all {count} lookups become part of one query and the loop reads from memory."
-                    : $"With .{include}, EF Core loads every {kf.RelatedEntityType} and its {kf.NavigationOnRelated} in one statement (or two with AsSplitQuery), " +
-                      $"so the {count} per-{kf.RelatedEntityType} queries disappear and the loop reads from memory. " +
+                    : $"With .{include}, EF Core loads every {kf.RelatedEntityType} and its {kf.NavigationOnRelated} in one statement (or two with AsSplitQuery). " +
+                      $"The {count} per-{kf.RelatedEntityType} queries disappear once the loop reads the loaded navigation instead of running its own query. " +
                       $"If you only need a few columns, project them with Select instead of Include.";
 
                 return new Fix(summary, FixKind.CodeChange, before, after, diff, rationale, docs);

@@ -29,7 +29,7 @@ public class NPlusOneRuleTests
         d.Evidence.Rows.Should().Be(15);
         d.Evidence.Details!["distinctParameterSets"].Should().Be("5");
         d.SuggestedFix.Should().NotBeNull();
-        d.SuggestedFix!.Summary.Should().Be("Add .Include(c => c.Orders) to the Customer query at OrderService.cs:40 OrderService.GetAll");
+        d.SuggestedFix!.Summary.Should().Be("Add .Include(c => c.Orders) to the Customer query at OrderService.cs:40 OrderService.GetAll, then read c.Orders in the loop instead of querying");
         d.SuggestedFix.Kind.Should().Be(FixKind.CodeChange);
         d.SuggestedFix.BeforeSnippet.Should().Be("DbSet<Customer>()");
         d.SuggestedFix.AfterSnippet.Should().Be("DbSet<Customer>()\n    .Include(c => c.Orders)");
