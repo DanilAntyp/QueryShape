@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Core</AssemblyName>
+    <PackageId>QueryShape.Core</PackageId>
+    <Description>Detects slow and dangerous Entity Framework Core queries (N+1, client evaluation, unbounded result sets, duplicates) and explains them in terms of the LINQ that produced them.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+</Project>

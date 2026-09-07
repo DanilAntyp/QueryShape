@@ -1,0 +1,122 @@
+using QueryShape.Rules;
+
+namespace QueryShape.Core.Tests.Rules;
+
+public class NPlusOneRuleTests
+{
+    private static readonly QueryInfo s_orders = Synthetic.Query(
+        "DbSet<Order>()\n    .Where(o => o.CustomerId == @__id_0)", "Order", hasFilter: true,
+        keyFilters: [new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer")]);
+
+    private static readonly QueryInfo s_customers = Synthetic.Query("DbSet<Customer>()", "Customer");
+
+    [Fact]
+    public void Fires_when_same_shape_runs_at_threshold_with_varying_parameters()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 5);
+        scope.Add("SELECT * FROM Customers", query: s_customers, callSite: new CallSite("/src/OrderService.cs", 40, "OrderService.GetAll"));
+        for (var i = 0; i < 5; i++)
+        {
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: $"p{i}", query: s_orders, rows: 3, callSite: new CallSite("/src/OrderService.cs", 42, "OrderService.GetAll"));
+        }
+
+        var d = new NPlusOneRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.RuleId.Should().Be("QS001");
+        d.Severity.Should().Be(Severity.Error);
+        d.Title.Should().Be("N+1 query: Order by CustomerId executed 5 times at OrderService.cs:42 OrderService.GetAll");
+        d.Explanation.Should().Contain("cannot see the loop").And.Contain("5 times").And.Contain("Order.CustomerId");
+        d.Evidence.Count.Should().Be(5);
+        d.Evidence.Rows.Should().Be(15);
+        d.Evidence.Details!["distinctParameterSets"].Should().Be("5");
+        d.SuggestedFix.Should().NotBeNull();
+        d.SuggestedFix!.Summary.Should().Be("Add .Include(c => c.Orders) to the Customer query at OrderService.cs:40 OrderService.GetAll");
+        d.SuggestedFix.Kind.Should().Be(FixKind.CodeChange);
+        d.SuggestedFix.BeforeSnippet.Should().Be("DbSet<Customer>()");
+        d.SuggestedFix.AfterSnippet.Should().Be("DbSet<Customer>()\n    .Include(c => c.Orders)");
+        d.SuggestedFix.UnifiedDiff.Should().BeNull("the source file does not exist");
+        d.SuggestedFix.DocsUrl.Should().EndWith("/QS001.md");
+    }
+
+    [Fact]
+    public void Does_not_fire_below_threshold()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 5);
+        for (var i = 0; i < 4; i++)
+        {
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: $"p{i}", query: s_orders);
+        }
+
+        new NPlusOneRule().Analyze(scope).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Does_not_fire_when_parameters_are_identical()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 3);
+        for (var i = 0; i < 6; i++)
+        {
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "same", query: s_orders);
+        }
+
+        new NPlusOneRule().Analyze(scope).Should().BeEmpty("identical parameters are QS008's business");
+    }
+
+    [Fact]
+    public void Raw_sql_loops_are_detected_with_a_generic_fix()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 3);
+        for (var i = 0; i < 3; i++)
+        {
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: $"p{i}", source: QuerySource.Raw);
+        }
+
+        var d = new NPlusOneRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Title.Should().StartWith("N+1 query: SELECT * FROM Orders WHERE CustomerId = @p executed 3 times");
+        d.Explanation.Should().Contain("raw SQL");
+        d.SuggestedFix!.BeforeSnippet.Should().BeNull();
+    }
+
+    [Fact]
+    public void Ignores_save_changes_and_failed_commands()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+        for (var i = 0; i < 4; i++)
+        {
+            scope.Add("INSERT INTO Orders VALUES (@p)", parameterHash: $"p{i}", source: QuerySource.SaveChanges);
+        }
+
+        new NPlusOneRule().Analyze(scope).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Produces_a_unified_diff_when_the_parent_call_site_file_is_readable()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file,
+        [
+            "public async Task<List<Customer>> GetAll()",
+            "{",
+            "    var customers = await _db.Customers.ToListAsync();",
+            "    foreach (var c in customers) c.Orders = await _db.Orders.Where(o => o.CustomerId == c.Id).ToListAsync();",
+            "    return customers;",
+            "}",
+        ]);
+        try
+        {
+            using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+            scope.Add("SELECT * FROM Customers", query: s_customers, callSite: new CallSite(file, 3, "OrderService.GetAll"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "a", query: s_orders, callSite: new CallSite(file, 4, "OrderService.GetAll"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "b", query: s_orders, callSite: new CallSite(file, 4, "OrderService.GetAll"));
+
+            var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+            fix.UnifiedDiff.Should().NotBeNull();
+            fix.UnifiedDiff.Should().Contain("-    var customers = await _db.Customers.ToListAsync();")
+                .And.Contain("+    var customers = await _db.Customers.Include(c => c.Orders).ToListAsync();")
+                .And.StartWith("--- a/");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+}

@@ -1,0 +1,50 @@
+using Microsoft.Extensions.Logging;
+using QueryShape.Rules;
+
+namespace QueryShape;
+
+/// <summary>All knobs. One instance configures both capture (on the interceptor) and analysis (on scopes).</summary>
+public sealed class QueryShapeOptions
+{
+    /// <summary>Process-wide defaults used when no options are supplied. Mutating this instance affects every scope begun without explicit options.</summary>
+    public static QueryShapeOptions Default { get; } = new();
+
+    /// <summary>Same shape executed at least this many times in one scope with varying parameters is an N+1 (QS001). Default 5.</summary>
+    public int NPlusOneThreshold { get; set; } = 5;
+
+    /// <summary>A query returning more rows than this is unbounded (QS004). Default 1000.</summary>
+    public int UnboundedRowThreshold { get; set; } = 1000;
+
+    /// <summary><c>Contains</c> over a collection with more elements than this is flagged (QS007). Default 500.</summary>
+    public int ContainsCollectionThreshold { get; set; } = 500;
+
+    /// <summary>After this many commands a scope stops recording and reports <c>QS_OVERFLOW</c>. Default 10 000.</summary>
+    public int MaxCommandsPerScope { get; set; } = 10_000;
+
+    /// <summary>Commands captured outside any scope are kept in a ring buffer of this size. Default 256.</summary>
+    public int UnscopedBufferSize { get; set; } = 256;
+
+    /// <summary>Walk the stack on every command to find the user frame. Expensive: on for tests, off for production. Default off.</summary>
+    public bool CaptureCallSites { get; set; }
+
+    /// <summary>Keep parameter values on captured commands. PII risk: values end up in snapshots, logs and telemetry. Default off.</summary>
+    public bool IncludeParameterValues { get; set; }
+
+    /// <summary>Let the OpenTelemetry package start its own activity when none is ambient. Default off: never create a competing trace.</summary>
+    public bool CreateActivitiesWhenNoneExist { get; set; }
+
+    /// <summary>Base URL for rule documentation; the rule id plus <c>.md</c> is appended.</summary>
+    public string DocsBaseUrl { get; set; } = "https://github.com/queryshape/QueryShape/blob/main/docs/rules/";
+
+    /// <summary>Rules run by <see cref="QueryShapeScope.Analyze"/>. Starts with every built-in rule; remove or replace as needed.</summary>
+    public IList<IRule> Rules { get; } = new List<IRule>(BuiltInRules.CreateAll());
+
+    /// <summary>Listeners notified on capture and scope completion.</summary>
+    public IList<IQueryShapeListener> Listeners { get; } = new List<IQueryShapeListener>();
+
+    /// <summary>Logger factory for QueryShape's own Debug-level diagnostics. Optional.</summary>
+    public ILoggerFactory? LoggerFactory { get; set; }
+
+    /// <summary>Builds the documentation URL for a rule.</summary>
+    public string DocsUrlFor(string ruleId) => DocsBaseUrl.TrimEnd('/') + "/" + ruleId + ".md";
+}
