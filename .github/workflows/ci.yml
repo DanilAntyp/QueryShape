@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  CI: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8 and .NET 10 (every targeted runtime; no roll-forward in CI)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore QueryShape.slnx
+
+      - name: Build
+        run: dotnet build QueryShape.slnx --configuration Release --no-restore
+
+      - name: Test (net8.0 on the .NET 8 runtime)
+        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net8.0 --logger "trx;LogFileName=net8.trx" --results-directory TestResults
+
+      - name: Test (net10.0 on the .NET 10 runtime)
+        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net10.0 --logger "trx;LogFileName=net10.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: TestResults
+
+      - name: Pack
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack QueryShape.slnx --configuration Release --no-build --output artifacts
+
+      - name: Upload packages
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*.nupkg
+
+  readme-smoke:
+    name: README commands (sample app)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Run the sample app and hit the demo endpoints
+        run: |
+          dotnet run --project tests/QueryShape.SampleApp -f net10.0 --urls http://127.0.0.1:5077 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5077/ >/dev/null && break; sleep 1; done
+          curl -s -D - -o /dev/null http://127.0.0.1:5077/bad/n-plus-one | grep -i "x-queryshape: 41 queries; QS001 Error"
+          curl -s -D - -o /dev/null http://127.0.0.1:5077/good/n-plus-one | grep -i "x-queryshape: 1 quer"

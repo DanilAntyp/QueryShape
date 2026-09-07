@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.AspNetCore</AssemblyName>
+    <PackageId>QueryShape.AspNetCore</PackageId>
+    <RootNamespace>QueryShape.AspNetCore</RootNamespace>
+    <Description>ASP.NET Core middleware for QueryShape: one analysis scope per HTTP request (app.UseQueryShape()).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../QueryShape.Core/QueryShape.Core.csproj" />
+  </ItemGroup>
+</Project>

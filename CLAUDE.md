@@ -59,7 +59,8 @@ queryshape/
 │  ├─ QueryShape.Core.Tests/
 │  ├─ QueryShape.Testing.Tests/
 │  ├─ QueryShape.OpenTelemetry.Tests/
-│  └─ QueryShape.SampleApp/           ← small ASP.NET Core app with deliberately bad queries; used by tests AND as the README demo
+│  ├─ QueryShape.SampleApp/           ← small ASP.NET Core app with deliberately bad queries; used by tests AND as the README demo
+│  └─ QueryShape.SampleApp.Tests/     ← one test per /bad endpoint (rule fires) and per /good twin (rule silent)
 ├─ docs/
 │  ├─ rules/                      ← one markdown file per rule: what, why EF Core does this, fix, example
 │  └─ adr/                        ← architecture decision records, numbered
