@@ -19,6 +19,10 @@
     {
       "ruleId": "QS004",
       "severity": "Warning"
+    },
+    {
+      "ruleId": "QS005",
+      "severity": "Info"
     }
   ]
 }

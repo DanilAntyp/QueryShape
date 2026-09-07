@@ -53,8 +53,8 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     /// <inheritdoc />
     public DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
     {
-        Capture(command, eventData, null, null);
-        return Wrap(result, eventData.CommandId);
+        var captured = Capture(command, eventData, null, null);
+        return Wrap(result, eventData.CommandId, captured);
     }
 
     /// <inheritdoc />
@@ -74,16 +74,17 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     /// <inheritdoc />
     public ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
     {
-        Capture(command, eventData, null, null);
-        return new ValueTask<DbDataReader>(Wrap(result, eventData.CommandId));
+        var captured = Capture(command, eventData, null, null);
+        return new ValueTask<DbDataReader>(Wrap(result, eventData.CommandId, captured));
     }
 
     /// <summary>Row counts come from our own wrapper: EF Core's <c>ReadCount</c> counts calls, including the final <c>false</c>.</summary>
-    private DbDataReader Wrap(DbDataReader reader, Guid commandId)
+    private DbDataReader Wrap(DbDataReader reader, Guid commandId, CapturedCommand? captured)
     {
         try
         {
-            return new CountingDataReader(reader, (rows, affected) => _capturer.ReaderClosed(commandId, rows, affected));
+            var trackRoots = captured?.Query is { CollectionIncludes.Count: >= 2, SplittingBehavior: "SingleQuery" };
+            return new CountingDataReader(reader, (rows, affected, roots) => _capturer.ReaderClosed(commandId, rows, affected, roots), trackRoots);
         }
         catch (Exception ex)
         {
@@ -117,7 +118,7 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
         return Task.CompletedTask;
     }
 
-    private void Capture(DbCommand command, CommandEndEventData eventData, object? result, Exception? error)
+    private CapturedCommand? Capture(DbCommand command, CommandEndEventData eventData, object? result, Exception? error)
         => _capturer.Capture(
             _capturer.OptionsFor(eventData.Context),
             command,

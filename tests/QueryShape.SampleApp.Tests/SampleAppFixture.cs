@@ -5,6 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace QueryShape.SampleApp.Tests;
 
+/// <summary>All sample-app test classes share one app instance (one shared in-memory SQLite database).</summary>
+[CollectionDefinition(Name)]
+public sealed class SampleAppCollection : ICollectionFixture<SampleAppFixture>
+{
+    public const string Name = "SampleApp";
+}
+
 /// <summary>Boots the sample app in-process and records every request scope's diagnoses through a listener.</summary>
 public sealed class SampleAppFixture : IDisposable
 {

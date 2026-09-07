@@ -54,7 +54,7 @@ public class SnapshotTests : IDisposable
         json.Should().EndWith("\n");
         json.Should().NotContain("\r");
         json.Should().Contain("\"source\": \"Linq\"");
-        json.Should().Contain("\"diagnostics\": []");
+        json.Should().Contain("\"diagnostics\": [\n    {\n      \"ruleId\": \"QS005\",\n      \"severity\": \"Info\"\n    }\n  ]", "the tracked Customer query is Info-level known debt");
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class SnapshotTests : IDisposable
             await using var ctx = _shop.CreateContext(options);
             await ctx.Products.ToListAsync();
             var result = await first.MatchSnapshotFileAsync(path, "t", Local());
-            result.Snapshot.Diagnostics.Should().ContainSingle().Which.Should().Be(new SnapshotDiagnostic("QS004", "Warning"));
+            result.Snapshot.Diagnostics.Should().Equal(new SnapshotDiagnostic("QS004", "Warning"), new SnapshotDiagnostic("QS005", "Info"));
         }
 
         // Same query again: known diagnostic, no failure.
@@ -164,12 +164,12 @@ public class SnapshotTests : IDisposable
         var act = () => third.MatchSnapshotFileAsync(path, "SnapshotTests.diag", Local());
         var ex = (await act.Should().ThrowAsync<QuerySnapshotMismatchException>()).Which;
         ex.Comparison.NewDiagnoses.Should().ContainSingle().Which.RuleId.Should().Be("QS001");
-        ex.Comparison.KnownDiagnoses.Should().ContainSingle().Which.RuleId.Should().Be("QS004");
+        ex.Comparison.KnownDiagnoses.Select(d => d.RuleId).Should().BeEquivalentTo(["QS004", "QS005", "QS005"], "QS004 and one QS005 are in the snapshot; the second QS005 (OrderLine) is Info, below FailOn");
         ex.Message.Should().Contain("\nNew diagnostics (severity >= Warning):\n  QS001 ERROR  N+1 query: OrderLine by ProductId executed 3 times at SnapshotTests.cs:");
         ex.Message.Should().Contain("    fix  Load all OrderLine rows in one query: collect the keys first, then .Where(ol =>",
             "Product has no navigation to OrderLines, so no Include can be suggested");
         ex.Message.Should().Contain("        linq: DbSet<OrderLine>() .Where(l => l.ProductId == ");
-        ex.Message.Should().Contain("Known diagnostics already in the snapshot (not failing): QS004 Warning\n");
+        ex.Message.Should().Contain("Known diagnostics already in the snapshot (not failing): QS004 Warning, QS005 Info x2\n");
     }
 
     [Fact]

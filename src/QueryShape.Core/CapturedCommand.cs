@@ -56,6 +56,15 @@ public sealed class CapturedCommand
     /// <summary>Rows affected as reported by the provider, when known.</summary>
     public int? RowsAffected { get; internal set; }
 
+    /// <summary>
+    /// For queries with two or more collection includes: the number of distinct values seen in the first result column
+    /// (EF Core orders such results by the root key, which is projected first), i.e. an estimate of distinct root entities. Otherwise <c>null</c>.
+    /// </summary>
+    public int? DistinctRootsEstimate { get; internal set; }
+
+    /// <summary>The largest number of elements passed in a collection parameter (JSON array, provider array) or an inline <c>IN (...)</c> list, when any.</summary>
+    public int? MaxCollectionParameterCount { get; init; }
+
     /// <summary>EF Core provider name, e.g. <c>Microsoft.EntityFrameworkCore.Sqlite</c>.</summary>
     public string? ProviderName { get; init; }
 

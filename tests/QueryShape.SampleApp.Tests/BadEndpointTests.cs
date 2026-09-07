@@ -5,7 +5,8 @@ using Xunit.Abstractions;
 namespace QueryShape.SampleApp.Tests;
 
 /// <summary>Every /bad endpoint must be diagnosed by its rule; every /good twin must be clean of that rule.</summary>
-public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output) : IClassFixture<SampleAppFixture>
+[Collection(SampleAppCollection.Name)]
+public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
 {
     [RuntimeMatchedFact]
     public async Task N_plus_one_is_diagnosed_with_include_fix()
@@ -66,5 +67,37 @@ public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output) : 
         var response = await app.Client.GetAsync(new Uri("/", UriKind.Relative));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Headers.GetValues("X-QueryShape").Single().Should().Be("0 queries");
+    }
+}
+
+[Collection(SampleAppCollection.Name)]
+public class RemainingBadEndpointTests(SampleAppFixture app)
+{
+    [RuntimeMatchedTheory]
+    [InlineData("/bad/cartesian-explosion", "QS002", "Cartesian explosion: 1,200 rows for 40 Customer entities (Orders, Orders.Lines, Addresses)")]
+    [InlineData("/bad/tracking-read-only", "QS005", "Tracked read-only query: 10 Product entities loaded with change tracking but never modified")]
+    [InlineData("/bad/missing-split-query", "QS006", "Split query candidate: 2 collection includes (Orders, Addresses) in one query, 40 rows for 10 Customer entities")]
+    [InlineData("/bad/contains-large-collection", "QS007", "Contains over 600 values on the OrderLine query (threshold 500)")]
+    [InlineData("/bad/query-in-loop", "QS009", "Queries in a loop: Summaries.ForOrderAsync issued 16 queries of 2 shapes (Customer, OrderLine) in one scope")]
+    [InlineData("/bad/raw-sql-concat", "QS010", "Raw SQL built from values: 3 text variants of \"SELECT * FROM Customers WHERE Name = ?\"")]
+    public async Task Bad_endpoint_is_diagnosed(string path, string ruleId, string titleStart)
+    {
+        var (response, _, diagnoses) = await app.GetAsync(path);
+        response.EnsureSuccessStatusCode();
+        var d = diagnoses.Should().ContainSingle(d => d.RuleId == ruleId).Subject;
+        d.Title.Should().StartWith(titleStart);
+        d.SuggestedFix.Should().NotBeNull();
+    }
+
+    [RuntimeMatchedTheory]
+    [InlineData("/good/cartesian-explosion", "QS002")]
+    [InlineData("/good/cartesian-explosion", "QS006")]
+    [InlineData("/good/tracking-read-only", "QS005")]
+    [InlineData("/good/raw-sql-concat", "QS010")]
+    public async Task Good_twins_are_clean(string path, string ruleId)
+    {
+        var (response, _, diagnoses) = await app.GetAsync(path);
+        response.EnsureSuccessStatusCode();
+        diagnoses.Should().NotContain(d => d.RuleId == ruleId);
     }
 }

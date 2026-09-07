@@ -94,8 +94,8 @@ public sealed class ListenerUnitTests : IDisposable
         exported.Select(a => a.DisplayName).Should().BeEquivalentTo("queryshape.query", "queryshape.scope scope");
         exported.Single(a => a.DisplayName == "queryshape.query").Kind.Should().Be(ActivityKind.Client);
         var scopeSpan = exported.Single(a => a.DisplayName.StartsWith("queryshape.scope"));
-        scopeSpan.GetTagItem("queryshape.diagnosis_count").Should().Be(1);
-        scopeSpan.Events.Should().ContainSingle(e => e.Name == "queryshape.diagnosis");
+        scopeSpan.GetTagItem("queryshape.diagnosis_count").Should().Be(2, "QS004 unbounded + QS005 tracked read-only");
+        scopeSpan.Events.Where(e => e.Name == "queryshape.diagnosis").Should().HaveCount(2);
     }
 
     [Fact]

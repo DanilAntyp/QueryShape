@@ -8,8 +8,14 @@ public static class BuiltInRules
         =>
         [
             new NPlusOneRule(),
+            new CartesianExplosionRule(),
             new ClientEvaluationRule(),
             new UnboundedResultSetRule(),
+            new TrackingOnReadOnlyQueryRule(),
+            new MissingSplitQueryRule(),
+            new ContainsLargeCollectionRule(),
             new DuplicateQueryRule(),
+            new QueryInLoopRule(),
+            new RawSqlConcatenationRule(),
         ];
 }

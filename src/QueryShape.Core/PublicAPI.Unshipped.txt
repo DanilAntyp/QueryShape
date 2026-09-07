@@ -1,56 +1,4 @@
 #nullable enable
-const QueryShape.Normalization.Fingerprint.Length = 12 -> int
-const QueryShape.QueryShapeScope.OverflowRuleId = "QS_OVERFLOW" -> string!
-const QueryShape.Rules.ClientEvaluationRule.RuleId = "QS003" -> string!
-const QueryShape.Rules.DuplicateQueryRule.RuleId = "QS008" -> string!
-const QueryShape.Rules.NPlusOneRule.RuleId = "QS001" -> string!
-const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
-override QueryShape.CallSite.Equals(object? obj) -> bool
-override QueryShape.CallSite.GetHashCode() -> int
-override QueryShape.CallSite.ToString() -> string!
-override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabase(string! databaseName) -> void
-override QueryShape.Capture.QueryShapeDbConnection.Close() -> void
-override QueryShape.Capture.QueryShapeDbConnection.CloseAsync() -> System.Threading.Tasks.Task!
-override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.get -> string!
-override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.set -> void
-override QueryShape.Capture.QueryShapeDbConnection.ConnectionTimeout.get -> int
-override QueryShape.Capture.QueryShapeDbConnection.Database.get -> string!
-override QueryShape.Capture.QueryShapeDbConnection.DataSource.get -> string!
-override QueryShape.Capture.QueryShapeDbConnection.DisposeAsync() -> System.Threading.Tasks.ValueTask
-override QueryShape.Capture.QueryShapeDbConnection.EnlistTransaction(System.Transactions.Transaction? transaction) -> void
-override QueryShape.Capture.QueryShapeDbConnection.GetSchema() -> System.Data.DataTable!
-override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName) -> System.Data.DataTable!
-override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName, string?[]! restrictionValues) -> System.Data.DataTable!
-override QueryShape.Capture.QueryShapeDbConnection.Open() -> void
-override QueryShape.Capture.QueryShapeDbConnection.OpenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-override QueryShape.Capture.QueryShapeDbConnection.ServerVersion.get -> string!
-override QueryShape.Capture.QueryShapeDbConnection.State.get -> System.Data.ConnectionState
-override QueryShape.CapturedCommand.ToString() -> string!
-override QueryShape.CapturedParameter.Equals(object? obj) -> bool
-override QueryShape.CapturedParameter.GetHashCode() -> int
-override QueryShape.CapturedParameter.ToString() -> string!
-override QueryShape.ClientEvaluatedCall.Equals(object? obj) -> bool
-override QueryShape.ClientEvaluatedCall.GetHashCode() -> int
-override QueryShape.ClientEvaluatedCall.ToString() -> string!
-override QueryShape.Diagnosis.Equals(object? obj) -> bool
-override QueryShape.Diagnosis.GetHashCode() -> int
-override QueryShape.Diagnosis.ToString() -> string!
-override QueryShape.Evidence.Equals(object? obj) -> bool
-override QueryShape.Evidence.GetHashCode() -> int
-override QueryShape.Evidence.ToString() -> string!
-override QueryShape.Fix.Equals(object? obj) -> bool
-override QueryShape.Fix.GetHashCode() -> int
-override QueryShape.Fix.ToString() -> string!
-override QueryShape.KeyFilter.Equals(object? obj) -> bool
-override QueryShape.KeyFilter.GetHashCode() -> int
-override QueryShape.KeyFilter.ToString() -> string!
-override QueryShape.Normalization.NormalizedSql.Equals(object? obj) -> bool
-override QueryShape.Normalization.NormalizedSql.GetHashCode() -> int
-override QueryShape.Normalization.NormalizedSql.ToString() -> string!
-override QueryShape.QueryInfo.ToString() -> string!
-override QueryShape.SaveChangesRecord.Equals(object? obj) -> bool
-override QueryShape.SaveChangesRecord.GetHashCode() -> int
-override QueryShape.SaveChangesRecord.ToString() -> string!
 QueryShape.CallSite
 QueryShape.CallSite.<Clone>$() -> QueryShape.CallSite!
 QueryShape.CallSite.CallSite(string? FilePath, int Line, string! Member) -> void
@@ -96,6 +44,7 @@ QueryShape.CapturedCommand.ConnectionId.get -> System.Guid
 QueryShape.CapturedCommand.ConnectionId.init -> void
 QueryShape.CapturedCommand.ContextId.get -> System.Guid?
 QueryShape.CapturedCommand.ContextId.init -> void
+QueryShape.CapturedCommand.DistinctRootsEstimate.get -> int?
 QueryShape.CapturedCommand.Duration.get -> System.TimeSpan
 QueryShape.CapturedCommand.Duration.init -> void
 QueryShape.CapturedCommand.ErrorType.get -> string?
@@ -108,6 +57,8 @@ QueryShape.CapturedCommand.Fingerprint.get -> string!
 QueryShape.CapturedCommand.Fingerprint.init -> void
 QueryShape.CapturedCommand.IsAsync.get -> bool
 QueryShape.CapturedCommand.IsAsync.init -> void
+QueryShape.CapturedCommand.MaxCollectionParameterCount.get -> int?
+QueryShape.CapturedCommand.MaxCollectionParameterCount.init -> void
 QueryShape.CapturedCommand.Origin.get -> string!
 QueryShape.CapturedCommand.ParameterHash.get -> string!
 QueryShape.CapturedCommand.ParameterHash.init -> void
@@ -299,6 +250,10 @@ QueryShape.QueryShapeDbContextOptionsBuilderExtensions
 QueryShape.QueryShapeOptions
 QueryShape.QueryShapeOptions.CaptureCallSites.get -> bool
 QueryShape.QueryShapeOptions.CaptureCallSites.set -> void
+QueryShape.QueryShapeOptions.CartesianExplosionFactor.get -> int
+QueryShape.QueryShapeOptions.CartesianExplosionFactor.set -> void
+QueryShape.QueryShapeOptions.CartesianMinimumRows.get -> int
+QueryShape.QueryShapeOptions.CartesianMinimumRows.set -> void
 QueryShape.QueryShapeOptions.ContainsCollectionThreshold.get -> int
 QueryShape.QueryShapeOptions.ContainsCollectionThreshold.set -> void
 QueryShape.QueryShapeOptions.CreateActivitiesWhenNoneExist.get -> bool
@@ -342,24 +297,60 @@ QueryShape.QuerySource.Raw = 1 -> QueryShape.QuerySource
 QueryShape.QuerySource.SaveChanges = 2 -> QueryShape.QuerySource
 QueryShape.Reporting.DiagnosisFormatter
 QueryShape.Rules.BuiltInRules
+QueryShape.Rules.CartesianExplosionRule
+QueryShape.Rules.CartesianExplosionRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.CartesianExplosionRule.CartesianExplosionRule() -> void
+QueryShape.Rules.CartesianExplosionRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.CartesianExplosionRule.Id.get -> string!
+QueryShape.Rules.CartesianExplosionRule.Name.get -> string!
 QueryShape.Rules.ClientEvaluationRule
 QueryShape.Rules.ClientEvaluationRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.ClientEvaluationRule.ClientEvaluationRule() -> void
 QueryShape.Rules.ClientEvaluationRule.DefaultSeverity.get -> QueryShape.Severity
 QueryShape.Rules.ClientEvaluationRule.Id.get -> string!
 QueryShape.Rules.ClientEvaluationRule.Name.get -> string!
+QueryShape.Rules.ContainsLargeCollectionRule
+QueryShape.Rules.ContainsLargeCollectionRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.ContainsLargeCollectionRule.ContainsLargeCollectionRule() -> void
+QueryShape.Rules.ContainsLargeCollectionRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.ContainsLargeCollectionRule.Id.get -> string!
+QueryShape.Rules.ContainsLargeCollectionRule.Name.get -> string!
 QueryShape.Rules.DuplicateQueryRule
 QueryShape.Rules.DuplicateQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.DuplicateQueryRule.DefaultSeverity.get -> QueryShape.Severity
 QueryShape.Rules.DuplicateQueryRule.DuplicateQueryRule() -> void
 QueryShape.Rules.DuplicateQueryRule.Id.get -> string!
 QueryShape.Rules.DuplicateQueryRule.Name.get -> string!
+QueryShape.Rules.MissingSplitQueryRule
+QueryShape.Rules.MissingSplitQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.MissingSplitQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.MissingSplitQueryRule.Id.get -> string!
+QueryShape.Rules.MissingSplitQueryRule.MissingSplitQueryRule() -> void
+QueryShape.Rules.MissingSplitQueryRule.Name.get -> string!
 QueryShape.Rules.NPlusOneRule
 QueryShape.Rules.NPlusOneRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.NPlusOneRule.DefaultSeverity.get -> QueryShape.Severity
 QueryShape.Rules.NPlusOneRule.Id.get -> string!
-QueryShape.Rules.NPlusOneRule.Name.get -> string!
 QueryShape.Rules.NPlusOneRule.NPlusOneRule() -> void
+QueryShape.Rules.NPlusOneRule.Name.get -> string!
+QueryShape.Rules.QueryInLoopRule
+QueryShape.Rules.QueryInLoopRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.QueryInLoopRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.QueryInLoopRule.Id.get -> string!
+QueryShape.Rules.QueryInLoopRule.Name.get -> string!
+QueryShape.Rules.QueryInLoopRule.QueryInLoopRule() -> void
+QueryShape.Rules.RawSqlConcatenationRule
+QueryShape.Rules.RawSqlConcatenationRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.RawSqlConcatenationRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.RawSqlConcatenationRule.Id.get -> string!
+QueryShape.Rules.RawSqlConcatenationRule.Name.get -> string!
+QueryShape.Rules.RawSqlConcatenationRule.RawSqlConcatenationRule() -> void
+QueryShape.Rules.TrackingOnReadOnlyQueryRule
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Id.get -> string!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Name.get -> string!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.TrackingOnReadOnlyQueryRule() -> void
 QueryShape.Rules.UnboundedResultSetRule
 QueryShape.Rules.UnboundedResultSetRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.UnboundedResultSetRule.DefaultSeverity.get -> QueryShape.Severity
@@ -381,6 +372,64 @@ QueryShape.Severity
 QueryShape.Severity.Error = 2 -> QueryShape.Severity
 QueryShape.Severity.Info = 0 -> QueryShape.Severity
 QueryShape.Severity.Warning = 1 -> QueryShape.Severity
+const QueryShape.Normalization.Fingerprint.Length = 12 -> int
+const QueryShape.QueryShapeScope.OverflowRuleId = "QS_OVERFLOW" -> string!
+const QueryShape.Rules.CartesianExplosionRule.RuleId = "QS002" -> string!
+const QueryShape.Rules.ClientEvaluationRule.RuleId = "QS003" -> string!
+const QueryShape.Rules.ContainsLargeCollectionRule.RuleId = "QS007" -> string!
+const QueryShape.Rules.DuplicateQueryRule.RuleId = "QS008" -> string!
+const QueryShape.Rules.MissingSplitQueryRule.RuleId = "QS006" -> string!
+const QueryShape.Rules.NPlusOneRule.RuleId = "QS001" -> string!
+const QueryShape.Rules.QueryInLoopRule.RuleId = "QS009" -> string!
+const QueryShape.Rules.RawSqlConcatenationRule.RuleId = "QS010" -> string!
+const QueryShape.Rules.TrackingOnReadOnlyQueryRule.RuleId = "QS005" -> string!
+const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
+override QueryShape.CallSite.Equals(object? obj) -> bool
+override QueryShape.CallSite.GetHashCode() -> int
+override QueryShape.CallSite.ToString() -> string!
+override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabase(string! databaseName) -> void
+override QueryShape.Capture.QueryShapeDbConnection.Close() -> void
+override QueryShape.Capture.QueryShapeDbConnection.CloseAsync() -> System.Threading.Tasks.Task!
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.set -> void
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionTimeout.get -> int
+override QueryShape.Capture.QueryShapeDbConnection.DataSource.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.Database.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.DisposeAsync() -> System.Threading.Tasks.ValueTask
+override QueryShape.Capture.QueryShapeDbConnection.EnlistTransaction(System.Transactions.Transaction? transaction) -> void
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema() -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName) -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName, string?[]! restrictionValues) -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.Open() -> void
+override QueryShape.Capture.QueryShapeDbConnection.OpenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override QueryShape.Capture.QueryShapeDbConnection.ServerVersion.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.State.get -> System.Data.ConnectionState
+override QueryShape.CapturedCommand.ToString() -> string!
+override QueryShape.CapturedParameter.Equals(object? obj) -> bool
+override QueryShape.CapturedParameter.GetHashCode() -> int
+override QueryShape.CapturedParameter.ToString() -> string!
+override QueryShape.ClientEvaluatedCall.Equals(object? obj) -> bool
+override QueryShape.ClientEvaluatedCall.GetHashCode() -> int
+override QueryShape.ClientEvaluatedCall.ToString() -> string!
+override QueryShape.Diagnosis.Equals(object? obj) -> bool
+override QueryShape.Diagnosis.GetHashCode() -> int
+override QueryShape.Diagnosis.ToString() -> string!
+override QueryShape.Evidence.Equals(object? obj) -> bool
+override QueryShape.Evidence.GetHashCode() -> int
+override QueryShape.Evidence.ToString() -> string!
+override QueryShape.Fix.Equals(object? obj) -> bool
+override QueryShape.Fix.GetHashCode() -> int
+override QueryShape.Fix.ToString() -> string!
+override QueryShape.KeyFilter.Equals(object? obj) -> bool
+override QueryShape.KeyFilter.GetHashCode() -> int
+override QueryShape.KeyFilter.ToString() -> string!
+override QueryShape.Normalization.NormalizedSql.Equals(object? obj) -> bool
+override QueryShape.Normalization.NormalizedSql.GetHashCode() -> int
+override QueryShape.Normalization.NormalizedSql.ToString() -> string!
+override QueryShape.QueryInfo.ToString() -> string!
+override QueryShape.SaveChangesRecord.Equals(object? obj) -> bool
+override QueryShape.SaveChangesRecord.GetHashCode() -> int
+override QueryShape.SaveChangesRecord.ToString() -> string!
 static QueryShape.CallSite.operator !=(QueryShape.CallSite? left, QueryShape.CallSite? right) -> bool
 static QueryShape.CallSite.operator ==(QueryShape.CallSite? left, QueryShape.CallSite? right) -> bool
 static QueryShape.Capture.QueryShapeInterceptor.Instance.get -> QueryShape.Capture.QueryShapeInterceptor!

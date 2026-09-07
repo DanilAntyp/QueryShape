@@ -151,7 +151,7 @@ public sealed class QueryShapeDbConnection : DbConnection
         {
             var id = Guid.NewGuid();
             var reader = Run(DbCommandMethod.ExecuteReader, false, () => _inner.ExecuteReader(behavior), static _ => null, id);
-            return new CountingDataReader(reader, (rows, affected) => _owner.ReaderClosed(id, rows, affected));
+            return new CountingDataReader(reader, (rows, affected, _) => _owner.ReaderClosed(id, rows, affected));
         }
 
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
@@ -199,7 +199,7 @@ public sealed class QueryShapeDbConnection : DbConnection
             {
                 var reader = await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
                 _owner.Record(_inner, DbCommandMethod.ExecuteReader, id, start, sw.Elapsed, true, null, null);
-                return new CountingDataReader(reader, (rows, affected) => _owner.ReaderClosed(id, rows, affected));
+                return new CountingDataReader(reader, (rows, affected, _) => _owner.ReaderClosed(id, rows, affected));
             }
             catch (Exception ex)
             {

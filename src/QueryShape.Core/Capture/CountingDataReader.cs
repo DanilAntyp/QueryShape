@@ -11,14 +11,21 @@ namespace QueryShape.Capture;
 internal sealed class CountingDataReader : DbDataReader
 {
     private readonly DbDataReader _inner;
-    private readonly Action<int, int> _onClosed;
+    private readonly Action<int, int, int?> _onClosed;
+    private readonly bool _trackFirstColumn;
     private int _rows;
+    private int _distinctFirstColumn;
+    private object? _lastFirstColumn;
     private bool _reported;
 
-    public CountingDataReader(DbDataReader inner, Action<int, int> onClosed)
+    /// <param name="inner">The provider reader.</param>
+    /// <param name="onClosed">(rows read, records affected, distinct first-column values or null).</param>
+    /// <param name="trackFirstColumn">Count distinct consecutive values of column 0 (root cardinality estimate for include queries).</param>
+    public CountingDataReader(DbDataReader inner, Action<int, int, int?> onClosed, bool trackFirstColumn = false)
     {
         _inner = inner;
         _onClosed = onClosed;
+        _trackFirstColumn = trackFirstColumn;
     }
 
     public DbDataReader Inner => _inner;
@@ -114,7 +121,7 @@ internal sealed class CountingDataReader : DbDataReader
         var result = _inner.Read();
         if (result)
         {
-            _rows++;
+            OnRow();
         }
 
         return result;
@@ -125,10 +132,33 @@ internal sealed class CountingDataReader : DbDataReader
         var result = await _inner.ReadAsync(cancellationToken).ConfigureAwait(false);
         if (result)
         {
-            _rows++;
+            OnRow();
         }
 
         return result;
+    }
+
+    private void OnRow()
+    {
+        _rows++;
+        if (!_trackFirstColumn)
+        {
+            return;
+        }
+
+        try
+        {
+            var value = _inner.FieldCount > 0 ? _inner.GetValue(0) : null;
+            if (_rows == 1 || !Equals(value, _lastFirstColumn))
+            {
+                _distinctFirstColumn++;
+                _lastFirstColumn = value;
+            }
+        }
+        catch
+        {
+            // Estimation only.
+        }
     }
 
     public override void Close()
@@ -181,7 +211,7 @@ internal sealed class CountingDataReader : DbDataReader
 
         try
         {
-            _onClosed(_rows, affected);
+            _onClosed(_rows, affected, _trackFirstColumn ? _distinctFirstColumn : null);
         }
         catch
         {

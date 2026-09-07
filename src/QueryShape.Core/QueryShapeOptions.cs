@@ -18,6 +18,12 @@ public sealed class QueryShapeOptions
     /// <summary><c>Contains</c> over a collection with more elements than this is flagged (QS007). Default 500.</summary>
     public int ContainsCollectionThreshold { get; set; } = 500;
 
+    /// <summary>A single-query include result with at least this many rows per distinct root entity is a Cartesian explosion (QS002). Default 10.</summary>
+    public int CartesianExplosionFactor { get; set; } = 10;
+
+    /// <summary>QS002/QS006 ignore include results smaller than this many rows: tiny result sets multiply harmlessly. Default 50.</summary>
+    public int CartesianMinimumRows { get; set; } = 50;
+
     /// <summary>After this many commands a scope stops recording and reports <c>QS_OVERFLOW</c>. Default 10 000.</summary>
     public int MaxCommandsPerScope { get; set; } = 10_000;
 

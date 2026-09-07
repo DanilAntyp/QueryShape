@@ -84,7 +84,7 @@ public class RuleIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task Bounded_queries_produce_no_diagnoses()
+    public async Task Bounded_queries_produce_nothing_above_info()
     {
         using var scope = QueryShapeScope.Begin(options: _shop.Options);
         await using var ctx = _shop.CreateContext();
@@ -94,7 +94,9 @@ public class RuleIntegrationTests : IDisposable
         await ctx.Products.AnyAsync();
         await ctx.OrderLines.Where(l => l.OrderId == 1).SumAsync(l => l.Quantity);
 
-        scope.Analyze().Should().BeEmpty();
+        var diagnoses = scope.Analyze();
+        diagnoses.Should().OnlyContain(d => d.RuleId == "QS005" && d.Severity == Severity.Info, "tracked read-only entity queries are Info-level hints");
+        diagnoses.Should().HaveCount(2, "the two entity-returning queries (Order, Customer); Any/Sum return scalars");
     }
 
     [Fact]
@@ -150,4 +152,102 @@ public class RuleIntegrationTests : IDisposable
     }
 
     private static string FormatTotal(decimal total) => total.ToString("C");
+}
+
+public class RemainingRuleIntegrationTests : IDisposable
+{
+    private readonly SqliteShop _shop = new(customers: 12, ordersPerCustomer: 5, linesPerOrder: 4);
+
+    public void Dispose() => _shop.Dispose();
+
+    [Fact]
+    public async Task Cartesian_explosion_and_split_query_are_detected_from_real_row_counts()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        // 12 customers x 5 orders x 4 lines = 240 rows for 12 roots -> QS002
+        await ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines).Include(c => c.Orders).ToListAsync();
+
+        var cmd = scope.Commands.Single();
+        cmd.RowsReturned.Should().Be(240);
+        cmd.DistinctRootsEstimate.Should().Be(12);
+        var diagnoses = scope.Analyze();
+        diagnoses.Should().Contain(d => d.RuleId == "QS002" && d.Title.StartsWith("Cartesian explosion: 240 rows for 12 Customer entities"));
+        diagnoses.Should().NotContain(d => d.RuleId == "QS006");
+
+        // Split query: two commands, no multiplication.
+        using var split = QueryShapeScope.Begin(options: _shop.Options);
+        await ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines).AsSplitQuery().ToListAsync();
+        split.Analyze().Should().NotContain(d => d.RuleId == "QS002" || d.RuleId == "QS006");
+    }
+
+    [Fact]
+    public async Task Tracking_on_read_only_query_is_info_and_disappears_after_save_changes()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var products = await ctx.Products.Where(p => p.Price > 10).ToListAsync();
+        scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS005").Which.Title.Should().StartWith("Tracked read-only query: 4 Product entities loaded with change tracking");
+
+        products[0].Price += 1;
+        await ctx.SaveChangesAsync();
+        scope.Analyze().Should().NotContain(d => d.RuleId == "QS005");
+    }
+
+    [Fact]
+    public async Task Contains_on_large_collection_is_detected_from_the_json_parameter()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var ids = Enumerable.Range(1, 600).ToList();
+        await ctx.OrderLines.Where(l => ids.Contains(l.Id)).ToListAsync();
+
+        scope.Commands.Single().MaxCollectionParameterCount.Should().Be(600);
+        scope.Commands.Single().Query!.HasParameterCollectionContains.Should().BeTrue();
+        scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS007").Which.Title.Should().StartWith("Contains over 600 values on the OrderLine query (threshold 500)");
+    }
+
+    [Fact]
+    public async Task Query_in_loop_is_detected_by_call_site()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var orders = await ctx.Orders.OrderBy(o => o.Id).Take(6).ToListAsync();
+        foreach (var order in orders)
+        {
+            await SummarizeAsync(ctx, order);
+        }
+
+        var d = scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS009").Subject;
+        d.Title.Should().Be("Queries in a loop: RemainingRuleIntegrationTests.SummarizeAsync issued 12 queries of 2 shapes (Customer, OrderLine) in one scope");
+    }
+
+    [Fact]
+    public async Task Raw_sql_concatenation_is_detected()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        foreach (var name in new[] { "Customer 1", "Customer 2", "Customer 3" })
+        {
+#pragma warning disable EF1002
+            await ctx.Customers.FromSqlRaw($"SELECT * FROM Customers WHERE Name = '{name}'").ToListAsync();
+#pragma warning restore EF1002
+        }
+
+        var d = scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS010").Subject;
+        d.Title.Should().StartWith("Raw SQL built from values: 3 text variants of \"SELECT * FROM Customers WHERE Name = ?\"");
+        d.CallSite!.Member.Should().Be("RemainingRuleIntegrationTests.Raw_sql_concatenation_is_detected");
+    }
+
+    private static async Task<(string, int)> SummarizeAsync(ShopContext ctx, Order order)
+    {
+        var customer = await ctx.Customers.FirstAsync(c => c.Id == order.CustomerId);
+        var lines = await ctx.OrderLines.CountAsync(l => l.OrderId == order.Id);
+        return (customer.Name, lines);
+    }
 }

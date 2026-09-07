@@ -62,7 +62,7 @@ public sealed class SpanEnrichmentTests : IDisposable
         var span = await RequestSpanAsync("/bad/n-plus-one");
 
         span.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.QueryCount).Should().Be(41);
-        span.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.DiagnosisCount).Should().Be(2);
+        span.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.DiagnosisCount).Should().Be(4, "QS001, QS004 and QS005 for both the Customer and the Order query");
         span.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.MaxSeverity).Should().Be("Error");
 
         var events = span.Events.ToList();
@@ -75,7 +75,7 @@ public sealed class SpanEnrichmentTests : IDisposable
         ((string)attrs["queryshape.callsite"]!).Should().StartWith("BadEndpoints.cs:");
 
         var diagnoses = events.Where(e => e.Name == "queryshape.diagnosis").ToList();
-        diagnoses.Should().HaveCount(2);
+        diagnoses.Should().HaveCount(4);
         var n1 = diagnoses.Select(e => e.Tags.ToDictionary(t => t.Key, t => t.Value)).Single(d => (string)d["queryshape.rule_id"]! == "QS001");
         n1["queryshape.severity"].Should().Be("Error");
         ((string)n1["queryshape.title"]!).Should().StartWith("N+1 query: Order by CustomerId executed 40 times");

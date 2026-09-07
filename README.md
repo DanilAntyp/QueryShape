@@ -4,7 +4,7 @@
 
 - **Query snapshot testing** — a test fails in CI when a code change makes EF Core issue more or different queries. Jest snapshots, but for SQL.
 - **Diagnosis + fix** — every finding says *why* EF Core did it and comes with a concrete, applicable fix (`Add .Include(c => c.Orders) at OrderService.cs:42`), with a unified diff when the call site is known.
-- **OpenTelemetry enrichment** — findings land on the spans you already look at. *(in progress)*
+- **OpenTelemetry enrichment** — findings land on the spans you already look at as `queryshape.*` tags and `queryshape.diagnosis` events, plus a `QueryShape` meter. No dependency on the OpenTelemetry SDK.
 
 Targets .NET 8 / EF Core 8 and .NET 10 / EF Core 10. SQLite, SQL Server and PostgreSQL are tested. MIT.
 
@@ -23,6 +23,8 @@ using var scope = QueryShapeScope.Begin();
 await service.GetOrdersAsync(customerId: 42);
 foreach (var d in scope.Analyze()) Console.WriteLine(DiagnosisFormatter.Format(d));
 ```
+
+For OpenTelemetry add `builder.Services.AddQueryShapeOpenTelemetry();` (and `.AddSource("QueryShape")` / `.AddMeter("QueryShape")` to your providers if you want QueryShape's own activities or metrics exported).
 
 ## Snapshot tests (`QueryShape.Testing`)
 
@@ -77,15 +79,15 @@ If this change is intended, update the snapshot: QUERYSHAPE_UPDATE_SNAPSHOTS=1 d
 | Id | Name | Severity | Status |
 |----|------|----------|--------|
 | [QS001](docs/rules/QS001.md) | N+1 query | Error | ✅ |
-| QS002 | Cartesian explosion | Error | planned |
+| [QS002](docs/rules/QS002.md) | Cartesian explosion | Error | ✅ |
 | [QS003](docs/rules/QS003.md) | Client-side evaluation | Error | ✅ |
 | [QS004](docs/rules/QS004.md) | Unbounded result set | Warning | ✅ |
-| QS005 | Tracking on read-only query | Info | planned |
-| QS006 | Missing split query candidate | Warning | planned |
-| QS007 | `Contains` on large collection | Warning | planned |
+| [QS005](docs/rules/QS005.md) | Tracking on read-only query | Info | ✅ |
+| [QS006](docs/rules/QS006.md) | Missing split query candidate | Warning | ✅ |
+| [QS007](docs/rules/QS007.md) | `Contains` on large collection | Warning | ✅ |
 | [QS008](docs/rules/QS008.md) | Duplicate identical query | Warning | ✅ |
-| QS009 | Query in loop over navigation | Warning | planned |
-| QS010 | Raw SQL with string concatenation | Error | planned |
+| [QS009](docs/rules/QS009.md) | Query in loop over navigation | Warning | ✅ |
+| [QS010](docs/rules/QS010.md) | Raw SQL with string concatenation | Error | ✅ |
 
 Every rule doc explains what EF Core does and why, and shows the fix. Architecture decisions live in [docs/adr](docs/adr).
 

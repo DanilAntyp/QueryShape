@@ -55,12 +55,12 @@ public static class BadEndpoints
             return Results.Ok(products.Select(p => new { p.Sku, p.Price }));
         });
 
-        // QS006: several collection includes without AsSplitQuery (mild multiplication).
+        // QS006: several collection includes without AsSplitQuery (mild multiplication: 2 recent orders x 2 addresses per customer).
         app.MapGet("/bad/missing-split-query", async (ShopDbContext db) =>
         {
             var customers = await db.Customers
-                .Where(c => c.Id <= 5)
-                .Include(c => c.Orders)
+                .Where(c => c.Id <= 10)
+                .Include(c => c.Orders.Where(o => o.Total >= 40))
                 .Include(c => c.Addresses)
                 .ToListAsync();
             return Results.Ok(customers.Select(c => new { c.Name, Orders = c.Orders.Count, Addresses = c.Addresses.Count }));

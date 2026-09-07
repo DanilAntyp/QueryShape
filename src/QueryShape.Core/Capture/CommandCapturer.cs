@@ -54,7 +54,8 @@ internal sealed class CommandCapturer
         get { lock (_gate) { return _unscoped.ToArray(); } }
     }
 
-    public void Capture(
+    /// <summary>Captures one command. Returns the captured command, or <c>null</c> when capture failed internally.</summary>
+    public CapturedCommand? Capture(
         QueryShapeOptions options,
         DbCommand command,
         QuerySource source,
@@ -86,7 +87,8 @@ internal sealed class CommandCapturer
             var wantCallSite = options.CaptureCallSites || (scope?.Options.CaptureCallSites ?? false);
             var callSite = CallSiteCapture.FromTags(tags) ?? (wantCallSite ? CallSiteCapture.Capture() : null);
 
-            var parameters = CaptureParameters(command, options.IncludeParameterValues, out var parameterHash);
+            var parameters = CaptureParameters(command, options.IncludeParameterValues, out var parameterHash, out var maxCollectionCount);
+            maxCollectionCount ??= InlineListCount(normalized.Shape);
 
             var captured = new CapturedCommand
             {
@@ -100,6 +102,7 @@ internal sealed class CommandCapturer
                 ExecuteMethod = executeMethod,
                 Parameters = parameters,
                 ParameterHash = parameterHash,
+                MaxCollectionParameterCount = maxCollectionCount,
                 Duration = duration,
                 ProviderName = SafeProviderName(context),
                 Query = query,
@@ -149,14 +152,17 @@ internal sealed class CommandCapturer
             {
                 scope.Record(captured);
             }
+
+            return captured;
         }
         catch (Exception ex)
         {
             Log.Swallowed(options, "capture", ex);
+            return null;
         }
     }
 
-    public void ReaderClosed(Guid commandId, int readCount, int recordsAffected)
+    public void ReaderClosed(Guid commandId, int readCount, int recordsAffected, int? distinctRoots = null)
     {
         try
         {
@@ -176,6 +182,7 @@ internal sealed class CommandCapturer
             }
 
             command.RowsReturned = readCount;
+            command.DistinctRootsEstimate = distinctRoots;
             if (recordsAffected >= 0 && command.RowsAffected is null && command.ExecuteMethod != DbCommandMethod.ExecuteReader)
             {
                 command.RowsAffected = recordsAffected;
@@ -201,8 +208,9 @@ internal sealed class CommandCapturer
         }
     }
 
-    private static IReadOnlyList<CapturedParameter> CaptureParameters(DbCommand command, bool includeValues, out string parameterHash)
+    private static IReadOnlyList<CapturedParameter> CaptureParameters(DbCommand command, bool includeValues, out string parameterHash, out int? maxCollectionCount)
     {
+        maxCollectionCount = null;
         var count = command.Parameters.Count;
         if (count == 0)
         {
@@ -220,12 +228,96 @@ internal sealed class CommandCapturer
             var text = isNull ? "NULL" : ValueToString(value!);
             hashInput.Append(p.ParameterName).Append('=').Append(text).Append(';');
             list[i] = new CapturedParameter(p.ParameterName, p.DbType, p.Direction, includeValues && !isNull ? value : null, isNull);
+
+            var elements = CollectionElementCount(value);
+            if (elements is { } n && (maxCollectionCount is null || n > maxCollectionCount))
+            {
+                maxCollectionCount = n;
+            }
         }
 
         Span<byte> hash = stackalloc byte[32];
         SHA256.HashData(Encoding.UTF8.GetBytes(hashInput.ToString()), hash);
         parameterHash = Convert.ToHexString(hash[..6]).ToLowerInvariant();
         return list;
+    }
+
+    /// <summary>Elements in a collection parameter: provider arrays (Npgsql) or the JSON array EF Core 8+ sends for OPENJSON/json_each.</summary>
+    private static int? CollectionElementCount(object? value)
+    {
+        switch (value)
+        {
+            case null or DBNull or string { Length: 0 } or byte[]:
+                return null;
+            case string s when s.Length >= 2 && s[0] == '[' && s[^1] == ']':
+                try
+                {
+                    var reader = new System.Text.Json.Utf8JsonReader(Encoding.UTF8.GetBytes(s));
+                    if (!reader.Read() || reader.TokenType != System.Text.Json.JsonTokenType.StartArray)
+                    {
+                        return null;
+                    }
+
+                    var n = 0;
+                    while (reader.Read() && reader.TokenType != System.Text.Json.JsonTokenType.EndArray)
+                    {
+                        n++;
+                        reader.TrySkip();
+                    }
+
+                    return n;
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return null;
+                }
+            case string:
+                return null;
+            case System.Collections.ICollection c:
+                return c.Count;
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>Largest number of items inside an inline <c>IN (a, b, c)</c> list, or <c>null</c> when there is none.</summary>
+    private static int? InlineListCount(string shape)
+    {
+        int? max = null;
+        var idx = 0;
+        while ((idx = shape.IndexOf(" IN (", idx, StringComparison.OrdinalIgnoreCase)) >= 0)
+        {
+            var start = idx + 5;
+            var depth = 1;
+            var items = 1;
+            var i = start;
+            for (; i < shape.Length && depth > 0; i++)
+            {
+                var ch = shape[i];
+                if (ch == '(')
+                {
+                    depth++;
+                }
+                else if (ch == ')')
+                {
+                    depth--;
+                }
+                else if (ch == ',' && depth == 1)
+                {
+                    items++;
+                }
+            }
+
+            var body = shape[start..Math.Max(start, i - 1)].Trim();
+            if (body.Length > 0 && !body.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase) && (max is null || items > max))
+            {
+                max = items;
+            }
+
+            idx = i;
+        }
+
+        return max;
     }
 
     private static string ValueToString(object value)

@@ -62,6 +62,30 @@ public class CaptureTests : IDisposable
     }
 
     [Fact]
+    public async Task Lambda_and_async_lambda_call_sites_resolve_to_the_enclosing_method()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        Func<Task> asyncLambda = async () => await ctx.Products.CountAsync();
+        Func<int> syncLambda = () => ctx.Customers.Count();
+        await asyncLambda();
+        syncLambda();
+
+        scope.Commands.Should().HaveCount(2);
+        scope.Commands.Should().OnlyContain(c => c.CallSite!.Member == "CaptureTests.Lambda_and_async_lambda_call_sites_resolve_to_the_enclosing_method");
+    }
+
+    [Theory]
+    [InlineData("<GetOrdersAsync>d__3", "GetOrdersAsync")]
+    [InlineData("<Map>b__0_1", "Map")]
+    [InlineData("<<Map>b__0_1>d", "Map")]
+    [InlineData("<>c", null)]
+    [InlineData("Plain", null)]
+    public void Logical_names_are_extracted_from_compiler_generated_names(string generated, string? expected)
+        => QueryShape.Capture.CallSiteCapture.LogicalName(generated).Should().Be(expected);
+
+    [Fact]
     public async Task Honors_ef_TagWithCallSite_without_stack_walking()
     {
         var options = new QueryShapeOptions { CaptureCallSites = false };

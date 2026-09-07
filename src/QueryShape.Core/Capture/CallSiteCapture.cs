@@ -90,27 +90,28 @@ internal static partial class CallSiteCapture
 
     private static string DescribeMember(Type type, MethodBase method)
     {
-        // Compiler-generated: OrderService+<GetOrdersAsync>d__3.MoveNext  ->  OrderService.GetOrdersAsync
-        //                     OrderService+<>c__DisplayClass0_0.<GetOrders>b__0  ->  OrderService.GetOrders
-        var typeName = type.Name;
+        // Compiler-generated shapes:
+        //   OrderService+<GetOrdersAsync>d__3.MoveNext        -> OrderService.GetOrdersAsync   (async method)
+        //   OrderService+<>c.<Map>b__0_1                      -> OrderService.Map              (lambda)
+        //   OrderService+<>c+<<Map>b__0_1>d.MoveNext          -> OrderService.Map              (async lambda)
+        //   OrderService+<>c__DisplayClass0_0.<Map>b__0        -> OrderService.Map              (closure lambda)
         var methodName = method.Name;
+        string? logical = null;
 
-        if (type.IsNested && type.Name.StartsWith('<'))
+        var userType = type;
+        while (userType is not null && IsGenerated(userType.Name))
         {
-            var logical = GeneratedName().Match(type.Name);
-            typeName = type.DeclaringType?.Name ?? typeName;
-            if (logical.Success && methodName == "MoveNext")
-            {
-                methodName = logical.Groups["name"].Value;
-            }
-            else if (GeneratedName().Match(methodName) is { Success: true } lambda)
-            {
-                methodName = lambda.Groups["name"].Value;
-            }
+            logical ??= LogicalName(userType.Name);
+            userType = userType.DeclaringType;
         }
-        else if (GeneratedName().Match(methodName) is { Success: true } lambda)
+
+        if (method.Name == "MoveNext" || IsGenerated(method.Name))
         {
-            methodName = lambda.Groups["name"].Value;
+            logical = (IsGenerated(method.Name) ? LogicalName(method.Name) : null) ?? logical;
+            if (logical is not null)
+            {
+                methodName = logical;
+            }
         }
 
         if (methodName == ".ctor")
@@ -118,6 +119,7 @@ internal static partial class CallSiteCapture
             methodName = "ctor";
         }
 
+        var typeName = (userType ?? type).Name;
         var tick = typeName.IndexOf('`', StringComparison.Ordinal);
         if (tick > 0)
         {
@@ -127,8 +129,50 @@ internal static partial class CallSiteCapture
         return typeName + "." + methodName;
     }
 
-    [GeneratedRegex(@"^<(?<name>[^>]+)>")]
-    private static partial Regex GeneratedName();
+    private static bool IsGenerated(string name) => name.StartsWith('<');
+
+    /// <summary>Innermost user identifier inside nested angle brackets: "&lt;&lt;Map&gt;b__0_1&gt;d" → "Map".</summary>
+    internal static string? LogicalName(string generated)
+    {
+        var s = generated;
+        while (s.Length > 0 && s[0] == '<')
+        {
+            var depth = 0;
+            var close = -1;
+            for (var i = 0; i < s.Length; i++)
+            {
+                if (s[i] == '<')
+                {
+                    depth++;
+                }
+                else if (s[i] == '>' && --depth == 0)
+                {
+                    close = i;
+                    break;
+                }
+            }
+
+            if (close <= 1)
+            {
+                return null;
+            }
+
+            var inner = s[1..close];
+            if (inner.Length == 0)
+            {
+                return null;
+            }
+
+            if (inner[0] != '<')
+            {
+                return inner;
+            }
+
+            s = inner;
+        }
+
+        return null;
+    }
 
     [GeneratedRegex(@"^File:\s*(?<path>.+):(?<line>\d+)\s*$")]
     private static partial Regex CallSiteTag();
