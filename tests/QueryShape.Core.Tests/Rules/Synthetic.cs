@@ -24,7 +24,7 @@ internal static class Synthetic
         CallSite? callSite = null,
         DbCommandMethod method = DbCommandMethod.ExecuteReader)
     {
-        var normalized = SqlNormalizer.Normalize(sql);
+        var normalized = SqlNormalizer.Normalize(sql, maskLiterals: source == QuerySource.Raw);   // as the capturer does for raw SQL
         var cmd = new CapturedCommand
         {
             CommandText = sql,

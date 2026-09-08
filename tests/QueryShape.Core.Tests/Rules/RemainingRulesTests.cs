@@ -201,8 +201,11 @@ public class RawSqlConcatenationRuleTests
         d.Severity.Should().Be(Severity.Error);
         d.Title.Should().Be("Raw SQL built from values: 3 text variants of \"SELECT * FROM Customers WHERE Name = ?\" at Search.cs:5 Search.Find");
         d.Explanation.Should().Contain("SQL injection");
-        d.Fingerprints.Should().HaveCount(3);
-        d.SuggestedFix!.AfterSnippet.Should().Be("SELECT * FROM Customers WHERE Name = {0}");
+        d.Fingerprints.Should().ContainSingle("every variant has the same literal-masked shape");
+        d.Evidence.SampleSql.Should().Be("SELECT * FROM Customers WHERE Name = ?", "the values never leave the process");
+        d.SuggestedFix!.BeforeSnippet.Should().Be("SELECT * FROM Customers WHERE Name = ?");
+        d.SuggestedFix.AfterSnippet.Should().Be("SELECT * FROM Customers WHERE Name = {0}");
+        scope.Commands.Where(c => c.Source == QuerySource.Raw).Select(c => c.Shape).Should().NotContain(s => s.Contains("Customer 1", StringComparison.Ordinal));
     }
 
     [Fact]

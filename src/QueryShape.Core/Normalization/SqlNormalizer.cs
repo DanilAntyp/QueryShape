@@ -7,13 +7,17 @@ namespace QueryShape.Normalization;
 /// Turns provider SQL into a deterministic <em>shape</em>: comments removed, whitespace collapsed,
 /// EF Core's generated table aliases (<c>[c]</c>, <c>"o0"</c>, <c>t</c>) renamed positionally to <c>t0</c>, <c>t1</c>…,
 /// and parameter names (<c>@__customerId_0</c> in EF Core 8, <c>@customerId</c> in EF Core 10) renamed positionally to <c>@p0</c>, <c>@p1</c>…
-/// Parameter values never appear in SQL text so nothing has to be stripped.
+/// EF Core sends values as parameters, so a LINQ query's text carries only the constants written in the source. Raw SQL can carry
+/// anything (a value concatenated into the text), so raw shapes additionally mask string and numeric literals as <c>?</c>.
 /// Two commands with the same shape are "the same query with different arguments". See ADR-0006.
 /// </summary>
 public static partial class SqlNormalizer
 {
     /// <summary>Normalizes <paramref name="sql"/> and returns the shape plus any leading <c>TagWith</c> tags.</summary>
-    public static NormalizedSql Normalize(string sql)
+    public static NormalizedSql Normalize(string sql) => Normalize(sql, maskLiterals: false);
+
+    /// <summary>Normalizes <paramref name="sql"/>; with <paramref name="maskLiterals"/>, string and numeric literals become <c>?</c> (used for raw SQL, whose text may embed values).</summary>
+    public static NormalizedSql Normalize(string sql, bool maskLiterals)
     {
         ArgumentNullException.ThrowIfNull(sql);
 
@@ -23,11 +27,24 @@ public static partial class SqlNormalizer
         body = Whitespace().Replace(body, " ").Trim();
         body = CanonicalizeAliases(body);
         body = CanonicalizeParameters(body);
+        if (maskLiterals)
+        {
+            body = MaskLiterals(body);
+        }
+
         return new NormalizedSql(body, tags);
     }
 
     /// <summary>Shape only, without tags.</summary>
     public static string Shape(string sql) => Normalize(sql).Shape;
+
+    /// <summary>Replaces string and numeric literals with <c>?</c> so texts that differ only in values collapse to one shape. Identifiers, aliases and parameter names are kept.</summary>
+    public static string MaskLiterals(string sql)
+    {
+        ArgumentNullException.ThrowIfNull(sql);
+        var s = StringLiteral().Replace(sql, "?");
+        return NumericLiteral().Replace(s, "?");
+    }
 
     private static List<string> ExtractTags(string sql, out string rest)
     {
@@ -149,9 +166,17 @@ public static partial class SqlNormalizer
     // An identifier that is quoted, or bare and preceded by AS, or bare and followed by a dot.
     [GeneratedRegex(@"(?:(?<pre>\bAS\s+)(?<id>\w+)\b(?!\.)|(?<id>\[[^\]]+\]|""[^""]+""|`[^`]+`)|\b(?<id>\w+)(?=\.))", RegexOptions.IgnoreCase)]
     private static partial Regex AliasReference();
+
+    // 'text' with '' escapes (also N'text').
+    [GeneratedRegex(@"'(?:[^']|'')*'")]
+    private static partial Regex StringLiteral();
+
+    // Numbers that are not part of an identifier or a parameter name (@p0, t0, [c1]).
+    [GeneratedRegex(@"(?<![\w@\]""`.])\b\d+(?:\.\d+)?\b(?![\w\]""`])")]
+    private static partial Regex NumericLiteral();
 }
 
-/// <summary>Result of <see cref="SqlNormalizer.Normalize"/>.</summary>
+/// <summary>Result of <see cref="SqlNormalizer.Normalize(string)"/>.</summary>
 /// <param name="Shape">The normalized SQL.</param>
 /// <param name="Tags">Tags extracted from leading comments.</param>
 public sealed record NormalizedSql(string Shape, IReadOnlyList<string> Tags)

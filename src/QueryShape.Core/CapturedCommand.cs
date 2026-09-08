@@ -17,10 +17,13 @@ public sealed class CapturedCommand
     /// <summary>0-based capture order within the outermost enclosing scope (or within the unscoped buffer); orders commands consistently in every nested scope.</summary>
     public int Sequence { get; internal set; }
 
-    /// <summary>The SQL exactly as sent, including tag comments. Never contains parameter values.</summary>
+    /// <summary>
+    /// The SQL exactly as sent, including tag comments. EF Core sends values as parameters, so for a LINQ query this holds only constants from the source;
+    /// raw SQL (<see cref="QuerySource.Raw"/>) may embed values. Never exported: reports, snapshots and telemetry use <see cref="Shape"/>.
+    /// </summary>
     public required string CommandText { get; init; }
 
-    /// <summary>Normalized SQL: comments removed, whitespace collapsed, aliases canonicalized. See <see cref="Normalization.SqlNormalizer"/>.</summary>
+    /// <summary>Normalized SQL: comments removed, whitespace collapsed, aliases and parameter names canonicalized; for raw SQL, literals masked as <c>?</c>. See <see cref="Normalization.SqlNormalizer"/>.</summary>
     public required string Shape { get; init; }
 
     /// <summary>SHA-256 of <see cref="Shape"/>, first 12 hex characters.</summary>
@@ -44,7 +47,7 @@ public sealed class CapturedCommand
     /// <summary>Parameters as sent. Values are stripped unless opted in.</summary>
     public IReadOnlyList<CapturedParameter> Parameters { get; init; } = [];
 
-    /// <summary>Stable 64-bit hash (12 hex characters) over parameter names and values. Lets rules tell "same arguments" from "different arguments" without keeping the values; never persisted.</summary>
+    /// <summary>Stable 64-bit hash (12 hex characters) over parameter names and values (and, for raw SQL, the text). Lets rules tell "same arguments" from "different arguments" without keeping the values; never persisted.</summary>
     public required string ParameterHash { get; init; }
 
     /// <summary>Wall-clock time from execute to first result (EF Core's <c>Duration</c>).</summary>

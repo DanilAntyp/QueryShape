@@ -583,7 +583,9 @@ static QueryShape.KeyFilter.operator ==(QueryShape.KeyFilter? left, QueryShape.K
 static QueryShape.Normalization.Fingerprint.Compute(string! text) -> string!
 static QueryShape.Normalization.NormalizedSql.operator !=(QueryShape.Normalization.NormalizedSql? left, QueryShape.Normalization.NormalizedSql? right) -> bool
 static QueryShape.Normalization.NormalizedSql.operator ==(QueryShape.Normalization.NormalizedSql? left, QueryShape.Normalization.NormalizedSql? right) -> bool
+static QueryShape.Normalization.SqlNormalizer.MaskLiterals(string! sql) -> string!
 static QueryShape.Normalization.SqlNormalizer.Normalize(string! sql) -> QueryShape.Normalization.NormalizedSql!
+static QueryShape.Normalization.SqlNormalizer.Normalize(string! sql, bool maskLiterals) -> QueryShape.Normalization.NormalizedSql!
 static QueryShape.Normalization.SqlNormalizer.Shape(string! sql) -> string!
 static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!
 static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape<TContext>(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>!

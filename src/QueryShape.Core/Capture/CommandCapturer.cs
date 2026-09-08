@@ -22,6 +22,7 @@ internal sealed class CommandCapturer
     private readonly Queue<CapturedCommand> _unscoped = new();
     private readonly ConditionalWeakTable<DbContext, ContextState> _contexts = new();
     private readonly ConcurrentDictionary<string, NormalizedSql> _normalized = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, NormalizedSql> _normalizedRaw = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
     private readonly ConcurrentDictionary<string, int> _sampleCounts = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, CallSite> _sampledCallSites = new(StringComparer.Ordinal);
@@ -153,7 +154,9 @@ internal sealed class CommandCapturer
 
         try
         {
-            var normalized = Normalize(command.CommandText ?? string.Empty);
+            // Raw SQL may embed values in its text: its shape masks literals, and its parameter hash covers the text so variants still differ.
+            var raw = source == QuerySource.Raw;
+            var normalized = Normalize(command.CommandText ?? string.Empty, maskLiterals: raw);
             var scope = QueryShapeScope.Current;
 
             QueryInfo? query = null;
@@ -170,7 +173,7 @@ internal sealed class CommandCapturer
 
             var (callSite, callSiteOrigin) = ResolveCallSite(options, scope, tags, normalized.Fingerprint);
 
-            var parameters = CaptureParameters(command, options.IncludeParameterValues, out var parameterHash, out var maxCollectionCount);
+            var parameters = CaptureParameters(command, options.IncludeParameterValues, raw ? command.CommandText : null, out var parameterHash, out var maxCollectionCount);
             maxCollectionCount ??= InlineListCount(normalized.Shape);
 
             var captured = new CapturedCommand
@@ -361,20 +364,21 @@ internal sealed class CommandCapturer
     }
 
     /// <summary>The same SQL text is executed over and over (compiled query cache); normalize each distinct text once.</summary>
-    private NormalizedSql Normalize(string commandText)
+    private NormalizedSql Normalize(string commandText, bool maskLiterals)
     {
-        if (_normalized.TryGetValue(commandText, out var cached))
+        var cache = maskLiterals ? _normalizedRaw : _normalized;
+        if (cache.TryGetValue(commandText, out var cached))
         {
             return cached;
         }
 
-        var normalized = SqlNormalizer.Normalize(commandText);
-        if (_normalized.Count >= NormalizationCacheLimit)
+        var normalized = SqlNormalizer.Normalize(commandText, maskLiterals);
+        if (cache.Count >= NormalizationCacheLimit)
         {
-            _normalized.Clear();
+            cache.Clear();
         }
 
-        _normalized[commandText] = normalized;
+        cache[commandText] = normalized;
         return normalized;
     }
 
@@ -390,18 +394,18 @@ internal sealed class CommandCapturer
         }
     }
 
-    private static IReadOnlyList<CapturedParameter> CaptureParameters(DbCommand command, bool includeValues, out string parameterHash, out int? maxCollectionCount)
+    private static IReadOnlyList<CapturedParameter> CaptureParameters(DbCommand command, bool includeValues, string? textToHash, out string parameterHash, out int? maxCollectionCount)
     {
         maxCollectionCount = null;
         var count = command.Parameters.Count;
-        if (count == 0)
+        if (count == 0 && textToHash is null)
         {
             parameterHash = "000000000000";
             return [];
         }
 
         var list = new CapturedParameter[count];
-        var hash = Fnv.Offset;
+        var hash = textToHash is null ? Fnv.Offset : Fnv.Add(Fnv.Offset, textToHash);
         for (var i = 0; i < count; i++)
         {
             var p = command.Parameters[i];
