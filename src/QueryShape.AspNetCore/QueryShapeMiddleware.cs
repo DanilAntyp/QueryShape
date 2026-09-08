@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace QueryShape.AspNetCore;
@@ -36,7 +37,10 @@ public sealed class QueryShapeMiddleware
         _middlewareOptions = middlewareOptions;
     }
 
-    /// <summary>Runs the rest of the pipeline inside a scope named <c>METHOD /path</c>.</summary>
+    /// <summary>
+    /// Runs the rest of the pipeline inside a scope named <c>METHOD /route/template</c> (the request path until routing has chosen an endpoint;
+    /// the template afterwards, so <c>/orders/{id}</c> is one name in reports and telemetry instead of one per id).
+    /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -85,7 +89,18 @@ public sealed class QueryShapeMiddleware
             }, (context, scope, _middlewareOptions.ResponseHeaderName));
         }
 
-        await _next(context).ConfigureAwait(false);
+        try
+        {
+            await _next(context).ConfigureAwait(false);
+        }
+        finally
+        {
+            // Routing ran inside the pipeline: name the scope by the route template before it is disposed (reported, exported).
+            if (context.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } template })
+            {
+                scope.Name = context.Request.Method + " " + template;
+            }
+        }
     }
 }
 

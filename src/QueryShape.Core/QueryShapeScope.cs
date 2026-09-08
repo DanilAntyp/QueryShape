@@ -46,8 +46,8 @@ public sealed class QueryShapeScope : IDisposable
         return scope;
     }
 
-    /// <summary>Optional label.</summary>
-    public string? Name { get; }
+    /// <summary>Optional label (test name, request route). Settable so a host can refine it once it knows more, e.g. the route template after routing.</summary>
+    public string? Name { get; set; }
 
     /// <summary>Options in effect for analysis.</summary>
     public QueryShapeOptions Options { get; }

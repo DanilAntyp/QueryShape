@@ -76,6 +76,17 @@ public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
     }
 
     [RuntimeMatchedFact]
+    public async Task Request_scopes_are_named_by_the_route_template_not_the_path()
+    {
+        var response = await app.Client.GetAsync(new Uri("/good/customer/7", UriKind.Relative));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var entry = app.Listener.Completed.Reverse().First(e => e.Scope.Name!.StartsWith("GET /good/customer/", StringComparison.Ordinal));
+        entry.Scope.Name.Should().Be("GET /good/customer/{id:int}", "one name per route keeps reports and telemetry low-cardinality");
+        entry.Scope.CommandCount.Should().Be(1);
+    }
+
+    [RuntimeMatchedFact]
     public async Task Excluded_and_root_paths_still_work()
     {
         var response = await app.Client.GetAsync(new Uri("/", UriKind.Relative));

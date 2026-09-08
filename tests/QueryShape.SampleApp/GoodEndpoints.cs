@@ -7,6 +7,13 @@ public static class GoodEndpoints
 {
     public static void Map(WebApplication app)
     {
+        // A parameterized route: the request scope is named by the template, not by each id.
+        app.MapGet("/good/customer/{id:int}", async (ShopDbContext db, int id) =>
+        {
+            var customer = await db.Customers.Include(c => c.Orders).AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+            return customer is null ? Results.NotFound() : Results.Ok(new { customer.Name, Orders = customer.Orders.Count });
+        });
+
         app.MapGet("/good/n-plus-one", async (ShopDbContext db) =>
         {
             var customers = await db.Customers.Include(c => c.Orders).AsNoTracking().ToListAsync();
