@@ -103,23 +103,24 @@ public sealed class NPlusOneRule : IRule
 
         if (q is { RootEntityShortName: { } root })
         {
-            // Prefer a key filter that points at an entity we saw loaded earlier in the scope.
-            foreach (var kf in q.KeyFilters)
-            {
-                if (kf.RelatedEntityType is null || kf.NavigationOnRelated is null)
-                {
-                    continue;
-                }
-
-                var parent = all
+            // Prefer a key filter whose related entity was actually loaded earlier in the scope (that query is where the Include goes);
+            // fall back to any navigation-bearing filter.
+            var candidates = q.KeyFilters.Where(kf => kf.RelatedEntityType is not null && kf.NavigationOnRelated is not null).ToList();
+            var chosen = candidates
+                .Select(kf => (Filter: kf, Parent: all
                     .Where(c => c.Sequence < repeated.Sequence && c.Source == QuerySource.Linq && c.Query?.RootEntityShortName == kf.RelatedEntityType)
                     .OrderByDescending(c => c.Sequence)
-                    .FirstOrDefault();
+                    .FirstOrDefault()))
+                .OrderByDescending(x => x.Parent is not null)
+                .FirstOrDefault();
 
-                var p = RuleHelpers.LambdaName(kf.RelatedEntityType);
+            if (chosen.Filter is { } kf)
+            {
+                var parent = chosen.Parent;
+                var p = RuleHelpers.LambdaName(kf.RelatedEntityType!);
                 var include = $"Include({p} => {p}.{kf.NavigationOnRelated})";
                 var where = parent?.CallSite is { } cs ? $" at {cs}" : parent is not null ? $" (query #{parent.Sequence})" : string.Empty;
-                var nav = RuleHelpers.LambdaName(kf.RelatedEntityType) + "." + kf.NavigationOnRelated;
+                var nav = RuleHelpers.LambdaName(kf.RelatedEntityType!) + "." + kf.NavigationOnRelated;
                 var summary = $"Add .{include} to the {kf.RelatedEntityType} query{where}, then read {nav} in the loop instead of querying";
 
                 string? before = parent?.Query?.Expression;

@@ -41,7 +41,7 @@ internal sealed class ReportCommand
         out_.WriteLine();
         foreach (var report in metrics.Reports)
         {
-            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries, {report.CommandDurationMs:0.#} ms in the database, {report.Diagnostics.Count} diagnostics");
+            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries, {report.CommandDurationMs.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} ms in the database, {report.Diagnostics.Count} diagnostics");
             foreach (var d in report.Diagnostics.OrderByDescending(d => d.Severity == "Error" ? 2 : d.Severity == "Warning" ? 1 : 0).ThenBy(d => d.RuleId, StringComparer.Ordinal))
             {
                 out_.WriteLine($"  {d.RuleId} {d.Severity.ToUpperInvariant()}  {d.Title}");

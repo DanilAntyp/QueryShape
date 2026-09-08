@@ -6,7 +6,7 @@
     <PackageId>QueryShape.Cli</PackageId>
     <RootNamespace>QueryShape.Cli</RootNamespace>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>queryshape</ToolCommandName>
+    <ToolCommandName>dotnet-queryshape</ToolCommandName>
     <Description>dotnet queryshape: verify a fix with before/after numbers, print QueryShape reports, update query snapshots, and (opt-in) explain diagnoses with an LLM.</Description>
     <RollForward>Major</RollForward>
     <NoWarn>$(NoWarn);CA1303;CA1848;CA2007;CA1031;CA1515;CA1812</NoWarn>
