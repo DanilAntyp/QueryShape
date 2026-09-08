@@ -191,13 +191,15 @@ QueryShape.IRule.Id.get -> string!
 QueryShape.IRule.Name.get -> string!
 QueryShape.KeyFilter
 QueryShape.KeyFilter.<Clone>$() -> QueryShape.KeyFilter!
-QueryShape.KeyFilter.Deconstruct(out string! EntityType, out string! PropertyName, out bool IsPrimaryKey, out string? RelatedEntityType, out string? NavigationOnRelated, out string? NavigationToRelated) -> void
+QueryShape.KeyFilter.Deconstruct(out string! EntityType, out string! PropertyName, out bool IsPrimaryKey, out string? RelatedEntityType, out string? NavigationOnRelated, out string? NavigationToRelated, out bool IsSolePredicate) -> void
 QueryShape.KeyFilter.EntityType.get -> string!
 QueryShape.KeyFilter.EntityType.init -> void
 QueryShape.KeyFilter.Equals(QueryShape.KeyFilter? other) -> bool
 QueryShape.KeyFilter.IsPrimaryKey.get -> bool
 QueryShape.KeyFilter.IsPrimaryKey.init -> void
-QueryShape.KeyFilter.KeyFilter(string! EntityType, string! PropertyName, bool IsPrimaryKey, string? RelatedEntityType, string? NavigationOnRelated, string? NavigationToRelated) -> void
+QueryShape.KeyFilter.IsSolePredicate.get -> bool
+QueryShape.KeyFilter.IsSolePredicate.init -> void
+QueryShape.KeyFilter.KeyFilter(string! EntityType, string! PropertyName, bool IsPrimaryKey, string? RelatedEntityType, string? NavigationOnRelated, string? NavigationToRelated, bool IsSolePredicate = false) -> void
 QueryShape.KeyFilter.NavigationOnRelated.get -> string?
 QueryShape.KeyFilter.NavigationOnRelated.init -> void
 QueryShape.KeyFilter.NavigationToRelated.get -> string?
@@ -229,8 +231,12 @@ QueryShape.QueryInfo.ExpressionHash.get -> string!
 QueryShape.QueryInfo.ExpressionHash.init -> void
 QueryShape.QueryInfo.HasFilter.get -> bool
 QueryShape.QueryInfo.HasFilter.init -> void
+QueryShape.QueryInfo.HasGrouping.get -> bool
+QueryShape.QueryInfo.HasGrouping.init -> void
 QueryShape.QueryInfo.HasLimit.get -> bool
 QueryShape.QueryInfo.HasLimit.init -> void
+QueryShape.QueryInfo.HasOrdering.get -> bool
+QueryShape.QueryInfo.HasOrdering.init -> void
 QueryShape.QueryInfo.HasParameterCollectionContains.get -> bool
 QueryShape.QueryInfo.HasParameterCollectionContains.init -> void
 QueryShape.QueryInfo.HasProjection.get -> bool
@@ -243,6 +249,8 @@ QueryShape.QueryInfo.IsTracking.get -> bool
 QueryShape.QueryInfo.IsTracking.init -> void
 QueryShape.QueryInfo.KeyFilters.get -> System.Collections.Generic.IReadOnlyList<QueryShape.KeyFilter!>!
 QueryShape.QueryInfo.KeyFilters.init -> void
+QueryShape.QueryInfo.Operators.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.Operators.init -> void
 QueryShape.QueryInfo.QueryInfo() -> void
 QueryShape.QueryInfo.ResultType.get -> string?
 QueryShape.QueryInfo.ResultType.init -> void

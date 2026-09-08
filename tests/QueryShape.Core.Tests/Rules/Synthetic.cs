@@ -55,7 +55,11 @@ internal static class Synthetic
         bool tracking = true,
         IReadOnlyList<KeyFilter>? keyFilters = null,
         IReadOnlyList<ClientEvaluatedCall>? clientCalls = null,
-        IReadOnlyList<string>? collectionIncludes = null)
+        IReadOnlyList<string>? collectionIncludes = null,
+        bool hasOrdering = false,
+        bool hasProjection = false,
+        bool hasGrouping = false,
+        IReadOnlyList<string>? operators = null)
         => new()
         {
             Expression = expression,
@@ -69,6 +73,10 @@ internal static class Synthetic
             IsTracking = tracking,
             HasFilter = hasFilter,
             HasLimit = hasLimit,
+            HasOrdering = hasOrdering,
+            HasProjection = hasProjection,
+            HasGrouping = hasGrouping,
+            Operators = operators ?? [],
             KeyFilters = keyFilters ?? [],
             ClientEvaluatedCalls = clientCalls ?? [],
             CollectionIncludes = collectionIncludes ?? [],

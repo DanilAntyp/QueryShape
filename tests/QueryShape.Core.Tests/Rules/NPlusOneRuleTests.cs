@@ -6,7 +6,7 @@ public class NPlusOneRuleTests
 {
     private static readonly QueryInfo s_orders = Synthetic.Query(
         "DbSet<Order>()\n    .Where(o => o.CustomerId == @__id_0)", "Order", hasFilter: true,
-        keyFilters: [new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer")]);
+        keyFilters: [new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer", IsSolePredicate: true)]);
 
     private static readonly QueryInfo s_customers = Synthetic.Query("DbSet<Customer>()", "Customer");
 
@@ -184,7 +184,7 @@ public class NPlusOneRuleTests
         try
         {
             var byKey = Synthetic.Query("DbSet<Customer>()\n    .Single(c => c.Id == @__order_CustomerId_0)", "Customer", hasFilter: true, hasLimit: true,
-                keyFilters: [new KeyFilter("Customer", "Id", true, "Order", "Customer", "Orders")]);
+                keyFilters: [new KeyFilter("Customer", "Id", true, "Order", "Customer", "Orders", IsSolePredicate: true)]);
             var ordersQuery = Synthetic.Query("DbSet<Order>()\n    .Take(@__p_0)", "Order", hasLimit: true);
             using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
             scope.Add("SELECT * FROM Orders LIMIT @p", query: ordersQuery, callSite: new CallSite(file, 1, "X.M"));
@@ -260,6 +260,147 @@ public class NPlusOneRuleTests
                 .And.StartWith("--- a/");
             fix.IsPartial.Should().BeTrue("the loop body sits on the foreach line, which is not a shape we rewrite");
             fix.ManualStep.Should().Contain("replace the Order query with a read of c.Orders");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+    [Fact]
+    public void Loop_query_with_a_second_condition_is_not_rewritten_to_the_navigation()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file,
+        [
+            "var customers = await _db.Customers.ToListAsync();",
+            "foreach (var c in customers)",
+            "{",
+            "    var open = await _db.Orders.Where(o => o.CustomerId == c.Id && o.Total > 100).ToListAsync();",
+            "}",
+        ]);
+        try
+        {
+            var filtered = Synthetic.Query("DbSet<Order>()\n    .Where(o => o.CustomerId == @__id_0 && o.Total > 100)", "Order", hasFilter: true,
+                keyFilters: [new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer", IsSolePredicate: false)], operators: ["Where"]);
+            using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+            scope.Add("SELECT * FROM Customers", query: s_customers, callSite: new CallSite(file, 1, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p AND Total > 100", parameterHash: "a", query: filtered, callSite: new CallSite(file, 4, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p AND Total > 100", parameterHash: "b", query: filtered, callSite: new CallSite(file, 4, "X.M"));
+
+            var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+            fix.IsPartial.Should().BeTrue("c.Orders would also contain the orders the loop query filtered out");
+            fix.UnifiedDiff.Should().Contain("+var customers = await _db.Customers.Include(c => c.Orders).ToListAsync();").And.NotContain("+    var open");
+            fix.ManualStep.Should().Contain("does more than filter by CustomerId").And.Contain("filtered Include");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact]
+    public void Loop_query_with_ordering_or_paging_is_not_rewritten()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file,
+        [
+            "var customers = await _db.Customers.ToListAsync();",
+            "foreach (var c in customers)",
+            "{",
+            "    var latest = await _db.Orders.Where(o => o.CustomerId == c.Id).OrderByDescending(o => o.PlacedAt).Take(3).ToListAsync();",
+            "}",
+        ]);
+        try
+        {
+            // The expression tree says OrderByDescending/Take are there: the rewrite is refused before the source is even parsed.
+            var paged = Synthetic.Query("DbSet<Order>()\n    .Where(o => o.CustomerId == @__id_0)\n    .OrderByDescending(o => o.PlacedAt)\n    .Take(3)", "Order",
+                hasFilter: true, hasLimit: true, hasOrdering: true, operators: ["Where", "OrderByDescending", "Take"],
+                keyFilters: [new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer", IsSolePredicate: true)]);
+            using (var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2))
+            {
+                scope.Add("SELECT * FROM Customers", query: s_customers, callSite: new CallSite(file, 1, "X.M"));
+                scope.Add("SELECT * FROM Orders WHERE CustomerId = @p ORDER BY PlacedAt DESC LIMIT 3", parameterHash: "a", query: paged, callSite: new CallSite(file, 4, "X.M"));
+                scope.Add("SELECT * FROM Orders WHERE CustomerId = @p ORDER BY PlacedAt DESC LIMIT 3", parameterHash: "b", query: paged, callSite: new CallSite(file, 4, "X.M"));
+
+                var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+                fix.IsPartial.Should().BeTrue();
+                fix.UnifiedDiff.Should().NotContain("+    var latest");
+                fix.ManualStep.Should().Contain("(OrderByDescending, Take)");
+            }
+
+            // Even when the expression facts look plain, the source line must be the exact shape: the parser refuses the OrderBy/Take chain.
+            using (var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2))
+            {
+                scope.Add("SELECT * FROM Customers", query: s_customers, callSite: new CallSite(file, 1, "X.M"));
+                scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "a", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+                scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "b", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+
+                var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+                fix.IsPartial.Should().BeTrue();
+                fix.UnifiedDiff.Should().NotContain("+    var latest");
+            }
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact]
+    public void Include_is_inserted_before_the_statement_level_terminal_not_one_inside_a_lambda()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file,
+        [
+            "var customers = await _db.Customers.Where(c => c.Orders.Any()).ToListAsync();",
+            "foreach (var c in customers)",
+            "{",
+            "    var orders = await _db.Orders.Where(o => o.CustomerId == c.Id).ToListAsync();",
+            "}",
+        ]);
+        try
+        {
+            using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+            scope.Add("SELECT * FROM Customers WHERE EXISTS (...)", query: Synthetic.Query("DbSet<Customer>()\n    .Where(c => c.Orders.Any())", "Customer", hasFilter: true, operators: ["Where"]), callSite: new CallSite(file, 1, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "a", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "b", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+
+            var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+            fix.IsPartial.Should().BeFalse();
+            fix.UnifiedDiff.Should().Contain("+var customers = await _db.Customers.Where(c => c.Orders.Any()).Include(c => c.Orders).ToListAsync();")
+                .And.Contain("+    var orders = c.Orders;");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact]
+    public void Projected_parent_query_gets_a_projection_fix_instead_of_an_include_patch()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file,
+        [
+            "var customers = await _db.Customers.Select(c => new { c.Id, c.Name }).ToListAsync();",
+            "foreach (var c in customers)",
+            "{",
+            "    var orders = await _db.Orders.Where(o => o.CustomerId == c.Id).ToListAsync();",
+            "}",
+        ]);
+        try
+        {
+            var projected = Synthetic.Query("DbSet<Customer>()\n    .Select(c => new { c.Id, c.Name })", "Customer", hasProjection: true, operators: ["Select"]);
+            using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+            scope.Add("SELECT Id, Name FROM Customers", query: projected, callSite: new CallSite(file, 1, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "a", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+            scope.Add("SELECT * FROM Orders WHERE CustomerId = @p", parameterHash: "b", query: s_orders, callSite: new CallSite(file, 4, "X.M"));
+
+            var fix = new NPlusOneRule().Analyze(scope).Single().SuggestedFix!;
+            fix.Summary.Should().StartWith("Add Orders to the Select projection of the Customer query");
+            fix.UnifiedDiff.Should().BeNull("an Include after Select is ignored by EF Core and one before ToList would not compile");
+            fix.IsPartial.Should().BeFalse();
+            fix.ManualStep.Should().Contain("Project c.Orders");
         }
         finally
         {

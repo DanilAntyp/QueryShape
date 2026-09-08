@@ -96,6 +96,13 @@ public sealed class NPlusOneRule : IRule
             "Because this is raw SQL, QueryShape cannot see the LINQ that produced it; the fix is to fetch all the items with a single statement.";
     }
 
+    /// <summary>Operators a loop query may contain and still be replaced by a navigation read: the key filter, tracking hints, tags, and a single-row or aggregate terminal.</summary>
+    private static readonly HashSet<string> s_loopNeutralOperators = new(StringComparer.Ordinal)
+    {
+        "Where", "AsNoTracking", "AsNoTrackingWithIdentityResolution", "AsTracking", "TagWith", "TagWithCallSite",
+        "First", "FirstOrDefault", "Single", "SingleOrDefault", "Count", "LongCount", "Any",
+    };
+
     private static Fix BuildFix(QueryShapeScope scope, CapturedCommand repeated, IReadOnlyList<CapturedCommand> all, int count)
     {
         var docs = scope.Options.DocsUrlFor(RuleId);
@@ -120,11 +127,33 @@ public sealed class NPlusOneRule : IRule
                 var p = RuleHelpers.LambdaName(kf.RelatedEntityType!);
                 var include = $"Include({p} => {p}.{kf.NavigationOnRelated})";
                 var where = parent?.CallSite is { } cs ? $" at {cs}" : parent is not null ? $" (query #{parent.Sequence})" : string.Empty;
-                var nav = RuleHelpers.LambdaName(kf.RelatedEntityType!) + "." + kf.NavigationOnRelated;
-                var summary = $"Add .{include} to the {kf.RelatedEntityType} query{where}, then read {nav} in the loop instead of querying";
+                var nav = p + "." + kf.NavigationOnRelated;
 
+                // The parent projects with Select: EF Core ignores an Include after a projection (and one inserted before ToList would not compile), so the navigation has to join the projection.
+                if (parent?.Query?.HasProjection == true)
+                {
+                    return new Fix(
+                        $"Add {kf.NavigationOnRelated} to the Select projection of the {kf.RelatedEntityType} query{where}, then read it in the loop instead of querying",
+                        FixKind.CodeChange,
+                        parent.Query.Expression,
+                        null,
+                        null,
+                        $"The {kf.RelatedEntityType} query projects with Select, so an Include on it does nothing. Projecting {p}.{kf.NavigationOnRelated} (or the columns you need from it) " +
+                        $"loads the {root} rows in the same statement, and the {count} per-item queries disappear once the loop reads the projected value.",
+                        docs)
+                    {
+                        ManualStep = $"Project {p}.{kf.NavigationOnRelated} in the {kf.RelatedEntityType} query and replace the {root} query inside the loop with that projected value.",
+                    };
+                }
+
+                var summary = $"Add .{include} to the {kf.RelatedEntityType} query{where}, then read {nav} in the loop instead of querying";
                 string? before = parent?.Query?.Expression;
                 string? after = before is null ? null : RuleHelpers.InsertAfterRoot(before, include);
+
+                // Reading the navigation returns exactly what the loop query returned only when the key comparison is the whole query:
+                // no other condition, ordering, paging, projection or Include. Otherwise the rewrite would silently change behavior.
+                var extras = q.Operators.Where(o => !s_loopNeutralOperators.Contains(o)).Distinct(StringComparer.Ordinal).ToList();
+                var plainLoopQuery = kf.IsSolePredicate && extras.Count == 0 && !q.HasProjection && !q.HasOrdering && !q.HasGrouping && q.CollectionIncludes.Count == 0;
 
                 // Hunk 1: the Include on the parent query. Hunk 2: the loop reads the navigation instead of querying.
                 var edits = new List<SourcePatcher.LineEdit>();
@@ -135,7 +164,7 @@ public sealed class NPlusOneRule : IRule
 
                 string? parentVariable = null;
                 SourcePatcher.LineEdit? loopEdit = null;
-                if (edits.Count > 0 && repeated.CallSite is { FilePath: not null } loopSite)
+                if (plainLoopQuery && edits.Count > 0 && repeated.CallSite is { FilePath: not null } loopSite)
                 {
                     loopEdit = SourcePatcher.TryRewriteLoopQuery(loopSite, kf.PropertyName, kf.NavigationOnRelated!, navigationIsCollection: !kf.IsPrimaryKey, out parentVariable);
                     if (loopEdit is not null)
@@ -146,9 +175,15 @@ public sealed class NPlusOneRule : IRule
 
                 var diff = edits.Count > 0 ? SourcePatcher.BuildDiff(edits) : null;
                 var partial = diff is not null && loopEdit is null;
-                var manualStep = loopEdit is null
-                    ? $"Inside the loop, replace the {root} query with a read of {(parentVariable ?? RuleHelpers.LambdaName(kf.RelatedEntityType!))}.{kf.NavigationOnRelated} (the Include now fills it); the patch only adds the Include."
-                    : null;
+                var readOf = $"{parentVariable ?? p}.{kf.NavigationOnRelated}";
+                var manualStep = loopEdit is not null
+                    ? null
+                    : plainLoopQuery
+                        ? $"Inside the loop, replace the {root} query with a read of {readOf} (the Include now fills it); the patch only adds the Include."
+                        : $"Inside the loop, the {root} query does more than filter by {kf.PropertyName}" +
+                          (extras.Count > 0 ? $" ({string.Join(", ", extras)})" : " (another condition in the predicate)") +
+                          $", so a plain read of {readOf} would return different rows. Read {readOf} and apply the rest in memory, " +
+                          $"or use a filtered Include (.Include({p} => {p}.{kf.NavigationOnRelated}.Where(...))) and read the navigation. The patch only adds the Include.";
 
                 var rationale = kf.IsPrimaryKey
                     ? $"With .{include}, EF Core joins {kf.RelatedEntityType} to {root} in the same SQL statement (or a second statement with AsSplitQuery), " +
@@ -158,7 +193,6 @@ public sealed class NPlusOneRule : IRule
                       $"If you only need a few columns, project them with Select instead of Include.";
 
                 return new Fix(summary, FixKind.CodeChange, before, after, diff, rationale, docs) { IsPartial = partial, ManualStep = manualStep };
-
             }
 
             var pk = q.RootKeyProperties.FirstOrDefault() ?? "Id";

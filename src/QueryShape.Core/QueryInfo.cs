@@ -7,13 +7,18 @@ namespace QueryShape;
 /// <param name="RelatedEntityType">For a foreign key: the principal entity type. For a primary key: <c>null</c>.</param>
 /// <param name="NavigationOnRelated">Navigation from the principal back to this entity (e.g. <c>Customer.Orders</c>), if one exists.</param>
 /// <param name="NavigationToRelated">Navigation from this entity to the principal (e.g. <c>Order.Customer</c>), if one exists.</param>
+/// <param name="IsSolePredicate">
+/// <c>true</c> when this comparison is the whole predicate of the query: the only <c>Where</c>/<c>First(...)</c> lambda, and nothing else in it
+/// (no <c>&amp;&amp;</c>). Only then does reading the navigation return exactly what the query returned.
+/// </param>
 public sealed record KeyFilter(
     string EntityType,
     string PropertyName,
     bool IsPrimaryKey,
     string? RelatedEntityType,
     string? NavigationOnRelated,
-    string? NavigationToRelated);
+    string? NavigationToRelated,
+    bool IsSolePredicate = false);
 
 /// <summary>A method call in the expression tree that EF Core cannot translate and will run on the client.</summary>
 /// <param name="Method">Display name, e.g. <c>PriceFormatter.Format(decimal)</c>.</param>
@@ -59,6 +64,15 @@ public sealed class QueryInfo
 
     /// <summary><c>true</c> when the final operator is a projection (<c>Select</c>).</summary>
     public bool HasProjection { get; init; }
+
+    /// <summary><c>true</c> when an <c>OrderBy</c>/<c>ThenBy</c> is present.</summary>
+    public bool HasOrdering { get; init; }
+
+    /// <summary><c>true</c> when a <c>GroupBy</c> is present: the result rows are groups, not rows of the root table.</summary>
+    public bool HasGrouping { get; init; }
+
+    /// <summary>Top-level LINQ operators in source order (<c>Where</c>, <c>Include</c>, <c>OrderBy</c>, <c>First</c>...). Terminal materializers such as <c>ToListAsync</c> are not part of the expression.</summary>
+    public IReadOnlyList<string> Operators { get; init; } = [];
 
     /// <summary>Effective query splitting behavior (from <c>AsSplitQuery</c>/<c>AsSingleQuery</c> or the context default).</summary>
     public string SplittingBehavior { get; init; } = "SingleQuery";

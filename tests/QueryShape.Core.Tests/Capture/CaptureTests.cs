@@ -155,7 +155,7 @@ public class CaptureTests : IDisposable
         orderQueries.Select(c => c.ParameterHash).Distinct().Should().HaveCount(10, "each iteration has a different customer id");
         orderQueries.Should().OnlyContain(c => c.Query != null && c.Query.KeyFilters.Count == 1);
         var kf = orderQueries[0].Query!.KeyFilters[0];
-        kf.Should().Be(new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer"));
+        kf.Should().Be(new KeyFilter("Order", "CustomerId", false, "Customer", "Orders", "Customer", IsSolePredicate: true));
     }
 
     [Fact]

@@ -33,6 +33,8 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     private readonly List<KeyFilter> _keyFilters = [];
     private readonly List<ClientEvaluatedCall> _clientCalls = [];
     private readonly Stack<string> _operators = new();
+    private readonly List<string> _operatorSequence = [];
+    private readonly Stack<Expression> _lambdaBodies = new();
     private readonly HashSet<ParameterExpression> _entityLambdaParameters = [];
 
     private IEntityType? _root;
@@ -40,6 +42,9 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     private bool _hasFilter;
     private bool _hasLimit;
     private bool _hasProjection;
+    private bool _hasOrdering;
+    private bool _hasGrouping;
+    private int _predicateLambdas;
     private bool _isBulk;
     private bool _hasParameterCollectionContains;
     private bool? _trackingOverride;
@@ -91,6 +96,11 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
 
         var collectionIncludes = _includePaths.Distinct(StringComparer.Ordinal).ToArray();
 
+        // A key comparison is the sole predicate only when it is the whole lambda body and that lambda is the query's only predicate.
+        var keyFilters = _predicateLambdas > 1
+            ? _keyFilters.Select(k => k with { IsSolePredicate = false }).ToArray()
+            : _keyFilters.ToArray();
+
         return new QueryInfo
         {
             Expression = printed,
@@ -105,10 +115,13 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             HasFilter = _hasFilter,
             HasLimit = _hasLimit,
             HasProjection = _hasProjection,
+            HasOrdering = _hasOrdering,
+            HasGrouping = _hasGrouping,
+            Operators = _operatorSequence.ToArray(),
             SplittingBehavior = splitting,
             CollectionIncludes = collectionIncludes,
             Tags = _tags.ToArray(),
-            KeyFilters = _keyFilters.ToArray(),
+            KeyFilters = keyFilters,
             ClientEvaluatedCalls = _clientCalls.ToArray(),
             IsFromSql = _isFromSql,
             IsBulkOperation = _isBulk,
@@ -189,12 +202,14 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
         }
 
         _lambdaDepth++;
+        _lambdaBodies.Push(node.Body);
         try
         {
             return base.VisitLambda(node);
         }
         finally
         {
+            _lambdaBodies.Pop();
             _lambdaDepth--;
         }
     }
@@ -203,8 +218,9 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     {
         if (_lambdaDepth > 0 && node.NodeType == ExpressionType.Equal && _operators.Count > 0 && s_predicateOperators.Contains(CurrentOperator))
         {
-            TryRecordKeyFilter(node.Left, node.Right);
-            TryRecordKeyFilter(node.Right, node.Left);
+            var sole = _lambdaBodies.Count > 0 && ReferenceEquals(_lambdaBodies.Peek(), node);
+            TryRecordKeyFilter(node.Left, node.Right, sole);
+            TryRecordKeyFilter(node.Right, node.Left, sole);
         }
 
         return base.VisitBinary(node);
@@ -239,14 +255,25 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
 
         var name = node.Method.Name;
         var argCount = node.Arguments.Count;
+        _operatorSequence.Add(name);
 
         switch (name)
         {
             case "Where":
                 _hasFilter = true;
+                _predicateLambdas++;
                 break;
             case "Select":
                 _hasProjection = true;
+                break;
+            case "OrderBy":
+            case "OrderByDescending":
+            case "ThenBy":
+            case "ThenByDescending":
+                _hasOrdering = true;
+                break;
+            case "GroupBy":
+                _hasGrouping = true;
                 break;
             case "AsNoTracking":
             case "AsNoTrackingWithIdentityResolution":
@@ -292,6 +319,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
         if (s_predicateOperators.Contains(name) && argCount > 1 && name != "Where")
         {
             _hasFilter = true;
+            _predicateLambdas++;
         }
 
         if (s_bulkOperators.Contains(name))
@@ -417,7 +445,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
         }
     }
 
-    private void TryRecordKeyFilter(Expression memberSide, Expression valueSide)
+    private void TryRecordKeyFilter(Expression memberSide, Expression valueSide, bool solePredicate)
     {
         if (StripConvert(memberSide) is not MemberExpression { Expression: ParameterExpression param } member
             || !_entityLambdaParameters.Contains(param)
@@ -443,7 +471,8 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
                     IsPrimaryKey: false,
                     fk.PrincipalEntityType.ClrType.Name,
                     fk.PrincipalToDependent?.Name,
-                    fk.DependentToPrincipal?.Name));
+                    fk.DependentToPrincipal?.Name,
+                    solePredicate));
             }
         }
         else if (property.IsPrimaryKey())
@@ -451,7 +480,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             var referencing = entityType.GetReferencingForeignKeys().ToList();
             if (referencing.Count == 0)
             {
-                _keyFilters.Add(new KeyFilter(entityType.ClrType.Name, property.Name, IsPrimaryKey: true, null, null, null));
+                _keyFilters.Add(new KeyFilter(entityType.ClrType.Name, property.Name, IsPrimaryKey: true, null, null, null, solePredicate));
             }
 
             foreach (var fk in referencing)
@@ -462,7 +491,8 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
                     IsPrimaryKey: true,
                     fk.DeclaringEntityType.ClrType.Name,
                     fk.DependentToPrincipal?.Name,
-                    fk.PrincipalToDependent?.Name));
+                    fk.PrincipalToDependent?.Name,
+                    solePredicate));
             }
         }
     }
