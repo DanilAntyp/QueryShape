@@ -110,8 +110,8 @@ public class CaptureTests : IDisposable
         orders.Should().OnlyContain(c => c.CallSite != null && c.CallSite.Member == "CaptureTests.Sampled_call_sites_are_walked_first_then_every_nth_and_cached_in_between");
         scope.Commands[7].CallSiteOrigin.Should().Be(CallSiteOrigin.Sampled);
 
-        // Nothing is walked when both switches are off.
-        var off = new QueryShapeOptions();
+        // Nothing is walked when both switches are off (the test-process default turns CaptureCallSites on, so say so explicitly).
+        var off = new QueryShapeOptions { CaptureCallSites = false };
         using var quiet = QueryShapeScope.Begin(options: off);
         await using var ctx2 = _shop.CreateContext(off);
         await ctx2.Products.CountAsync();

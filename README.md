@@ -43,6 +43,8 @@ public async Task GetOrders_stays_within_budget() { ... }
 
 First run writes the snapshot and passes (in CI, `CI=true`, a missing snapshot fails). Later runs compare the **multiset of query fingerprints**, never timings or parameter values. Update with `QUERYSHAPE_UPDATE_SNAPSHOTS=1`. The provider is part of the file name, so a suite that runs on SQLite locally and SQL Server in CI keeps one snapshot per provider instead of failing on SQL dialect differences.
 
+Call sites (`at OrderService.cs:42`) and source patches come from stack walks and source reads. Both are on by default when a test framework (xUnit, NUnit, MSTest, TUnit) is loaded in the process and off otherwise; `QueryShapeOptions.CaptureCallSites` and `ReadSourceFiles` override that. With `WebApplicationFactory`, set `factory.Server.PreserveExecutionContext = true` so the test's scope encloses the request scope the middleware opens (TestServer drops `AsyncLocal` values otherwise). For `[Theory]` rows or a shared helper, pass `name:` (and `callerFilePath:`/`callerMemberName:`) to `MatchSnapshotAsync` so each case gets its own file.
+
 When someone introduces an N+1, the test fails like this:
 
 ```
@@ -149,7 +151,7 @@ curl -sD - -o /dev/null http://localhost:5000/bad/n-plus-one | grep X-QueryShape
 
 ## Safety and performance
 
-QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, never walks stack traces unless `CaptureCallSites` is on (tests turn it on; production leaves it off and can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
+QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, masks literals in raw SQL shapes, never walks stack traces or reads source files unless `CaptureCallSites`/`ReadSourceFiles` are on (on by default only when a test framework is loaded in the process; production can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
 
 Capture costs about 4 µs and 3 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
 

@@ -302,6 +302,8 @@ QueryShape.QueryShapeOptions.MaxCommandsPerScope.set -> void
 QueryShape.QueryShapeOptions.NPlusOneThreshold.get -> int
 QueryShape.QueryShapeOptions.NPlusOneThreshold.set -> void
 QueryShape.QueryShapeOptions.QueryShapeOptions() -> void
+QueryShape.QueryShapeOptions.ReadSourceFiles.get -> bool?
+QueryShape.QueryShapeOptions.ReadSourceFiles.set -> void
 QueryShape.QueryShapeOptions.Rules.get -> System.Collections.Generic.IList<QueryShape.IRule!>!
 QueryShape.QueryShapeOptions.UnboundedRowThreshold.get -> int
 QueryShape.QueryShapeOptions.UnboundedRowThreshold.set -> void

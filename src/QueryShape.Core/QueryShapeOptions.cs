@@ -33,8 +33,20 @@ public sealed class QueryShapeOptions
     /// <summary>Commands captured outside any scope are kept in a ring buffer of this size. Default 256.</summary>
     public int UnscopedBufferSize { get; set; } = 256;
 
-    /// <summary>Walk the stack on every command to find the user frame. Expensive: on for tests, off for production. Default off.</summary>
-    public bool CaptureCallSites { get; set; }
+    /// <summary>
+    /// Walk the stack on every command to find the user frame. Expensive, so the default depends on the process: on when a test framework
+    /// (xUnit, NUnit, MSTest, TUnit) is loaded, off otherwise. Production can use EF Core's <c>TagWithCallSite()</c> or <see cref="CallSiteSamplingInterval"/> instead.
+    /// </summary>
+    public bool CaptureCallSites { get; set; } = Internal.TestEnvironment.IsTestProcess;
+
+    /// <summary>
+    /// Let rules read source files to produce real unified diffs (and the CLI's LLM prompts). <c>null</c> (default) follows <see cref="CaptureCallSites"/>:
+    /// on in tests, off in production, where QueryShape must never touch the file system on the request path. Set <c>true</c>/<c>false</c> to decide explicitly.
+    /// </summary>
+    public bool? ReadSourceFiles { get; set; }
+
+    /// <summary>Effective value of <see cref="ReadSourceFiles"/>.</summary>
+    internal bool ShouldReadSourceFiles => ReadSourceFiles ?? CaptureCallSites;
 
     /// <summary>
     /// Production alternative to <see cref="CaptureCallSites"/>: walk the stack for the first execution of every query shape and then for one in every

@@ -313,6 +313,7 @@ This runs inside other people's production apps. Treat it that way.
 - [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI). Workflow written; needs the first push to GitHub to confirm.
 
 ### Decisions recorded outside ADRs
+- Test-mode defaults (2026-09-08): `CaptureCallSites` and `ReadSourceFiles` default to on when a test-framework assembly (xunit.core, xunit.v3.core, nunit.framework, MSTest, TUnit) is loaded in the process and off otherwise (`Internal/TestEnvironment`). Rules read source files only when `ReadSourceFiles` is on, which is how section 9 is enforced.
 - Scopes nest (2026-09-08): a command is recorded by the innermost scope and by every enclosing scope, numbered by the outermost one. A test scope around an in-process request therefore sees what the middleware's request scope saw (with `WebApplicationFactory`, set `factory.Server.PreserveExecutionContext = true`; TestServer drops the AsyncLocal scope otherwise).
 - `QueryShapeOptions.Enabled` is a master kill switch (default on) so production can turn capture off without redeploying.
 - `QueryShapeOptions.CallSiteSamplingInterval` (2026-09-08): per-shape sampled stack walks for production; cached call sites are marked `CallSiteOrigin.Cached` and never exported to telemetry.

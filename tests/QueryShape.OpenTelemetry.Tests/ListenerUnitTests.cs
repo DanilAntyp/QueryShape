@@ -56,7 +56,7 @@ public sealed class ListenerUnitTests : IDisposable
         ActivitySource.AddActivityListener(listener);
         using var source = new ActivitySource("test-sampling");
 
-        var options = new QueryShapeOptions { CallSiteSamplingInterval = 2 }.AddOpenTelemetry();
+        var options = new QueryShapeOptions { CaptureCallSites = false, CallSiteSamplingInterval = 2 }.AddOpenTelemetry();
         using var scope = QueryShapeScope.Begin(options: options);
         using var span = source.StartActivity("request");
         await using var ctx = _shop.CreateContext(options);

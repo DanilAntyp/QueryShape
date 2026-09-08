@@ -157,7 +157,7 @@ public sealed class NPlusOneRule : IRule
 
                 // Hunk 1: the Include on the parent query. Hunk 2: the loop reads the navigation instead of querying.
                 var edits = new List<SourcePatcher.LineEdit>();
-                if (parent?.CallSite is { FilePath: not null } parentSite && SourcePatcher.TryInsertBeforeTerminalOperatorEdit(parentSite, "." + include) is { } includeEdit)
+                if (scope.Options.ShouldReadSourceFiles && parent?.CallSite is { FilePath: not null } parentSite && SourcePatcher.TryInsertBeforeTerminalOperatorEdit(parentSite, "." + include) is { } includeEdit)
                 {
                     edits.Add(includeEdit);
                 }
