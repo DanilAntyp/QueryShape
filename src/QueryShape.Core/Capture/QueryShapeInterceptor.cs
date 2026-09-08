@@ -146,47 +146,38 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
             error);
 
     // ---- ISaveChangesInterceptor ----
+    // Nothing runs before the save on purpose: calling ChangeTracker.Entries() there would run DetectChanges a second time (EF Core runs its own
+    // right after this interceptor). The write set is observed through change-tracker events instead (see CommandCapturer).
 
     /// <inheritdoc />
-    public InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
+    public int SavedChanges(SaveChangesCompletedEventData eventData, int result)
     {
-        RecordSaveChanges(eventData.Context);
+        Completed(eventData.Context, result);
         return result;
     }
 
     /// <inheritdoc />
-    public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    public ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
     {
-        RecordSaveChanges(eventData.Context);
-        return new ValueTask<InterceptionResult<int>>(result);
+        Completed(eventData.Context, result);
+        return new ValueTask<int>(result);
     }
 
-    private void RecordSaveChanges(DbContext? context)
+    /// <inheritdoc />
+    public void SaveChangesFailed(DbContextErrorEventData eventData) => Completed(eventData.Context, 0);
+
+    /// <inheritdoc />
+    public Task SaveChangesFailedAsync(DbContextErrorEventData eventData, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var scope = QueryShapeScope.Current;
-            if (scope is null || context is null || !_capturer.OptionsFor(context).Enabled)
-            {
-                return;
-            }
+        Completed(eventData.Context, 0);
+        return Task.CompletedTask;
+    }
 
-            var types = new SortedSet<string>(StringComparer.Ordinal);
-            var count = 0;
-            foreach (var entry in context.ChangeTracker.Entries())
-            {
-                if (entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
-                {
-                    count++;
-                    types.Add(entry.Metadata.ClrType.FullName ?? entry.Metadata.Name);
-                }
-            }
-
-            scope.Record(new SaveChangesRecord(context.ContextId.InstanceId, types.ToArray(), count));
-        }
-        catch (Exception ex)
+    private void Completed(DbContext? context, int written)
+    {
+        if (context is not null)
         {
-            Log.Swallowed(_capturer.OptionsFor(context), "save changes", ex);
+            _capturer.SaveChangesCompleted(context, written);
         }
     }
 }

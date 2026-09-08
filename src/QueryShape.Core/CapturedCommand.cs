@@ -140,6 +140,6 @@ public enum CallSiteOrigin
 
 /// <summary>A <c>SaveChanges</c> call observed in a scope.</summary>
 /// <param name="ContextId">Instance id of the DbContext.</param>
-/// <param name="ModifiedEntityTypes">CLR names of entity types with Added/Modified/Deleted entries at the time of the call.</param>
-/// <param name="EntriesWritten">Number of entries EF Core reported as written.</param>
+/// <param name="ModifiedEntityTypes">CLR names of entity types that were added, modified or deleted since the previous SaveChanges on the context (observed through change-tracker events).</param>
+/// <param name="EntriesWritten">Number of entries EF Core reported as written (0 when the save failed).</param>
 public sealed record SaveChangesRecord(Guid ContextId, IReadOnlyList<string> ModifiedEntityTypes, int EntriesWritten);

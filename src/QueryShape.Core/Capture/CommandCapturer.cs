@@ -32,11 +32,33 @@ internal sealed class CommandCapturer
     /// <summary>Per-DbContext-instance state: options, provider name, and the reader currently being consumed (for tracking observation).</summary>
     private sealed class ContextState
     {
+        private readonly SortedSet<string> _dirtyTypes = new(StringComparer.Ordinal);
+
         public required QueryShapeOptions Options { get; init; }
 
         public string? ProviderName { get; set; }
 
         public CapturedCommand? ActiveReader { get; set; }
+
+        /// <summary>An entity of this type became Added/Modified/Deleted: it belongs to the write set of the next SaveChanges.</summary>
+        public void MarkDirty(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry)
+        {
+            var name = entry.Metadata.ClrType.FullName ?? entry.Metadata.Name;
+            lock (_dirtyTypes)
+            {
+                _dirtyTypes.Add(name);
+            }
+        }
+
+        public string[] TakeDirtyTypes()
+        {
+            lock (_dirtyTypes)
+            {
+                var result = _dirtyTypes.ToArray();
+                _dirtyTypes.Clear();
+                return result;
+            }
+        }
     }
 
     /// <summary>Options for a context: from its <see cref="QueryShapeOptionsExtension"/>, else <see cref="QueryShapeOptions.Default"/>.</summary>
@@ -70,17 +92,33 @@ internal sealed class CommandCapturer
             try
             {
                 // Entities that start being tracked while a reader is open are this command's results: tracking observed, not inferred (ADR-0002).
+                // Entities attached or transitioning as Added/Modified/Deleted are the write set of the next SaveChanges: observed through the
+                // change tracker's own events, so QueryShape never runs DetectChanges itself.
                 context.ChangeTracker.Tracked += (_, e) =>
                 {
-                    if (e.FromQuery && state.ActiveReader is { } active)
+                    if (e.FromQuery)
                     {
-                        active.TrackedEntities++;
+                        if (state.ActiveReader is { } active)
+                        {
+                            active.TrackedEntities++;
+                        }
+                    }
+                    else if (e.Entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                    {
+                        state.MarkDirty(e.Entry);
+                    }
+                };
+                context.ChangeTracker.StateChanged += (_, e) =>
+                {
+                    if (e.NewState is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                    {
+                        state.MarkDirty(e.Entry);
                     }
                 };
             }
             catch (Exception ex)
             {
-                Log.Swallowed(resolved, "tracked subscription", ex);
+                Log.Swallowed(resolved, "change tracker subscription", ex);
             }
         }
 
@@ -223,6 +261,27 @@ internal sealed class CommandCapturer
         {
             Log.Swallowed(options, "capture", ex);
             return null;
+        }
+    }
+
+    /// <summary>A SaveChanges finished (or failed): records the entity types it was writing, observed through change-tracker events since the previous one.</summary>
+    public void SaveChangesCompleted(DbContext context, int entriesWritten)
+    {
+        try
+        {
+            var state = StateFor(context);
+            var types = state.TakeDirtyTypes(); // always taken, so the next save starts clean even outside a scope
+            var scope = QueryShapeScope.Current;
+            if (scope is null || !state.Options.Enabled)
+            {
+                return;
+            }
+
+            scope.Record(new SaveChangesRecord(context.ContextId.InstanceId, types, entriesWritten));
+        }
+        catch (Exception ex)
+        {
+            Log.Swallowed(OptionsFor(context), "save changes", ex);
         }
     }
 
