@@ -66,7 +66,7 @@ public sealed class RowLimitingWithoutOrderByRule : IRule
                     FixKind.CodeChange,
                     q.Expression,
                     RuleHelpers.InsertAfterRoot(q.Expression, orderBy),
-                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeRowLimitingOperator(site, "." + orderBy) : null,
+                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeRowLimitingOperator(site, "." + orderBy, q) : null,
                     "An explicit, total order (a unique key or a sort plus the key as tie-breaker) makes paging stable and the picked row deterministic. " +
                     "Order by an indexed column so the database does not have to sort the whole table to find the page.",
                     scope.Options.DocsUrlFor(RuleId)));

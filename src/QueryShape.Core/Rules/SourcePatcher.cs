@@ -44,21 +44,58 @@ internal static partial class SourcePatcher
     /// found at the call-site line or within the next few lines. Only a terminal at the statement level counts: one inside a lambda
     /// (<c>Where(c =&gt; c.Orders.Any())</c>) is skipped. Returns the edit, or <c>null</c>.
     /// </summary>
-    public static LineEdit? TryInsertBeforeTerminalOperatorEdit(CallSite site, string insertion)
-        => TryInsertBeforeCall(site, insertion, s_terminals, static _ => true);
+    public static LineEdit? TryInsertBeforeTerminalOperatorEdit(CallSite site, string insertion, QueryInfo? query = null)
+        => TryInsertBeforeCall(site, insertion, s_terminals, line => LooksLikeEfQueryLine(line, query));
 
     /// <summary>Inserts <paramref name="insertion"/> before the first row-limiting operator (<c>Take</c>, <c>Skip</c>, <c>First...</c>, <c>Last...</c>) at or shortly after the call-site line.</summary>
-    public static string? TryInsertBeforeRowLimitingOperator(CallSite site, string insertion)
+    public static string? TryInsertBeforeRowLimitingOperator(CallSite site, string insertion, QueryInfo? query = null)
     {
-        var edit = TryInsertBeforeCall(site, insertion, s_rowLimiting, static line => !line.Contains(".OrderBy", StringComparison.Ordinal));
+        var edit = TryInsertBeforeCall(site, insertion, s_rowLimiting, line => !line.Contains(".OrderBy", StringComparison.Ordinal) && LooksLikeEfQueryLine(line, query));
         return edit is null ? null : BuildDiff([edit]);
     }
 
     /// <summary>Convenience: the single-edit diff for <see cref="TryInsertBeforeTerminalOperatorEdit"/>.</summary>
-    public static string? TryInsertBeforeTerminalOperator(CallSite site, string insertion)
+    public static string? TryInsertBeforeTerminalOperator(CallSite site, string insertion, QueryInfo? query = null)
     {
-        var edit = TryInsertBeforeTerminalOperatorEdit(site, insertion);
+        var edit = TryInsertBeforeTerminalOperatorEdit(site, insertion, query);
         return edit is null ? null : BuildDiff([edit]);
+    }
+
+    /// <summary>
+    /// Whether an operator inserted on this line lands on an EF Core query. The call site of a query is often a repository or specification
+    /// call (<c>_repository.FirstOrDefaultAsync(spec, ct)</c>): the query exists, but this line has no IQueryable to put <c>.AsNoTracking()</c> or
+    /// <c>.Include(...)</c> on, and the patch would not compile. The line qualifies when it uses one of the query's own LINQ operators, or
+    /// <c>Set&lt;T&gt;()</c>, or a member named after the root entity's table or DbSet.
+    /// </summary>
+    internal static bool LooksLikeEfQueryLine(string line, QueryInfo? query)
+    {
+        if (query is null)
+        {
+            return true; // nothing known about the query: keep the old behavior
+        }
+
+        foreach (var op in query.Operators)
+        {
+            if (line.Contains("." + op + "(", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        if (line.Contains("Set<", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        foreach (var name in new[] { query.RootTableName, query.RootEntityShortName is { } e ? e + "s" : null, query.RootEntityShortName })
+        {
+            if (name is not null && line.Contains("." + name + ".", StringComparison.Ordinal))
+            {
+                return true; // db.Contributors.FirstOrDefaultAsync(...): a DbSet member, then the terminal
+            }
+        }
+
+        return false;
     }
 
     private static LineEdit? TryInsertBeforeCall(CallSite site, string insertion, HashSet<string> names, Func<string, bool> lineFilter)

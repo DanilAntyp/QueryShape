@@ -25,6 +25,26 @@ public class SourcePatcherTests
     public void Top_level_call_is_not_found_when_the_line_is_not_self_contained(string line)
         => SourcePatcher.FindTopLevelCall(line, s_terminals).Should().Be(-1);
 
+    [Theory]
+    [InlineData("var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);", false)]   // Ardalis.Specification: no IQueryable on this line
+    [InlineData("var entity = await db.Contributors.FirstOrDefaultAsync(c => c.Id == id);", true)]          // DbSet member
+    [InlineData("var entity = await db.Set<Contributor>().FirstOrDefaultAsync(c => c.Id == id);", true)]
+    [InlineData("var list = await query.Where(c => c.Active).ToListAsync();", true)]                          // one of the query's own operators
+    [InlineData("var list = await service.LoadAsync(id);", false)]
+    public void Only_lines_that_hold_an_ef_query_get_operator_patches(string line, bool patchable)
+    {
+        var query = new QueryInfo
+        {
+            Expression = "DbSet<Contributor>()\n    .Where(c => c.Id == @__id_0)\n    .FirstOrDefault()",
+            ExpressionHash = "x",
+            RootEntityShortName = "Contributor",
+            RootTableName = "Contributors",
+            Operators = ["Where", "FirstOrDefault"],
+        };
+        SourcePatcher.LooksLikeEfQueryLine(line, query).Should().Be(patchable);
+        SourcePatcher.LooksLikeEfQueryLine(line, null).Should().BeTrue("without query facts the old behavior stands");
+    }
+
     [Fact]
     public void Chain_parser_splits_calls_and_rejects_non_chains()
     {

@@ -73,7 +73,7 @@ public sealed class MissingSplitQueryRule : IRule
                     FixKind.CodeChange,
                     q.Expression,
                     RuleHelpers.InsertAfterRoot(q.Expression, "AsSplitQuery()"),
-                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()") : null,
+                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()", q) : null,
                     "Split queries load each collection with its own statement keyed by the root ids, so rows are transferred once. The price is one extra round trip per collection " +
                     "and no snapshot consistency across the statements (wrap in a transaction if that matters). Setting the default on the DbContext makes every multi-include query split.",
                     scope.Options.DocsUrlFor(RuleId)));
