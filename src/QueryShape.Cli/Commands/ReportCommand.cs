@@ -14,10 +14,13 @@ internal sealed class ReportCommand
     public bool Json { get; init; }
 
     public bool Markdown { get; init; }
+    public string? Acceptances { get; init; }
+    public string FailOn { get; init; } = "error";
 
     public async Task<int> ExecuteAsync(TextWriter out_, TextWriter err, CancellationToken ct)
     {
         RunMetrics metrics;
+        var runFailed = false;
         if (ReportDirectory is not null)
         {
             metrics = RunMetrics.Load(ReportDirectory);
@@ -27,32 +30,51 @@ internal sealed class ReportCommand
             var dir = Path.Combine(Path.GetTempPath(), "queryshape-report", Guid.NewGuid().ToString("N"));
             var (m, process) = await TestRun.RunAsync(Directory.GetCurrentDirectory(), Project, TestFilter, dir, noBuild: false, null, Json || Markdown ? err : out_, ct);
             metrics = m;
-            if (metrics.Scopes == 0)
+            if (!process.Success)
             {
-                err.WriteLine("report: no QueryShape scope reports were produced (exit code " + process.ExitCode + ").");
-                return 2;
+                runFailed = true;
+                err.WriteLine(process.StdOut);
+                err.WriteLine(process.StdErr);
+                err.WriteLine("report: dotnet test failed (exit code " + process.ExitCode + "); any scope reports below are partial results.");
             }
         }
 
+        if (metrics.Scopes == 0)
+        {
+            err.WriteLine("report: no QueryShape scope reports were produced. Check the project, test filter, and QueryShape instrumentation.");
+            return 2;
+        }
+
+        try
+        {
+            metrics = FindingAcceptancePolicy.Apply(metrics, Acceptances is null ? null : FindingAcceptancePolicy.Load(Acceptances), DateOnly.FromDateTime(DateTime.UtcNow));
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        { err.WriteLine("report: " + ex.Message); return 2; }
+        var threshold = FailOn switch { "info" => 0, "warning" => 1, "error" => 2, _ => -1 };
+        if (threshold < 0) { err.WriteLine("report: --fail-on must be info, warning or error."); return 2; }
+        var exitCode = runFailed ? 2 : metrics.Diagnostics.Any(d => (d.Severity == "Error" ? 2 : d.Severity == "Warning" ? 1 : 0) >= threshold) ? 1 : 0;
         if (Json)
         {
             out_.WriteLine("[" + string.Join(",\n", metrics.Reports.Select(r => r.ToJson())) + "]");
-            return metrics.Diagnostics.Any(d => d.Severity == "Error") ? 1 : 0;
+            return exitCode;
         }
 
         if (Markdown)
         {
             out_.Write(RenderMarkdown(metrics));
-            return metrics.Diagnostics.Any(d => d.Severity == "Error") ? 1 : 0;
+            return exitCode;
         }
 
         out_.WriteLine();
         foreach (var report in metrics.Reports)
         {
-            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries, {report.CommandDurationMs.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} ms in the database, {report.Diagnostics.Count} diagnostics");
+            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries, {report.CommandDurationMs.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} ms command execution, {report.Diagnostics.Count} diagnostics");
             foreach (var d in report.Diagnostics.OrderByDescending(d => d.Severity == "Error" ? 2 : d.Severity == "Warning" ? 1 : 0).ThenBy(d => d.RuleId, StringComparer.Ordinal))
             {
                 out_.WriteLine($"  {d.RuleId} {d.Severity.ToUpperInvariant()}  {d.Title}");
+                out_.WriteLine($"    {d.Basis}; {d.Disposition}; finding {d.FindingId}");
+                if (d.AcceptanceReason is not null) out_.WriteLine($"    accepted until {d.AcceptanceExpiresOn}: {d.AcceptanceReason}");
                 if (d.FixSummary is not null)
                 {
                     out_.WriteLine($"    fix  {d.FixSummary}");
@@ -71,7 +93,8 @@ internal sealed class ReportCommand
 
         var errors = metrics.Diagnostics.Count(d => d.Severity == "Error");
         out_.WriteLine($"{metrics.Scopes} scope(s), {metrics.Queries} queries, {metrics.Diagnostics.Count} diagnostics ({errors} errors)");
-        return errors > 0 ? 1 : 0;
+        out_.WriteLine("Findings describe observed patterns or heuristic risks. Returned rows are not server rows scanned; command time is not endpoint latency.");
+        return exitCode;
     }
 
     /// <summary>Markdown for step summaries and PR comments: one row per scope, then every diagnosis with its fix.</summary>
@@ -110,6 +133,8 @@ internal sealed class ReportCommand
                 {
                     sb.Append("  - fix: ").Append(Escape(d.FixSummary)).Append(d.FixIsPartial ? " _(partial; manual step: " + Escape(d.ManualStep ?? string.Empty) + ")_" : string.Empty).Append('\n');
                 }
+                sb.Append("  - ").Append(d.Basis).Append("; ").Append(d.Disposition).Append("; finding `").Append(d.FindingId).Append("`\n");
+                if (d.AcceptanceReason is not null) sb.Append("  - accepted until ").Append(d.AcceptanceExpiresOn).Append(": ").Append(Escape(d.AcceptanceReason)).Append('\n');
             }
 
             sb.Append("\n</details>\n");

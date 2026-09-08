@@ -277,13 +277,17 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
 
         var name = node.Method.Name;
         var argCount = node.Arguments.Count;
+        var noOpPredicate = s_predicateOperators.Contains(name) && argCount > 1 && IsAlwaysTruePredicate(node.Arguments[1]);
         _operatorSequence.Add(name);
 
         switch (name)
         {
             case "Where":
-                _hasFilter = true;
-                _predicateLambdas++;
+                if (!noOpPredicate)
+                {
+                    _hasFilter = true;
+                    _predicateLambdas++;
+                }
                 break;
             case "Select":
                 _hasProjection = true;
@@ -338,7 +342,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             _hasLimit = true;
         }
 
-        if (s_predicateOperators.Contains(name) && argCount > 1 && name != "Where")
+        if (s_predicateOperators.Contains(name) && argCount > 1 && name != "Where" && !noOpPredicate)
         {
             _hasFilter = true;
             _predicateLambdas++;
@@ -354,6 +358,11 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
         {
             for (var i = 1; i < node.Arguments.Count; i++)
             {
+                if (i == 1 && noOpPredicate)
+                {
+                    continue; // EF removes this predicate, including any parameters in its unreachable branches.
+                }
+
                 Visit(node.Arguments[i]);
             }
         }
@@ -366,6 +375,26 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     }
 
     private string CurrentOperator => _operators.Count > 0 ? _operators.Peek() : string.Empty;
+
+    private static bool IsAlwaysTruePredicate(Expression expression)
+    {
+        if (expression is UnaryExpression { NodeType: ExpressionType.Quote } quote)
+        {
+            expression = quote.Operand;
+        }
+
+        return expression is LambdaExpression lambda && ConstantBoolean(lambda.Body) == true;
+    }
+
+    // Inspect constants only; never compile/evaluate user code while capturing a query.
+    private static bool? ConstantBoolean(Expression expression) => expression switch
+    {
+        ConstantExpression { Value: bool value } => value,
+        UnaryExpression { NodeType: ExpressionType.Not } not => !ConstantBoolean(not.Operand),
+        BinaryExpression { NodeType: ExpressionType.AndAlso } and => ConstantBoolean(and.Left) & ConstantBoolean(and.Right),
+        BinaryExpression { NodeType: ExpressionType.OrElse } or => ConstantBoolean(or.Left) | ConstantBoolean(or.Right),
+        _ => null,
+    };
 
     private void RecordInclude(MethodCallExpression node, string? parentPath)
     {

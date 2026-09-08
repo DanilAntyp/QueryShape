@@ -88,6 +88,7 @@ public class FixCommandTests
 
 /// <summary>The full loop with a fake model: the model's diff is applied in a worktree and measured; garbage is rejected before anything runs.</summary>
 [Trait("Category", "Slow")]
+[Collection("Isolated verify repository")]
 public class FixEndToEndTests
 {
     private const string GoodPatch =
@@ -120,8 +121,9 @@ public class FixEndToEndTests
         {
             var code = await new FixCommand
             {
+                Policy = new VerificationPolicy { AllowedNewWarningRules = ["QS004"] },
                 Project = "tests/QueryShape.SampleApp.Tests",
-                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix",
+                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_behavior_is_preserved",
                 RuleFilter = "QS001",
                 UseLlm = true,
                 ShowPrompt = true,
@@ -142,7 +144,7 @@ public class FixEndToEndTests
     public async Task A_correct_model_patch_is_proved_by_verify()
     {
         var (code, text, err) = await RunAsync("Sure, here is the fix:\n```diff\n" + GoodPatch + "```\n");
-        text.Should().Contain("---- prompt sent to fake-model (user) ----").And.Contain("\"ruleId\": \"QS001\"").And.Contain("## Source: tests/QueryShape.SampleApp/BadEndpoints.cs");
+        text.Should().Contain("---- prompt sent to fake-model (user) ----", err).And.Contain("\"ruleId\": \"QS001\"").And.Contain("## Source: tests/QueryShape.SampleApp/BadEndpoints.cs");
         text.Should().Contain("==== LLM-proposed patch (fake-model) — generated, not yet verified");
         text.Should().Contain("Fix: LLM patch for QS001 (fake-model): Add .Include(c => c.Orders)");
         System.Text.RegularExpressions.Regex.Replace(text, " +", " ").Should().Contain("\nqueries 41 1 -40\n");

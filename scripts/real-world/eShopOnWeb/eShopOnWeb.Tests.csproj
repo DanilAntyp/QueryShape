@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EShopRoot Condition="'$(EShopRoot)' == ''">/private/tmp/queryshape-eshoponweb</EShopRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../../src/QueryShape.Core/QueryShape.Core.csproj" />
+    <ProjectReference Include="../../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
+    <ProjectReference Include="$(EShopRoot)/src/Infrastructure/Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <Compile Include="$(EShopRoot)/src/Web/Services/CatalogViewModelService.cs" Link="Upstream/CatalogViewModelService.cs" />
+    <Compile Include="$(EShopRoot)/src/Web/Services/BasketViewModelService.cs" Link="Upstream/BasketViewModelService.cs" />
+    <Compile Include="$(EShopRoot)/src/Web/Interfaces/ICatalogViewModelService.cs" Link="Upstream/ICatalogViewModelService.cs" />
+    <Compile Include="$(EShopRoot)/src/Web/Interfaces/IBasketViewModelService.cs" Link="Upstream/IBasketViewModelService.cs" />
+    <Compile Include="$(EShopRoot)/src/Web/ViewModels/Catalog*ViewModel.cs" Link="Upstream/%(Filename)%(Extension)" />
+    <Compile Include="$(EShopRoot)/src/Web/ViewModels/PaginationInfoViewModel.cs" Link="Upstream/PaginationInfoViewModel.cs" />
+    <Compile Include="$(EShopRoot)/src/Web/Pages/Basket/*ViewModel.cs" Link="Upstream/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

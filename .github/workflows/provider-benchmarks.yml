@@ -1,0 +1,21 @@
+name: Provider benchmarks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Measure PostgreSQL and SQL Server in isolated containers
+        run: dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*ProviderOverheadBenchmarks*' --exporters json markdown
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-benchmarks
+          path: BenchmarkDotNet.Artifacts

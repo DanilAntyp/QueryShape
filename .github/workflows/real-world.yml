@@ -1,0 +1,55 @@
+name: Real application validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  applications:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        application: [eShopOnWeb, CleanArchitecture]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Check out pinned eShopOnWeb
+        if: matrix.application == 'eShopOnWeb'
+        uses: actions/checkout@v4
+        with:
+          repository: dotnet-architecture/eShopOnWeb
+          ref: 4da8212117e87d808d4bbc7da6286fd2147ce606
+          path: artifacts/upstream/eShopOnWeb
+      - name: Check out pinned CleanArchitecture
+        if: matrix.application == 'CleanArchitecture'
+        uses: actions/checkout@v4
+        with:
+          repository: ardalis/CleanArchitecture
+          ref: fbdc0951879f5e8dca1bebc273d4b28cb2934469
+          path: artifacts/upstream/CleanArchitecture
+      - name: Exercise original services with synthetic SQLite fixtures
+        env:
+          APPLICATION: ${{ matrix.application }}
+          EShopRoot: ${{ github.workspace }}/artifacts/upstream/eShopOnWeb
+          CleanArchitectureRoot: ${{ github.workspace }}/artifacts/upstream/CleanArchitecture
+          QUERYSHAPE_REPORT_DIR: ${{ github.workspace }}/artifacts/reports
+        run: dotnet test "scripts/real-world/$APPLICATION/$APPLICATION.Tests.csproj" --logger trx --results-directory artifacts/test-results
+      - name: Upload reports and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-world-${{ matrix.application }}
+          path: |
+            artifacts/reports
+            artifacts/test-results

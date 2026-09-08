@@ -1,168 +1,223 @@
-# QueryShape
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DanilAntyp/QueryShape/main/docs/assets/queryshape-hero.svg" alt="QueryShape — Your tests pass. Do your queries scale? EF Core query contracts, behavior checks, and failure reduction." width="100%">
+</p>
 
-**Catches slow and dangerous Entity Framework Core queries, explains them in terms of the LINQ that produced them, and stops regressions from reaching production.**
+<p align="center">
+  <a href="https://github.com/DanilAntyp/QueryShape/actions/workflows/ci.yml"><img src="https://github.com/DanilAntyp/QueryShape/actions/workflows/ci.yml/badge.svg" alt="Build and tests"></a>
+  <img src="https://img.shields.io/badge/.NET-8%20%7C%2010-8B7CFF" alt=".NET 8 and 10">
+  <img src="https://img.shields.io/badge/EF%20Core-8%20%7C%2010-64DFC7" alt="EF Core 8 and 10">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-64DFC7" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/status-preview-F3C969" alt="Preview software">
+</p>
 
-- **Query snapshot testing** — a test fails in CI when a code change makes EF Core issue more or different queries. Jest snapshots, but for SQL.
-- **Diagnosis + fix** — every finding says *why* EF Core did it and comes with a concrete, applicable fix (`Add .Include(c => c.Orders) at OrderService.cs:42`), with a unified diff when the call site is known.
-- **OpenTelemetry enrichment** — findings land on the spans you already look at as `queryshape.*` tags and `queryshape.diagnosis` events, plus a `QueryShape` meter. No dependency on the OpenTelemetry SDK.
+<p align="center">
+  <strong>Catch EF Core query regressions before they reach production.</strong><br>
+  Run your real operations. Check how queries grow. Validate what an optimization preserves.
+</p>
 
-Targets .NET 8 / EF Core 8 and .NET 10 / EF Core 10. SQLite, SQL Server and PostgreSQL are tested. MIT.
+<p align="center">
+  <a href="#try-it-now"><strong>Try the demo</strong></a> ·
+  <a href="#tested-on-real-applications">Real application results</a> ·
+  <a href="#use-it-in-your-tests">Get started</a> ·
+  <a href="docs/scenarios.md">Scenario guide</a> ·
+  <a href="docs/ci.md">CI integration</a>
+</p>
 
-## Three-line setup
+## Why QueryShape?
 
-```csharp
-builder.Services.AddQueryShape();                                                        // 1
-builder.Services.AddDbContext<ShopDbContext>(o => o.UseSqlite(conn).UseQueryShape());    // 2
-app.UseQueryShape();                                                                     // 3  one analysis scope per request
-```
+A test can return the right JSON while making one database call per customer. A four-item page can fetch every brand in the database. A query rewrite can reduce commands and accidentally drop records.
 
-Outside ASP.NET Core, open a scope yourself:
+**QueryShape makes those risks testable.** It captures the SQL your EF Core operation actually executes, links findings to source locations when available, and gives you contracts you can review in a pull request.
 
-```csharp
-using var scope = QueryShapeScope.Begin();
-await service.GetOrdersAsync(customerId: 42);
-foreach (var d in scope.Analyze()) Console.WriteLine(DiagnosisFormatter.Format(d));
-```
-
-For OpenTelemetry add `builder.Services.AddQueryShapeOpenTelemetry();` (and `.AddSource("QueryShape")` / `.AddMeter("QueryShape")` to your providers if you want QueryShape's own activities or metrics exported).
-
-## Snapshot tests (`QueryShape.Testing`)
-
-```csharp
-[Fact]
-public async Task GetOrders_query_shape()
-{
-    using var scope = QueryShapeScope.Begin();
-    await _sut.GetOrdersAsync(customerId: 42);
-    await scope.MatchSnapshotAsync();     // __querysnapshots__/OrderServiceTests.GetOrders_query_shape.sqlite.json
-}
-
-[Fact, QueryBudget(MaxQueries = 2, MaxDurationMs = 200, FailOn = Severity.Error)]   // QueryShape.Testing.Xunit
-public async Task GetOrders_stays_within_budget() { ... }
-```
-
-First run writes the snapshot and passes (in CI, `CI=true`, a missing snapshot fails). Later runs compare the **multiset of query fingerprints**, never timings or parameter values. Update with `QUERYSHAPE_UPDATE_SNAPSHOTS=1`. The provider is part of the file name, so a suite that runs on SQLite locally and SQL Server in CI keeps one snapshot per provider instead of failing on SQL dialect differences.
-
-Call sites (`at OrderService.cs:42`) and source patches come from stack walks and source reads. Both are on by default when a test framework (xUnit, NUnit, MSTest, TUnit) is loaded in the process and off otherwise; `QueryShapeOptions.CaptureCallSites` and `ReadSourceFiles` override that. With `WebApplicationFactory`, set `factory.Server.PreserveExecutionContext = true` so the test's scope encloses the request scope the middleware opens (TestServer drops `AsyncLocal` values otherwise). For `[Theory]` rows or a shared helper, pass `name:` (and `callerFilePath:`/`callerMemberName:`) to `MatchSnapshotAsync` so each case gets its own file.
-
-When someone introduces an N+1, the test fails like this:
-
-```
-QueryShape snapshot mismatch: OrderServiceTests.GetOrders_query_shape
-  snapshot: tests/Shop.Tests/__querysnapshots__/OrderServiceTests.GetOrders_query_shape.sqlite.json
-
-Queries: 2 in snapshot, 12 now (+10)
-  + x10  a2d461845296  Linq  SELECT "t0"."Id", "t0"."OrderId", "t0"."ProductId", "t0"."Quantity" FROM "OrderLines" AS "t0" WHERE "t0"."ProductId" = @p0
-        at OrderService.cs:42 OrderService.GetOrdersAsync
-        linq: DbSet<OrderLine>() .Where(l => l.ProductId == @p_Id)
-
-New diagnostics (severity >= Warning):
-  QS001 ERROR  N+1 query: OrderLine by ProductId executed 10 times at OrderService.cs:42 OrderService.GetOrdersAsync
-    why  EF Core translates each LINQ query into exactly one SQL statement at the moment it is enumerated, and
-         it cannot see the loop around it. This query loads the OrderLine rows for one Product at a time
-         (filtering on OrderLine.ProductId); it ran 10 times in this scope with 10 different parameter values, ...
-    fix  Add .Include(p => p.Lines) to the Product query at OrderService.cs:40 OrderService.GetOrdersAsync
-         before: DbSet<Product>()
-         after:  DbSet<Product>()
-                     .Include(p => p.Lines)
-         patch:
-           --- a/src/Shop/OrderService.cs
-           +++ b/src/Shop/OrderService.cs
-           -        var products = await db.Products.ToListAsync();
-           +        var products = await db.Products.Include(p => p.Lines).ToListAsync();
-    data 10 queries, 1.2 ms, 30 rows, distinctParameterSets=10, threshold=5
-    docs https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS001.md
-
-If this change is intended, update the snapshot: QUERYSHAPE_UPDATE_SNAPSHOTS=1 dotnet test, or `dotnet queryshape snapshots update`.
-```
-
-## Prove the fix: `dotnet queryshape verify`
-
-The CLI runs the named test before and after a patch (applied in a clean git worktree, never your working copy), measures both with QueryShape, and prints the proof. Exit code 0 means improved with no new Error-level diagnosis.
-
-```
-dotnet queryshape verify --project tests/QueryShape.SampleApp.Tests \
-    --test BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix --patch n-plus-one-fix.diff
-```
-
-```
-Fix: n-plus-one-fix.diff
-
-                        before     after         Δ
-queries                     41         1       -40
-duration (ms)              1.4       0.9      -32%
-QS001 N+1 query              1         0         ✓
-QS004 Unbounded query        1         1         =
-QS005 Tracked read-on…       2         1        -1
-new diagnostics              -         0         ✓
-
-after = median of 3 runs (spread 0.2 ms)
-note: the duration delta is within run-to-run noise; judge by queries and diagnostics
-
-verdict: improved
-```
-
-`--patch-from-diagnosis` uses the patch QueryShape itself proposed in the baseline run; when that patch is only part of the fix (for example the loop still has to read the navigation), verify says so and refuses to print a misleading table. `--format json|markdown` gives CI something to post; see [docs/ci.md](docs/ci.md) for the GitHub Action that comments the report or the verify table on every pull request. Other commands: `queryshape report` (print every diagnosis of a test run), `queryshape snapshots update`, and `queryshape explain [--llm --show-prompt]`. The `--llm` path is off by default, needs `ANTHROPIC_API_KEY`, sends only the diagnosis JSON and the enclosing source method (printed verbatim with `--show-prompt`), and labels its output as generated; detection never depends on it.
-
-`dotnet queryshape fix --llm --test <name>` closes the loop: the model gets the diagnosis and the enclosing method, answers with a unified diff (or `CANNOT`), and that diff goes through the same worktree-and-measure flow as `verify`. The model is never trusted: a patch that does not apply, touches files outside the repository, or fails to improve the numbers is rejected, and the output is labeled as model-generated with the table as the proof.
-
-Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is set, every completed scope writes a JSON summary (shapes, counts, timings, diagnoses; never parameter values).
-
-## Packages
-
-| Package | What |
+| Developer question | What you can check |
 |---|---|
-| `QueryShape.Core` | capture, normalization, rules, diagnoses |
-| `QueryShape.Testing` | snapshot testing and `QueryBudget` (framework-agnostic) |
-| `QueryShape.Testing.Xunit` / `.Xunit.v3` / `.NUnit` / `.MSTest` | `[QueryBudget]` attributes for each framework (xUnit v2 and v3, NUnit, MSTest) |
-| `QueryShape.AspNetCore` | `app.UseQueryShape()` request scopes |
-| `QueryShape.OpenTelemetry` | span enrichment and metrics |
-| `QueryShape.Cli` | `dotnet queryshape` tool |
-| `QueryShape.Analyzers` | Roslyn analyzer for the mistakes the runtime cannot see (QSA001) |
+| Did this change add database calls? | Commit query snapshots; fail CI when query shapes or counts change. |
+| What happens with 1,000 customers? | Run the same scenario at different sizes and enforce command/returned-row budgets. |
+| Did my optimization change the result? | Compare explicit result and database-state observations in isolated fixtures. |
+| Does this patch actually help? | Repeat before/after tests in a Git worktree and check separate metric budgets. |
+| Why does this fail only on a big fixture? | Reduce a reproducible failure to smaller input and export a replay test. |
 
-## Rules
+**Runs locally. No hosted account. No API key needed for detection, contracts, or verification.** Works with xUnit, NUnit and MSTest; optional ASP.NET Core and OpenTelemetry integrations.
 
-| Id | Name | Severity | Status |
-|----|------|----------|--------|
-| [QS001](docs/rules/QS001.md) | N+1 query | Error | ✅ |
-| [QS002](docs/rules/QS002.md) | Cartesian explosion | Error | ✅ |
-| [QS003](docs/rules/QS003.md) | Client-side evaluation | Error | ✅ |
-| [QS004](docs/rules/QS004.md) | Unbounded result set | Warning | ✅ |
-| [QS005](docs/rules/QS005.md) | Tracking on read-only query | Info | ✅ |
-| [QS006](docs/rules/QS006.md) | Missing split query candidate | Warning | ✅ |
-| [QS007](docs/rules/QS007.md) | `Contains` on large collection | Warning | ✅ |
-| [QS008](docs/rules/QS008.md) | Duplicate identical query | Warning | ✅ |
-| [QS009](docs/rules/QS009.md) | Query in loop over navigation | Warning | ✅ |
-| [QS010](docs/rules/QS010.md) | Raw SQL with string concatenation | Error | ✅ |
-| [QS011](docs/rules/QS011.md) | Row limiting without OrderBy (from EF Core's own warning) | Warning | ✅ |
-| [QSA001](docs/rules/QSA001.md) | Where/First/OrderBy/Take… right after `ToList()` on a query (compile-time, `QueryShape.Analyzers`) | Warning | ✅ |
-| [QS_OVERFLOW](docs/rules/QS_OVERFLOW.md) | A scope hit `MaxCommandsPerScope` and stopped recording | Warning | ✅ |
+## Try it now
 
-Every rule doc explains what EF Core does and why, and shows the fix. Architecture decisions live in [docs/adr](docs/adr).
+You need **Git and the .NET 10 SDK**. The demo uses in-memory SQLite; there is no database server to configure. The first run restores dependencies from NuGet.
 
-## Sample app
-
-`tests/QueryShape.SampleApp` has one deliberately bad endpoint per rule (`/bad/n-plus-one`, `/bad/unbounded`, …) and a fixed twin under `/good/`. Run it and look at the `X-QueryShape` response header:
-
-```
-dotnet run --project tests/QueryShape.SampleApp -f net10.0 --urls http://localhost:5000
-curl -sD - -o /dev/null http://localhost:5000/bad/n-plus-one | grep X-QueryShape
-# X-QueryShape: 41 queries; QS001 Error, QS004 Warning, QS005 Info, QS005 Info
+```sh
+git clone https://github.com/DanilAntyp/QueryShape.git
+cd QueryShape
+dotnet run --project src/QueryShape.Cli -f net10.0 -- scale --project tests/QueryShape.Testing.Tests --test FullyQualifiedName~ScenarioExamples.Scale_customer_orders --sizes 10,100,1000
 ```
 
-The sample app targets both .NET 8 and .NET 10, so `dotnet run` needs `-f`.
+This deliberately inefficient fixture loads customers, then counts orders once per customer. The measured counts are:
 
-## Safety and performance
+```text
+Customers        SQL commands        Rows returned
+       10                  11                   20
+      100                 101                  200
+    1,000               1,001                2,000
 
-QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then [`QS_OVERFLOW`](docs/rules/QS_OVERFLOW.md) with the number of commands it dropped), never records parameter values unless `IncludeParameterValues` is switched on, masks literals in raw SQL shapes, never walks stack traces or reads source files unless `CaptureCallSites`/`ReadSourceFiles` are on (on by default only when a test framework is loaded in the process; production can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
-
-Capture costs about 3.5 µs and 1.6 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
-
-## Building
-
+Constant-command contract: FAIL
 ```
+
+**Exit code 1 is the expected result:** QueryShape caught the growth. The CLI prints repeated measurements and source evidence; the multi-target test project runs against both EF Core versions. This is an executable synthetic example, separate from the external application trials below.
+
+See the [complete fixture](tests/QueryShape.Testing.Tests/ScenarioTests.cs) and its batched version. To run the regression test that checks both:
+
+```sh
+dotnet test tests/QueryShape.Testing.Tests -f net10.0 --filter FullyQualifiedName~Scaling_detects_n_plus_one_and_confirms_the_batched_fix
+```
+
+Prefer HTTP? Run the [sample application](tests/QueryShape.SampleApp) and compare `/bad/n-plus-one` with `/good/n-plus-one`. Its response headers report **41 queries versus 1** for the seeded sample:
+
+```sh
+dotnet run --project tests/QueryShape.SampleApp -f net10.0 --urls http://localhost:5077
+# In a second terminal:
+curl -i http://localhost:5077/bad/n-plus-one
+curl -i http://localhost:5077/good/n-plus-one
+```
+
+## Tested on real applications
+
+Actual upstream service code. Pinned revisions. Reproducible harnesses. Synthetic datasets, with the adaptations and measurement limits documented.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DanilAntyp/QueryShape/main/docs/assets/real-world-results.svg" alt="eShopOnWeb catalog lookup trial: at sizes 10, 100, and 501, commands stayed at 4 while returned rows increased from 25 to 205 to 1,007." width="100%">
+</p>
+
+### Microsoft eShopOnWeb
+
+**15 harness tests passed**, exercising catalog, basket, checkout, order history, scaling, behavior comparison and reduction.
+
+| Actual operation | What QueryShape recorded | Why it matters |
+|---|---|---|
+| Catalog with growing brand/type lists | **4 queries at every size; 25 → 205 → 1,007 returned rows** | Query count alone misses the growing data transfer. |
+| Catalog pagination | **QS011:** `Skip`/`Take` without an explicit `OrderBy` | Flags a query shape that can produce unstable pages. |
+| Catalog with tracking disabled in the harness | Recorded result/state matched; tracking findings fell **3 → 0** | Checks the observed behavior of a candidate change. |
+| Large basket lookup | **QS007** reproduced with 501 product IDs | Reduced a 1,000-product fixture to **501 in 42 trials**. |
+
+Complete dropdowns may be intentional. The 501-ID boundary is a configured diagnostic threshold, not a measured performance cliff. The catalog cache and production latency were outside this trial.
+
+[Read the case study and measurements →](docs/validation/eshoponweb-scenarios.md) · [Reproduce the run →](scripts/real-world/eShopOnWeb/README.md)
+
+### Ardalis CleanArchitecture
+
+The original contributor-list service used ordered pagination and projection over raw SQL. With **0, 1, 10 and 100 contributors**, QueryShape recorded **2 commands** and **1, 2, 5 and 5 returned rows** respectively, with **no rule diagnoses** in the exercised paths.
+
+A deliberately incorrect candidate dropped contributors without phone numbers. QueryShape detected the result mismatch and reduced **12 contributors to one in 19 trials**. This was an introduced regression for validation, not a bug claim against the upstream project. **Both harness tests passed.**
+
+[Read the case study and machine-readable evidence →](docs/validation/cleanarchitecture.md) · [Reproduce the run →](scripts/real-world/CleanArchitecture/README.md)
+
+Both application trials used SQLite in memory. They establish results for those fixtures, not production speed or a repository-wide clean bill of health. [Full validation record and remaining gaps](docs/validation/README.md).
+
+## Use it in your tests
+
+This is a **source preview**. You can run the CLI from this checkout today; [installation instructions](docs/installation.md) cover building local packages and adding the library to your project without relying on a public NuGet release.
+
+Register capture on the context your integration test actually uses:
+
+```csharp
+using QueryShape;
+
+optionsBuilder.UseSqlite(connection).UseQueryShape();
+```
+
+Wrap one real operation after fixture setup and seeding:
+
+```csharp
+using QueryShape;
+using QueryShape.Testing;
+
+[Fact]
+public async Task GetOrders_query_contract()
+{
+    using var scope = QueryShapeScope.Begin("GetOrders");
+    var result = await service.GetOrdersAsync(customerId: 42);
+
+    Assert.NotEmpty(scope.Commands); // Confirm this context is instrumented.
+    scope.Observe("result", result); // Materialized result DTOs.
+    await scope.MatchSnapshotAsync();
+}
+```
+
+The first local run creates a snapshot. Review and commit it. Later runs compare query fingerprints and counts; timings and parameter values are excluded. Missing snapshots fail in CI. Update intentional changes with `QUERYSHAPE_UPDATE_SNAPSHOTS=1`.
+
+After installing the CLI:
+
+```sh
+dotnet queryshape doctor --project tests/Shop.Tests --test GetOrders_query_contract
+dotnet queryshape report --project tests/Shop.Tests --test GetOrders_query_contract --fail-on warning
+```
+
+`doctor` confirms tests, scopes, captured commands and completeness. `init --out QueryShapeSmokeTests.cs --framework xunit` generates a wrapper for you to connect to your fixture. For `WebApplicationFactory`, set `factory.Server.PreserveExecutionContext = true`.
+
+[First-run troubleshooting →](docs/getting-started.md)
+
+## Go beyond snapshots
+
+**Enforce growth budgets.** Prepare an isolated fixture for each input, then express the cost your operation should have:
+
+```csharp
+var report = await QueryScaling.RunAsync(scenario, [0, 10, 100, 1000],
+    new ScalingOptions
+    {
+        ConstantCommands = false,
+        MaxCommandsForSize = n => 1 + (n + 99) / 100,
+        MaxRowsForSize = n => 2L * n
+    });
+report.AssertSatisfied();
+```
+
+Named cases cover empty data, batch boundaries and skewed relationships. [Build a scenario →](docs/scenarios.md)
+
+**Validate a patch against explicit contracts.**
+
+```sh
+dotnet queryshape verify --project tests/Shop.Tests --test GetOrders_behavior --patch optimization.diff --max-commands 3 --max-rows 200
+```
+
+The CLI repeats baseline and candidate runs in an isolated worktree. It checks passing test identities, scope coverage, complete capture, recorded behavior, new finding identities and separate command/row/duration budgets. Explicit budgets allow deliberate tradeoffs such as split queries. Keep the selected functional test separate from snapshots that intentionally change with the patch.
+
+**Keep intentional findings visible.** Accept a specific finding with a reason, expiry and occurrence limit; new or increased findings still gate CI:
+
+```sh
+dotnet queryshape baseline --report-dir artifacts/queryshape --id <finding-id> --reason "Complete dropdown required by the UI" --expires 2026-12-31 --out queryshape-acceptances.json
+dotnet queryshape report --project tests/Shop.Tests --fail-on warning --acceptances queryshape-acceptances.json
+```
+
+[CI, exit codes and acceptance policy →](docs/ci.md)
+
+## What it detects and what it measures
+
+| Area | Rules / capabilities |
+|---|---|
+| Repeated work | N+1, duplicate queries, repeated navigation-query call sites |
+| Data growth | Unbounded results, Cartesian explosion, split-query candidates, large `Contains` inputs |
+| Query correctness risks | Pagination without ordering, client-side evaluation patterns, raw SQL concatenation risks |
+| Tracking | Tracked reads with no save observed in the measured scope |
+| Regression contracts | Query snapshots, command and returned-row budgets, explicit result/state comparison |
+
+[Browse every rule →](docs/rules)
+
+Findings distinguish observed patterns from heuristic risks. **Returned rows are not rows scanned. Command duration is not endpoint latency.** Behavior checks cover only the result/state projections you record. Pair QueryShape with your database's execution plans and production telemetry when investigating server cost.
+
+Capture is bounded and configurable; SQL parameter values are excluded by default. Call-site capture and source reads add overhead. Optional `explain --llm` / `fix --llm` workflows send selected source only when explicitly enabled. [Performance measurements and limits](docs/performance.md).
+
+## Build, contribute, explore
+
+```sh
 dotnet build QueryShape.slnx
-dotnet test QueryShape.slnx            # locally: .NET 10 SDK only, net8.0 tests roll forward
+dotnet test QueryShape.slnx --filter 'Category!=Slow'
+dotnet test tests/QueryShape.Cli.Tests --filter 'Category=Slow'
 ```
 
-CI runs every target on its real runtime (Linux and Windows). Provider tests (SQL Server, PostgreSQL) use Testcontainers and are skipped when Docker is unavailable.
+The solution requires the .NET 10 SDK. Libraries and CLI target .NET 8 / EF Core 8 and .NET 10 / EF Core 10. Docker enables SQL Server/PostgreSQL integration tests. CI is configured for Linux and Windows with both runtimes.
+
+The recorded local audit passed **459 repository tests and 17 external-harness tests**, with **18 repository tests skipped**. Native runtime/provider validation is tracked separately; see the [audit record](docs/validation/adoption-audit.md) and the live CI badge for current results.
+
+- [Contributing](CONTRIBUTING.md) — run checks, report findings, add a real application case.
+- [Architecture decisions](docs/adr) — why the capture and verification APIs work this way.
+- [Validation evidence](docs/validation) — inspect measurements, limitations and replay inputs.
+- [Open an issue](https://github.com/DanilAntyp/QueryShape/issues/new/choose) — bring a query, a reproduction, or a first-run problem.
+
+**Start with one important operation. Give its queries a regression test.**

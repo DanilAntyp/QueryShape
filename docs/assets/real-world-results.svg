@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="460" viewBox="0 0 1280 460" role="img" aria-labelledby="title desc">
+  <title id="title">Four queries. Forty times the returned data.</title>
+  <desc id="desc">eShopOnWeb catalog lookup lists, measured using synthetic SQLite fixtures. At 10, 100, and 501 brands and types each, commands stayed at four while rows returned were 25, 205, and 1007. Complete dropdowns may be intentional; this does not measure production latency.</desc>
+  <rect width="1280" height="460" rx="22" fill="#0d1423"/>
+  <rect x="1" y="1" width="1278" height="458" rx="22" fill="none" stroke="#28334e"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="48" y="48" fill="#64dfc7" font-size="13" font-weight="700" letter-spacing="2">REAL APPLICATION / ESHOPONWEB</text>
+    <text x="48" y="98" fill="#f1f5ff" font-size="35" font-weight="700" letter-spacing="-1">Four queries. 40× the returned data.</text>
+    <text x="48" y="130" fill="#a1b1cc" font-size="17">Catalog lookup lists grew while the product page stayed at four items.</text>
+    <rect x="48" y="164" width="354" height="218" rx="14" fill="#151f33"/>
+    <text x="72" y="199" fill="#a1b1cc" font-size="14">COMMANDS PER OPERATION</text>
+    <text x="72" y="271" fill="#64dfc7" font-size="60" font-weight="700">4 → 4 → 4</text>
+    <text x="72" y="319" fill="#d3ddef" font-size="18">Query count stays constant.</text>
+    <text x="72" y="350" fill="#91a3bf" font-size="15">Returned-row contract catches growth.</text>
+    <text x="448" y="189" fill="#a1b1cc" font-size="14">ROWS RETURNED PER OPERATION</text>
+    <g stroke="#253148"><path d="M532 218v149M832 218v149M1132 218v149"/></g>
+    <g fill="#aebbd1" font-size="14"><text x="448" y="244">N = 10</text><text x="448" y="295">N = 100</text><text x="448" y="346">N = 501</text></g>
+    <rect x="532" y="223" width="15" height="29" rx="4" fill="#8d80e8"/>
+    <rect x="532" y="274" width="123" height="29" rx="4" fill="#a398ff"/>
+    <rect x="532" y="325" width="604.2" height="29" rx="4" fill="#64dfc7"/>
+    <g fill="#eef3ff" font-size="18" font-weight="700"><text x="560" y="245">25</text><text x="668" y="296">205</text><text x="1149" y="347">1,007</text></g>
+    <g fill="#7e91af" font-size="12"><text x="532" y="382">0</text><text x="820" y="382">500</text><text x="1115" y="382">1,000 rows</text></g>
+    <text x="48" y="423" fill="#91a3bf" font-size="14">N brands + N types · synthetic SQLite fixtures · repeated measurements · cache and production latency excluded</text>
+  </g>
+</svg>

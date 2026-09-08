@@ -4,7 +4,7 @@ Measured with BenchmarkDotNet (`tests/QueryShape.Benchmarks`), Release, .NET 10.
 Re-run before every release:
 
 ```
-dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*' --join
+dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*CaptureOverheadBenchmarks*' '*NormalizationBenchmarks*' '*RequestBenchmarks*' --join
 ```
 
 ## 0.1.0-preview.1 (2026-09-08), p99 under concurrent load
@@ -21,9 +21,9 @@ reported, so JIT and cache warm-up do not favour whichever mode runs second. Sam
 | `/bad/n-plus-one` | on | 4,779 | 11,612 | 12,666 | 1.00 |
 
 Reading it: the 41-query request is unchanged at p99 (12.7 ms either way; 41 captures plus the eleven rules at scope end cost around 150 µs, hidden inside
-the database time), so the < 3 % p99 budget of CLAUDE.md section 9 holds for a request that does real database work. The one-query request is dominated by
+the database time), which met the target for this measured workload; it does not establish a general production overhead bound. The one-query request is dominated by
 run-to-run noise at p99 (about ±10 % between passes on a 0.6 ms request); its p50 difference, roughly 120 µs, is the fixed cost per request: one capture,
-all rules over a one-command scope, and the `X-QueryShape` header. Against a networked database that fixed cost is well under 3 % of any request.
+all rules over a one-command scope, and the `X-QueryShape` header. The effect against a networked database has not been established by this SQLite measurement.
 
 ## 0.1.0-preview.1 (2026-09-08), after the parameter-hash change
 
@@ -77,8 +77,7 @@ CLAUDE.md asks for **< 3 % p99 latency with call-site capture off**. The relativ
 | local PostgreSQL / SQL Server (~150 µs) | ≈ 4 µs | ~2.7 % |
 | networked database (≥ 500 µs) | ≈ 4 µs | < 1 % |
 
-Against any networked database the budget holds with room to spare; against an in-memory SQLite the budget cannot be met by design
-because the queries themselves cost only a few microseconds. Treat 4 µs/query as the number to watch.
+The networked-database percentages above are arithmetic illustrations using assumed round-trip times, not provider benchmark results. Real overhead depends on materialization, concurrency, row width, allocations and enabled features. The 3% figure is a target, not a guarantee.
 
 ### Call sites in production
 
@@ -98,3 +97,15 @@ The walk happens synchronously inside the interceptor on the request's own path,
 2. ~~Resolve provider name lazily.~~ Done (cached per context).
 3. Skip the counting reader when no rule needs row counts (all built-in rules currently do).
 4. Pool `CapturedParameter[]` for commands with few parameters.
+
+## Provider validation and interpretation
+
+`ProviderOverheadBenchmarks` measures identical reads with plain EF Core and QueryShape capture plus scope-end analysis, including allocations, against disposable PostgreSQL and SQL Server containers. Run explicitly:
+
+```sh
+dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*ProviderOverheadBenchmarks*' --exporters json markdown
+```
+
+The manual `provider-benchmarks.yml` workflow runs this on a Docker-enabled Ubuntu runner and uploads the full BenchmarkDotNet artifacts. It does not enforce a universal percentage threshold. These provider measurements have **not been executed locally** in the audit-fix session: Docker is not installed. The new benchmark harness compiles; published numbers above remain the historical SQLite measurements with their original environment and limitations.
+
+Before a release, inspect absolute overhead, allocation differences, uncertainty and production-representative concurrency and result sizes. The provider microbenchmark is not an HTTP p99 measurement. Caller-supplied scenario metrics and operation elapsed time can provide additional evidence, but QueryShape does not infer database rows scanned or explain plans.

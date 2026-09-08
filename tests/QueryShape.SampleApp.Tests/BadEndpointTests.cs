@@ -1,5 +1,6 @@
 using System.Net;
 using QueryShape.Reporting;
+using QueryShape.Testing;
 using Xunit.Abstractions;
 
 namespace QueryShape.SampleApp.Tests;
@@ -8,6 +9,20 @@ namespace QueryShape.SampleApp.Tests;
 [Collection(SampleAppCollection.Name)]
 public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
 {
+    [RuntimeMatchedFact]
+    public async Task N_plus_one_behavior_is_preserved()
+    {
+        var (response, _, _) = await app.GetAsync("/bad/n-plus-one");
+        using (response)
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            json.RootElement.GetArrayLength().Should().Be(40);
+            using var behavior = QueryShapeScope.Begin("N_plus_one_behavior");
+            behavior.Observe("response", json.RootElement);
+        }
+    }
+
     [RuntimeMatchedFact]
     public async Task N_plus_one_is_diagnosed_with_include_fix()
     {
@@ -100,7 +115,7 @@ public class RemainingBadEndpointTests(SampleAppFixture app)
 {
     [RuntimeMatchedTheory]
     [InlineData("/bad/cartesian-explosion", "QS002", "Cartesian explosion: 1,200 rows for 40 Customer entities (Orders, Orders.Lines, Addresses)")]
-    [InlineData("/bad/tracking-read-only", "QS005", "Tracked read-only query: 10 Product entities loaded with change tracking but never modified")]
+    [InlineData("/bad/tracking-read-only", "QS005", "Tracked read-only query: 10 Product entities loaded with change tracking; no save observed in this scope")]
     [InlineData("/bad/missing-split-query", "QS006", "Split query candidate: 2 collection includes (Orders, Addresses) in one query, 60 rows for 15 Customer entities")]
     [InlineData("/bad/contains-large-collection", "QS007", "Contains over 600 values on the OrderLine query (threshold 500)")]
     [InlineData("/bad/query-in-loop", "QS009", "Queries in a loop: Summaries.ForOrderAsync issued 16 queries of 2 shapes (Customer, OrderLine) in one scope")]

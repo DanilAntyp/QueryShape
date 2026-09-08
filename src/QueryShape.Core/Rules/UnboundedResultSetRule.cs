@@ -58,7 +58,7 @@ public sealed class UnboundedResultSetRule : IRule
                 explanation =
                     $"The LINQ query has no Where and no Take/First/Single, so EF Core translates it to a SELECT with no WHERE clause and no row limit; the database returns every row in {table}. " +
                     $"EF Core then materializes each row into a {root}{(q!.IsTracking ? " and registers it in the change tracker, which keeps a snapshot of every property for change detection" : string.Empty)}. " +
-                    $"That work is linear in the table size, so a query that is fine with today's {rowsText} becomes the slowest thing in the request as data accumulates, " +
+                    $"That work is linear in the table size, so returned data can grow beyond today's {rowsText} as the table grows, " +
                     "and a large table can exhaust memory outright." +
                     (q.CollectionIncludes.Count > 0 ? $" The Include of {string.Join(", ", q.CollectionIncludes)} multiplies the rows transferred." : string.Empty) +
                     (small ? $" Today's result is below {RuleHelpers.N(minimumRows)} rows (UnboundedMinimumRows), the size of a lookup table, so this is reported at Info level; it is still unbounded and grows with the table." : string.Empty);
@@ -86,7 +86,7 @@ public sealed class UnboundedResultSetRule : IRule
                 before,
                 after,
                 null,
-                "A bounded query does a fixed amount of work no matter how large the table grows. If every row really is needed (exports, batch jobs), " +
+                "A row limit bounds returned data; server-side work can still grow and depends on filters, indexes and the execution plan. If every row really is needed (exports, batch jobs), " +
                 "stream with AsAsyncEnumerable() and add AsNoTracking() so memory stays flat; if this is a small lookup table you can suppress this rule for the query.",
                 scope.Options.DocsUrlFor(RuleId));
 

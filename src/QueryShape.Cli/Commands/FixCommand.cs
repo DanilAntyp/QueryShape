@@ -2,7 +2,7 @@ using QueryShape.Cli.Llm;
 
 namespace QueryShape.Cli.Commands;
 
-/// <summary>`queryshape fix --llm`: the model proposes a patch for a diagnosis, `verify` proves or rejects it. Nothing is trusted from the model.</summary>
+/// <summary>`queryshape fix --llm`: the model proposes a patch for a diagnosis, `verify` checks explicit measurements and observations. Nothing is trusted from the model.</summary>
 internal sealed class FixCommand
 {
     public required string TestFilter { get; init; }
@@ -22,6 +22,9 @@ internal sealed class FixCommand
     public int Runs { get; init; } = 3;
 
     public bool AllowDirty { get; init; }
+
+    public bool PerformanceOnly { get; init; }
+    public VerificationPolicy Policy { get; init; } = new();
 
     public string Format { get; init; } = "text";
 
@@ -52,6 +55,8 @@ internal sealed class FixCommand
             TestFilter = TestFilter,
             Runs = Runs,
             AllowDirty = AllowDirty,
+            PerformanceOnly = PerformanceOnly,
+            Policy = Policy,
             Format = Format,
             PatchProvider = async (baseline, work, repoRoot) =>
             {
@@ -115,7 +120,7 @@ internal sealed class FixCommand
                 await File.WriteAllTextAsync(patchPath, diff, ct);
 
                 progress.WriteLine();
-                progress.WriteLine($"==== LLM-proposed patch ({client.Model}) — generated, not yet verified; the table below is the proof ====");
+                progress.WriteLine($"==== LLM-proposed patch ({client.Model}) — generated, not yet verified; the table below reports measured checks ====");
                 progress.Write(diff);
                 progress.WriteLine("==== end of LLM-proposed patch ====");
                 progress.WriteLine($"patch written to {patchPath}");

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace QueryShape.Cli;
 
-/// <summary>The before/after table. This is the proof `verify` exists for.</summary>
+/// <summary>The before/after table and the scope of its measured acceptance criteria.</summary>
 internal static class VerifyTable
 {
     public sealed record Result(string Text, bool Improved, int NewErrors, bool BelowNoise)
@@ -15,6 +15,7 @@ internal static class VerifyTable
         public IReadOnlyList<string> Notes { get; init; } = [];
 
         public int Runs { get; init; }
+        public IReadOnlyDictionary<string, string> Outcomes { get; init; } = new Dictionary<string, string>();
 
         /// <summary>GitHub-flavoured Markdown for pull-request comments and step summaries.</summary>
         public string ToMarkdown()
@@ -52,12 +53,13 @@ internal static class VerifyTable
                 runs = Runs,
                 rows = Rows.Select(r => new { r.Label, r.Before, r.After, r.Delta }),
                 notes = Notes,
+                outcomes = Outcomes,
             }, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web) { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
     }
 
     public sealed record Row(string Label, string Before, string After, string Delta);
 
-    public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns, IReadOnlyList<string>? notes = null)
+    public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns, IReadOnlyList<string>? notes = null, VerificationPolicy? policy = null, double baselineSpread = 0)
     {
         var rows = new List<(string Label, string Before, string After, string Delta)>();
 
@@ -68,10 +70,13 @@ internal static class VerifyTable
         var durationPct = before.DurationMs > 0 ? durationDelta / before.DurationMs * 100 : 0;
         rows.Add(("duration (ms)", Ms(before.DurationMs), Ms(after.DurationMs), before.DurationMs > 0 ? Pct(durationPct) : Signed((int)Math.Round(durationDelta))));
 
+        if (before.RowsReturned is { } br && after.RowsReturned is { } ar)
+            rows.Add(("returned rows", br.ToString(CultureInfo.InvariantCulture), ar.ToString(CultureInfo.InvariantCulture), (ar - br).ToString("+0;-0;0", CultureInfo.InvariantCulture)));
+
         var beforeRules = before.RuleCounts;
         var afterRules = after.RuleCounts;
         var anyRuleImproved = false;
-        var anyRuleWorse = false;
+
         foreach (var ruleId in beforeRules.Keys.Union(afterRules.Keys, StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal))
         {
             var b = beforeRules.GetValueOrDefault(ruleId);
@@ -92,7 +97,7 @@ internal static class VerifyTable
             else if (a > b)
             {
                 delta = "✗ " + Signed(a - b);
-                anyRuleWorse = true;
+
             }
             else
             {
@@ -110,8 +115,10 @@ internal static class VerifyTable
         var noiseFloor = Math.Max(Math.Max(spread, before.DurationMs * 0.10), 1.0);
         var belowNoise = Math.Abs(durationDelta) <= noiseFloor;
 
-        var improved = newErrors == 0 && !anyRuleWorse && queryDelta <= 0
-                       && (queryDelta < 0 || anyRuleImproved || (durationDelta < 0 && !belowNoise));
+        var policyBlockers = (policy ?? new VerificationPolicy()).Check(before, after, baselineSpread);
+        var improved = policyBlockers.Count == 0
+            && (queryDelta < 0 || anyRuleImproved || after.RowsReturned < before.RowsReturned || (durationDelta < 0 && !belowNoise));
+        notes = (notes ?? []).Concat(policyBlockers).Append("Verdict covers measured metrics and recorded observations only; production latency improvement is not established.").ToArray();
 
         var sb = new StringBuilder();
         sb.Append("Fix: ").Append(fixTitle).Append('\n').Append('\n');
@@ -153,20 +160,21 @@ internal static class VerifyTable
             FixTitle = fixTitle,
             Notes = allNotes,
             Runs = afterRuns.Count,
+            Outcomes = new Dictionary<string, string>
+            {
+                ["commands"] = queryDelta < 0 ? "reduced" : queryDelta > 0 ? "increased" : "unchanged",
+                ["returnedRows"] = before.RowsReturned is null || after.RowsReturned is null ? "not measured" : after.RowsReturned < before.RowsReturned ? "reduced" : after.RowsReturned > before.RowsReturned ? "increased" : "unchanged",
+                ["commandDuration"] = belowNoise ? "change within noise" : durationDelta < 0 ? "reduced beyond noise estimate" : "increased beyond noise estimate",
+                ["productionLatency"] = "not established",
+                ["budgets"] = policyBlockers.Count == 0 ? "satisfied" : "violated",
+            },
         };
     }
 
     /// <summary>Error-level (ruleId) occurrences in <paramref name="after"/> beyond those in <paramref name="before"/>.</summary>
     internal static int CountNewErrors(RunMetrics before, RunMetrics after)
     {
-        var beforeErrors = before.Diagnostics.Where(d => d.Severity == "Error").GroupBy(d => d.RuleId).ToDictionary(g => g.Key, g => g.Count());
-        var newErrors = 0;
-        foreach (var g in after.Diagnostics.Where(d => d.Severity == "Error").GroupBy(d => d.RuleId))
-        {
-            newErrors += Math.Max(0, g.Count() - beforeErrors.GetValueOrDefault(g.Key));
-        }
-
-        return newErrors;
+        return FindingIdentity.Added(before, after, d => d.Severity == "Error");
     }
 
     private static string N(int n) => n.ToString("N0", CultureInfo.InvariantCulture);

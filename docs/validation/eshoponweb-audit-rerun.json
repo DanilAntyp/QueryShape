@@ -1,0 +1,375 @@
+{
+  "tests": {
+    "Passed": 15
+  },
+  "rawReports": "/private/var/folders/1c/7k95888d4m92nbyv3vr1cgfw0000gn/T/queryshape-scaling/39e35b60206146d8b727973811e355ce",
+  "scopes": 180,
+  "commands": 240,
+  "complete": true,
+  "scaling": [
+    {
+      "scenario": "eshop-catalog-products",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "10",
+          "elapsedMs": 1.3191,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "10",
+          "elapsedMs": 0.9877,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "100",
+          "elapsedMs": 1.4026,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "100",
+          "elapsedMs": 1.4172,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "501",
+          "elapsedMs": 1.4779,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "501",
+          "elapsedMs": 1.5647,
+          "metrics": {}
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-basket-count",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "10",
+          "elapsedMs": 0.2999,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "10",
+          "elapsedMs": 0.3159,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "100",
+          "elapsedMs": 0.3952,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "100",
+          "elapsedMs": 0.2972,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "501",
+          "elapsedMs": 0.5304,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "501",
+          "elapsedMs": 0.3344,
+          "metrics": {}
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-basket",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 2,
+          "rows": 20,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ],
+          "case": "10",
+          "elapsedMs": 0.8386,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 2,
+          "rows": 20,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ],
+          "case": "10",
+          "elapsedMs": 0.8296,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 2,
+          "rows": 200,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ],
+          "case": "100",
+          "elapsedMs": 2.4868,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 2,
+          "rows": 200,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ],
+          "case": "100",
+          "elapsedMs": 3.2332,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 2,
+          "rows": 1002,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser"
+          ],
+          "case": "501",
+          "elapsedMs": 10.9185,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 2,
+          "rows": 1002,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser"
+          ],
+          "case": "501",
+          "elapsedMs": 10.2949,
+          "metrics": {}
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-catalog-lookups",
+      "dimension": "brands-and-types-each",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 4,
+          "rows": 25,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "10",
+          "elapsedMs": 0.9862,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 4,
+          "rows": 25,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ],
+          "case": "10",
+          "elapsedMs": 0.9218,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 4,
+          "rows": 205,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ],
+          "case": "100",
+          "elapsedMs": 1.6203,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 4,
+          "rows": 205,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ],
+          "case": "100",
+          "elapsedMs": 1.5536,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 4,
+          "rows": 1007,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ],
+          "case": "501",
+          "elapsedMs": 5.661,
+          "metrics": {}
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 4,
+          "rows": 1007,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ],
+          "case": "501",
+          "elapsedMs": 5.3355,
+          "metrics": {}
+        }
+      ],
+      "violations": [
+        "Rows read change with dataset size or repetition."
+      ],
+      "passed": false
+    }
+  ]
+}

@@ -82,7 +82,7 @@ public class TrackingOnReadOnlyQueryRuleTests
         var d = new TrackingOnReadOnlyQueryRule().Analyze(scope).Should().ContainSingle().Subject;
         d.RuleId.Should().Be("QS005");
         d.Severity.Should().Be(Severity.Info);
-        d.Title.Should().Be("Tracked read-only query: 10 Product entities loaded with change tracking but never modified at Catalog.cs:9 Catalog.List");
+        d.Title.Should().Be("Tracked read-only query: 10 Product entities loaded with change tracking; no save observed in this scope at Catalog.cs:9 Catalog.List");
         d.Explanation.Should().Contain("snapshot of every property");
         d.SuggestedFix!.Summary.Should().StartWith("Add .AsNoTracking() to the Product query");
         d.SuggestedFix.AfterSnippet.Should().Be("DbSet<Product>()\n    .AsNoTracking()\n    .Where(p => p.Price > @__min_0)");

@@ -19,6 +19,9 @@ internal sealed class VerifyCommand
 
     public bool KeepWorktree { get; init; }
 
+    public bool PerformanceOnly { get; init; }
+    public VerificationPolicy Policy { get; init; } = new();
+
     /// <summary>Run the after leg even when the diagnosis patch is partial (default: refuse, since the table would be misleading).</summary>
     public bool RunPartial { get; init; }
 
@@ -33,9 +36,17 @@ internal sealed class VerifyCommand
 
     public async Task<int> ExecuteAsync(TextWriter out_, TextWriter err, CancellationToken ct)
     {
+        try { Policy.Validate(); }
+        catch (ArgumentException ex) { err.WriteLine(ex.Message); return 2; }
         if (PatchPath is null && !PatchFromDiagnosis && PatchProvider is null)
         {
             err.WriteLine("verify: pass --patch <file.diff> or --patch-from-diagnosis.");
+            return 2;
+        }
+
+        if (string.IsNullOrWhiteSpace(TestFilter) || Runs < 1 || Runs > 20)
+        {
+            err.WriteLine("verify: select a test with --test and use --runs between 1 and 20.");
             return 2;
         }
 
@@ -75,6 +86,17 @@ internal sealed class VerifyCommand
         out_.WriteLine();
         out_.WriteLine("[1/3] baseline");
         var (before, baselineProcess) = await TestRun.RunAsync(repoRoot, projectRelative, TestFilter, Path.Combine(work, "before"), noBuild: false, null, out_, ct);
+        if (!baselineProcess.Success)
+        {
+            err.WriteLine("verify: baseline tests failed. Separate behavior tests from assertions that require the old query shape.");
+            err.WriteLine(Tail(baselineProcess.StdOut + baselineProcess.StdErr, 40));
+            return 2;
+        }
+        if (baselineProcess.ExecutedTests is not > 0)
+        {
+            err.WriteLine("verify: no executed tests confirmed by the TRX logger (empty filter, skipped tests, or unsupported runner).");
+            return 2;
+        }
         if (before.Scopes == 0)
         {
             err.WriteLine("verify: the baseline run produced no QueryShape scope reports.");
@@ -87,6 +109,27 @@ internal sealed class VerifyCommand
 
             return 2;
         }
+
+        var baselineProblems = BehaviorVerification.Compare(before, before, PerformanceOnly);
+        if (baselineProblems.Count > 0)
+        {
+            foreach (var problem in baselineProblems) err.WriteLine("verify: " + problem);
+            return 2;
+        }
+
+        var baselineRuns = new List<RunMetrics> { before };
+        for (var i = 1; i < Runs; i++)
+        {
+            var (repeat, process) = await TestRun.RunAsync(repoRoot, projectRelative, TestFilter, Path.Combine(work, $"before-{i}"), true, null, out_, ct);
+            if (!process.Success || !SameTests(baselineProcess, process) || BehaviorVerification.Compare(before, repeat, PerformanceOnly).Count > 0)
+            {
+                err.WriteLine("verify: baseline execution or recorded behavior is unstable; make the fixture deterministic before comparing a patch.");
+                return 2;
+            }
+            baselineRuns.Add(repeat);
+        }
+        before = RunMetrics.Median(baselineRuns);
+        var baselineSpread = baselineRuns.Max(r => r.DurationMs) - baselineRuns.Min(r => r.DurationMs);
 
         string patchFile;
         string fixTitle;
@@ -186,9 +229,16 @@ internal sealed class VerifyCommand
             for (var i = 0; i < Math.Max(1, Runs); i++)
             {
                 var (after, afterProcess) = await TestRun.RunAsync(worktree, projectRelative, TestFilter, Path.Combine(work, $"after-{i}"), noBuild: i > 0, null, out_, ct);
-                if (!afterProcess.Success && i == 0)
+                if (!afterProcess.Success)
                 {
-                    notes.Add($"dotnet test exited with code {afterProcess.ExitCode} after the patch; expected when the test asserts the old query count or a snapshot, otherwise check the test output");
+                    err.WriteLine("verify: patched tests failed; a faster failing test is not an accepted fix.");
+                    err.WriteLine(Tail(afterProcess.StdOut + afterProcess.StdErr, 40));
+                    return 2;
+                }
+                if (!SameTests(baselineProcess, afterProcess))
+                {
+                    err.WriteLine("verify: executed test coverage changed after the patch.");
+                    return 2;
                 }
 
                 if (after.Scopes == 0)
@@ -202,14 +252,21 @@ internal sealed class VerifyCommand
             }
 
             var median = RunMetrics.Median(afterRuns);
-            if (!baselineProcess.Success)
-            {
-                notes.Add($"dotnet test exited with code {baselineProcess.ExitCode} in the baseline run");
-            }
-
-            var table = VerifyTable.Render(fixTitle, before, median, afterRuns, notes);
-            out_.WriteLine();
-            out_.Write(table.Text);
+            var blockers = afterRuns.SelectMany(after => BehaviorVerification.Compare(before, after, PerformanceOnly)).Distinct().ToList();
+            blockers.AddRange(afterRuns.SelectMany(after => Policy.Check(before, after, baselineSpread)).Distinct());
+            foreach (var problem in blockers) err.WriteLine("verify: " + problem);
+            notes.AddRange(blockers);
+            var behaviorChecked = BehaviorVerification.Observations(before).Count > 0;
+            notes.Add(behaviorChecked ? "Behavior observations preserved in every patched run; checks cover only the recorded result/state projections and fixtures."
+                : "Performance-only verification: behavior preservation was not checked.");
+            var coverage = before.Reports.SelectMany(r => (r.Annotations ?? new Dictionary<string, string>())
+                .Where(a => a.Key.StartsWith("behavior.coverage.", StringComparison.Ordinal)).Select(a => a.Key + "=" + a.Value)).Distinct();
+            notes.Add("Observation coverage: " + string.Join("; ", coverage.DefaultIfEmpty("explicit named observations only; unrecorded outputs/state are unchecked")));
+            notes.Add("Budgets checked in every patched run. Duration is summed command execution time, not endpoint latency or server rows scanned.");
+            if (Policy.AllowedNewWarningRules.Count > 0) notes.Add("Explicitly permitted new warning identities for: " + string.Join(", ", Policy.AllowedNewWarningRules) + ". Error findings remain blocking.");
+            var table = VerifyTable.Render(fixTitle, before, median, afterRuns, notes, Policy, baselineSpread);
+            if (blockers.Count > 0) table = table with { Improved = false, Text = table.Text.Replace("verdict: improved", "verdict: not improved", StringComparison.Ordinal) };
+            document.Write(Format == "json" ? table.ToJson() : Format == "markdown" ? table.ToMarkdown() : table.Text);
             return table.Improved ? 0 : 1;
         }
         finally
@@ -232,6 +289,9 @@ internal sealed class VerifyCommand
             }
         }
     }
+
+    internal static bool SameTests(ProcessResult before, ProcessResult after) => before.ExecutedTestIdentities is { Count: > 0 } identities
+        && after.ExecutedTestIdentities is { } actual && identities.SequenceEqual(actual);
 
     /// <summary>Copies untracked, non-ignored files (git ls-files --others --exclude-standard) into the worktree so a patch that needs them builds there too.</summary>
     private static async Task<int> CopyUntrackedAsync(string repoRoot, string worktree)

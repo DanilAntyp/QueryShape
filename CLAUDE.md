@@ -2,7 +2,7 @@
 
 > Name decided 2026-09-07: **QueryShape** (namespaces, packages, CLI `dotnet queryshape`, rule ids `QS0xx`, OTel prefix `queryshape.`). See ADR-0001.
 
-You are building an open-source .NET library that catches slow and dangerous Entity Framework Core queries, explains them in terms of the **LINQ that produced them** (not the SQL that came out), and stops regressions from reaching production.
+You are building an open-source .NET library that protects selected EF Core operations with query contracts, explains observed patterns in terms of their LINQ, and reports the limits of the measured evidence.
 
 This file is the source of truth for scope, architecture and conventions. Read it fully before touching code. When something here is ambiguous or turns out to be wrong in practice, stop and ask instead of guessing — then update this file with the decision.
 
@@ -15,7 +15,7 @@ Three features, in this order. Each must be independently shippable and useful o
 | # | Feature | One-line outcome |
 |---|---------|------------------|
 | 1 | **Query snapshot testing** | A test that fails in CI when a code change makes EF Core issue more/different queries than before. "Jest snapshots, but for SQL." |
-| 2 | **Diagnosis + measured fix** | Every detected pathology comes with a concrete, applicable code fix, and a harness that proves the improvement with before/after numbers. |
+| 2 | **Diagnosis + measured fix** | Findings include candidate changes where possible and a harness that checks explicit metrics and recorded observations. |
 | 3 | **OpenTelemetry enrichment** | Diagnoses appear as attributes/events on the spans teams already look at in Datadog / App Insights / Grafana. We are the "why" layer, not another APM. |
 
 ### Explicit non-goals (do not build these, even if tempting)
@@ -233,11 +233,11 @@ When we can locate the exact source line (call site known + file readable), prod
 - Print exactly what is being sent (`--show-prompt`) so users can audit it.
 - LLM output is always labeled as such and never trusted for the *detection* — only for explanation/fix drafting.
 - Model/provider behind an interface; first implementation targets the Anthropic Messages API. Keep this thin.
-- `dotnet queryshape fix --llm` (added 2026-09-08, owner-approved item 7): the model proposes a unified diff for the worst diagnosis, `verify` proves or rejects it. The diff is validated (repo-relative existing files only), applied with `git apply --recount` in a worktree, never to the working copy.
+- `dotnet queryshape fix --llm` (added 2026-09-08, owner-approved item 7): the model proposes a unified diff for the worst diagnosis, `verify` checks explicit budgets and observations. The diff is validated (repo-relative existing files only), applied with `git apply --recount` in a worktree, never to the working copy.
 
 ### 7.3 Verification harness (`dotnet queryshape verify`)
 
-The point of this feature is **proof**, not advice.
+The outcome is bounded evidence for explicit contracts, not proof of application-wide behavior or production speed. ADR-0012 defines acceptance.
 
 ```
 dotnet queryshape verify --test "OrderServiceTests.GetOrders_query_shape" --patch fix.diff
@@ -246,7 +246,7 @@ dotnet queryshape verify --test "OrderServiceTests.GetOrders_query_shape" --patc
 1. Run the named test(s) with QueryShape capture → baseline metrics (query count, total duration, per-fingerprint counts, diagnostics).
 2. Apply the patch to a **clean git worktree** (never the user's working copy; refuse if the repo is dirty unless `--allow-dirty`).
 3. Rebuild and rerun the same tests → after metrics.
-4. Print a before/after table and exit code: `0` if improved and no new Error-severity diagnostics, `1` otherwise.
+4. Require passing tests and matching executed-test/scope coverage; compare explicit behavior observations on every patched run (ADR-0011). Print a before/after table and exit code: `0` if improved and these checks pass, `1` for a rejected change, `2` for an invalid/failed test run. `--performance-only` explicitly permits absent observations but never failing tests or changed observations.
 
 ```
 Fix: Add .Include(c => c.Orders) at OrderService.cs:42
@@ -310,11 +310,12 @@ This runs inside other people's production apps. Treat it that way.
 - [x] `CI=true` behavior, `QUERYSHAPE_UPDATE_SNAPSHOTS`, and `QueryBudget` attribute all covered by tests.
 - [x] OTel: spans from SampleApp requests carry `queryshape.*` tags and `queryshape.diagnosis` events; verified with in-memory exporter.
 - [x] `dotnet queryshape verify` produces the before/after table for at least the QS001 SampleApp case (end-to-end test in `QueryShape.Cli.Tests`, Category=Slow).
-- [x] Benchmarks recorded (`docs/performance.md`): ≈ 3.5 µs per query (micro) and, under 8-way concurrent load through the sample app, p99 unchanged on the 41-query request and within noise (+6 % of a 0.6 ms request) on the single-query one. The < 3 % p99 budget holds for any request that does real database work; a sub-millisecond in-memory SQLite request cannot meet it by construction.
+- [x] Benchmarks recorded (`docs/performance.md`): ≈ 3.5 µs per query (micro) and, under 8-way concurrent load through the sample app, p99 unchanged on the 41-query request and within noise (+6 % of a 0.6 ms request) on the single-query one. These workloads do not establish a universal overhead bound. The 3% figure remains a target; provider benchmarks need a Docker-enabled runner.
 - [x] README: 3-line setup, one screenshot-equivalent code block of a snapshot failure, one of a `verify` table, link to rules docs.
 - [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI). Workflow written; needs the first push to GitHub to confirm.
 
 ### Decisions recorded outside ADRs
+- Scenarios (2026-09-08, user requested): implement scaling contracts, explicit result/database-state comparison, and failure reduction with generated replay tests in `QueryShape.Testing`, plus `scale`/`reduce` CLI commands. ADR-0011 defines their scope and limitations. No changes to runtime rule IDs or production capture are required.
 - Package floors (2026-09-08): the libraries reference EF Core and Microsoft.Extensions.* at the floor of each major (10.0.0; 8.0.10 for EF Core 8 because 8.0.0 carries a vulnerable Caching.Memory), so a consumer pinned to an older patch (found running against a project on EF Core 10.0.7) is not forced into a downgrade error; tests use the latest patch.
 - The snapshot "created/updated" line (2026-09-08) is written to the console by `QueryShape.Testing` when no `SnapshotOptions.Log` sink is set: test runners show console output and hide Trace. Section 2's "never Console.WriteLine" stays absolute for the runtime packages.
 - Test-mode defaults (2026-09-08): `CaptureCallSites` and `ReadSourceFiles` default to on when a test-framework assembly (xunit.core, xunit.v3.core, nunit.framework, MSTest, TUnit) is loaded in the process and off otherwise (`Internal/TestEnvironment`). Rules read source files only when `ReadSourceFiles` is on, which is how section 9 is enforced.
@@ -324,3 +325,5 @@ This runs inside other people's production apps. Treat it that way.
 - Scopes write JSON reports when `QUERYSHAPE_REPORT_DIR` is set; this is the contract between test runs and `dotnet queryshape` (no I/O otherwise).
 - `verify` measures database time summed over the scope's commands (EF Core's execute duration), not wall time; a delta must beat the run-to-run spread, 10 % of the baseline and 1 ms to count.
 - Local runs of the sample-app tests on the net8.0 target are skipped when rolled forward to .NET 10 (TestHost 8 cannot serve JSON on System.Text.Json 9+); CI runs them on the real runtime.
+
+- Adoption audit (2026-09-08, user authorized all fixes): ADR-0012 supersedes broad proof/overhead claims. CLI targets net8.0/net10.0. Verification repeats both baseline/candidate, compares TRX identities and finding identities, requires complete capture and applies explicit command/row/time budgets. Default time tolerance is baseline spread, 10%, or 1ms, whichever is larger; this is an estimate, not statistical proof. Named scaling cases, local redacted behavior differences, doctor/init, expiring report acceptances and a relational reduction helper are in scope. Provider benchmarking is opt-in and unexecuted results remain marked pending.

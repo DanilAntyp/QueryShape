@@ -6,6 +6,9 @@ namespace QueryShape.Cli;
 internal sealed record ProcessResult(int ExitCode, string StdOut, string StdErr)
 {
     public bool Success => ExitCode == 0;
+    public int? ExecutedTests { get; init; }
+    public IReadOnlyList<string>? ExecutedTestIdentities { get; init; }
+    public bool ContractFailuresOnly { get; init; }
 }
 
 /// <summary>Runs external processes (git, dotnet) and captures output.</summary>

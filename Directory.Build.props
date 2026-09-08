@@ -19,8 +19,8 @@
     <Product>QueryShape</Product>
     <Copyright>Copyright (c) 2026 QueryShape contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/queryshape/QueryShape</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/queryshape/QueryShape</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/DanilAntyp/QueryShape</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DanilAntyp/QueryShape</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>efcore;entity-framework;performance;n+1;snapshot-testing;opentelemetry</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

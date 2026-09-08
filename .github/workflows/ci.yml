@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -49,7 +52,7 @@ jobs:
             dotnet test "$p" --configuration Release --no-build --framework net10.0 --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).net10.trx" --results-directory TestResults || exit 1
           done
 
-      - name: Test (single-target projects: CLI unit tests, analyzer)
+      - name: "Test (single-target projects: CLI unit tests, analyzer)"
         shell: bash
         run: |
           for p in tests/QueryShape.Cli.Tests tests/QueryShape.Analyzers.Tests; do
@@ -86,6 +89,14 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Run the README scaling demo (exit 1 means the expected regression was caught)
+        shell: bash
+        run: |
+          set +e
+          dotnet run --project src/QueryShape.Cli -f net10.0 -- scale --project tests/QueryShape.Testing.Tests --test FullyQualifiedName~ScenarioExamples.Scale_customer_orders --sizes 10,100,1000 > readme-scale.txt 2>&1
+          status=$?
+          cat readme-scale.txt
+          test "$status" -eq 1
       - name: Run the sample app and hit the demo endpoints
         run: |
           dotnet run --project tests/QueryShape.SampleApp -f net10.0 --urls http://127.0.0.1:5077 &
@@ -115,13 +126,15 @@ jobs:
           cat queryshape.md >> "$GITHUB_STEP_SUMMARY"
           exit 0
       - uses: actions/github-script@v7
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
         with:
           script: |
             const fs = require('fs');
             const body = fs.readFileSync('queryshape.md', 'utf8') + '\n<!-- queryshape-action -->';
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
-            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
-            const mine = comments.data.find(c => c.body && c.body.includes('<!-- queryshape-action -->'));
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const mine = comments.find(c => c.user?.type === 'Bot' && c.body && c.body.includes('<!-- queryshape-action -->'));
             if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
             else await github.rest.issues.createComment({ owner, repo, issue_number, body });

@@ -30,7 +30,15 @@ public sealed record ScopeReportDiagnosis(
     string? UnifiedDiff,
     string? DocsUrl,
     bool FixIsPartial = false,
-    string? ManualStep = null);
+    string? ManualStep = null)
+{
+    /// <summary>Evidence category; a detected pattern is not a measured application slowdown.</summary>
+    public string Basis => RuleId is "QS011" or "QS_OVERFLOW" ? "Observed pattern" : "Heuristic risk";
+    public string? FindingId { get; init; }
+    public string Disposition { get; init; } = "active";
+    public string? AcceptanceReason { get; init; }
+    public DateOnly? AcceptanceExpiresOn { get; init; }
+}
 
 /// <summary>
 /// Machine-readable summary of one completed scope. Written to <c>$QUERYSHAPE_REPORT_DIR/&lt;ticks&gt;-&lt;id&gt;.json</c> when that variable is set;
@@ -48,6 +56,12 @@ public sealed record ScopeReport(
     IReadOnlyList<ScopeReportDiagnosis> Diagnostics,
     IReadOnlyDictionary<string, string>? Annotations = null)
 {
+    /// <summary>Rows returned through read-command readers, not server-side rows scanned. Null in older captures.</summary>
+    public long? RowsReturned { get; init; }
+    /// <summary>Whether capture was enabled and all captured commands/readers completed successfully. Null in older captures.</summary>
+    public bool? CaptureComplete { get; init; }
+    /// <summary>Database providers observed in this scope.</summary>
+    public IReadOnlyList<string> Providers { get; init; } = [];
     /// <summary>Current format version.</summary>
     public const int CurrentVersion = 1;
 
@@ -104,7 +118,14 @@ public sealed record ScopeReport(
             scope.Overflowed,
             queries,
             diags,
-            scope.Annotations.Count == 0 ? null : scope.Annotations);
+            scope.Annotations.Count == 0 ? null : scope.Annotations)
+        {
+            Providers = commands.Select(c => c.ProviderName).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+            RowsReturned = commands.Where(c => c.Source != QuerySource.SaveChanges && c.ExecuteMethod == Microsoft.EntityFrameworkCore.Diagnostics.DbCommandMethod.ExecuteReader)
+                .Sum(c => (long)(c.RowsReturned ?? 0)),
+            CaptureComplete = scope.Options.Enabled && !scope.Overflowed && !commands.Any(c => c.Failed)
+                && commands.Where(c => c.Source != QuerySource.SaveChanges && c.ExecuteMethod == Microsoft.EntityFrameworkCore.Diagnostics.DbCommandMethod.ExecuteReader).All(c => c.RowsReturned.HasValue),
+        };
     }
 
     /// <summary>Serializes to indented camelCase JSON.</summary>

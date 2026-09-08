@@ -65,7 +65,7 @@ public sealed class QueryShapeOptions
     public bool CreateActivitiesWhenNoneExist { get; set; }
 
     /// <summary>Base URL for rule documentation; the rule id plus <c>.md</c> is appended. Point it at your own copy of <c>docs/rules</c> (a wiki, an internal site) when the GitHub repository is not reachable from where diagnoses are read.</summary>
-    public string DocsBaseUrl { get; set; } = "https://github.com/queryshape/QueryShape/blob/main/docs/rules/";
+    public string DocsBaseUrl { get; set; } = "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/";
 
     /// <summary>Rules run by <see cref="QueryShapeScope.Analyze"/>. Starts with every built-in rule; remove or replace as needed.</summary>
     public IList<IRule> Rules { get; } = new List<IRule>(BuiltInRules.CreateAll());

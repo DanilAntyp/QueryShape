@@ -34,7 +34,21 @@ internal sealed class ExplainCommand
         else
         {
             var dir = Path.Combine(Path.GetTempPath(), "queryshape-explain", Guid.NewGuid().ToString("N"));
-            (metrics, _) = await TestRun.RunAsync(Directory.GetCurrentDirectory(), Project, TestFilter, dir, noBuild: false, null, out_, ct);
+            var (m, process) = await TestRun.RunAsync(Directory.GetCurrentDirectory(), Project, TestFilter, dir, noBuild: false, null, out_, ct);
+            metrics = m;
+            if (!process.Success)
+            {
+                err.WriteLine(process.StdOut);
+                err.WriteLine(process.StdErr);
+                err.WriteLine("explain: dotnet test failed (exit code " + process.ExitCode + "). Fix the test run before requesting explanations.");
+                return 2;
+            }
+        }
+
+        if (metrics.Scopes == 0)
+        {
+            err.WriteLine("explain: no QueryShape scope reports were produced. Check the project, test filter, and QueryShape instrumentation.");
+            return 2;
         }
 
         var diagnoses = metrics.Diagnostics.Where(d => RuleFilter is null || string.Equals(d.RuleId, RuleFilter, StringComparison.OrdinalIgnoreCase)).ToList();

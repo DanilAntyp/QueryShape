@@ -1,93 +1,153 @@
 name: QueryShape
-description: Run QueryShape on a .NET test project and post the report or a verify table on the pull request.
+description: Check EF Core query contracts and publish the measured results in the job summary.
 branding:
   icon: search
   color: blue
 inputs:
   command:
-    description: "`report` (diagnoses of the test run) or `verify` (before/after table for a patch)."
-    required: false
+    description: report, verify, scale, reduce, or doctor.
     default: report
   project:
-    description: Test project, solution or directory passed to `dotnet test`.
+    description: Existing integration test project.
     required: true
   test:
-    description: Test filter (FullyQualifiedName~ substring). Required for `verify`.
-    required: false
-    default: ""
+    description: Test filter; required for verify, scale, reduce, and doctor.
+    default: ''
   patch:
-    description: Unified diff for `verify`. Leave empty with `patch-from-diagnosis`.
-    required: false
-    default: ""
+    description: Repository-relative patch for verify.
+    default: ''
   patch-from-diagnosis:
-    description: For `verify`: use the patch QueryShape proposed in the baseline run.
-    required: false
-    default: "false"
+    description: Use a diagnostic patch for verify.
+    default: 'false'
   version:
-    description: QueryShape.Cli version to install (NuGet).
-    required: false
-    default: "*-*"
+    description: Exact published CLI version. Pin this to the release used by your test packages.
+    default: '0.1.0-preview.1'
+  sizes:
+    description: Nonnegative dataset sizes for scale.
+    default: '10,100,1000'
+  out:
+    description: Reduced input and replay-test directory.
+    default: queryshape-reduced
+  max-attempts:
+    default: '200'
+    description: Reduction trial budget.
+  fail-on:
+    default: error
+    description: Report gate severity (info, warning, error) after applying acceptances.
+  acceptances:
+    default: ''
+    description: Reviewed expiring finding acceptances for report.
+  max-commands:
+    default: ''
+    description: Explicit command budget for verify (permits split queries within the budget).
+  max-rows:
+    default: ''
+    description: Explicit returned-row budget for verify.
+  allow-new-warning:
+    default: ''
+    description: Explicitly permit new warning identities for one reviewed rule ID; Errors remain blocking.
+  max-duration-ms:
+    default: ''
+    description: Summed command duration budget for verify; not endpoint latency.
   comment:
-    description: Post the result as a pull-request comment (needs `pull-requests: write`). Always written to the step summary.
-    required: false
-    default: "true"
+    description: Comment on same-repository PRs when the token has write permission; fork PRs use the summary.
+    default: 'true'
   github-token:
-    description: Token for the comment.
-    required: false
     default: ${{ github.token }}
+    description: Token for optional PR comments.
 outputs:
   exit-code:
-    description: QueryShape exit code (0 improved / no errors, 1 not improved / errors, 2 usage or setup problem).
+    description: 0 passed, 1 contract rejected, 2 test/setup failure.
     value: ${{ steps.run.outputs.exit-code }}
 runs:
   using: composite
   steps:
-    - name: Install QueryShape CLI
+    - name: Install pinned QueryShape CLI
+      id: install
       shell: bash
-      run: dotnet tool install --global QueryShape.Cli --version "${{ inputs.version }}" --prerelease || dotnet tool update --global QueryShape.Cli --version "${{ inputs.version }}" --prerelease
+      env:
+        QS_VERSION: ${{ inputs.version }}
+      run: |
+        if [[ ! "$QS_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]; then
+          echo 'Use an exact CLI version, not a floating range.' >&2
+          exit 2
+        fi
+        tool_dir=$(mktemp -d "$RUNNER_TEMP/queryshape-tool.XXXXXX")
+        dotnet tool install --tool-path "$tool_dir" QueryShape.Cli --version "$QS_VERSION"
+        echo "tool-directory=$tool_dir" >> "$GITHUB_OUTPUT"
     - name: Run QueryShape
       id: run
       shell: bash
       env:
-        CI: "true"
+        CI: 'true'
+        QS_TOOL_DIRECTORY: ${{ steps.install.outputs.tool-directory }}
+        QS_COMMAND: ${{ inputs.command }}
+        QS_PROJECT: ${{ inputs.project }}
+        QS_TEST: ${{ inputs.test }}
+        QS_PATCH: ${{ inputs.patch }}
+        QS_FROM_DIAGNOSIS: ${{ inputs.patch-from-diagnosis }}
+        QS_SIZES: ${{ inputs.sizes }}
+        QS_OUT: ${{ inputs.out }}
+        QS_ATTEMPTS: ${{ inputs.max-attempts }}
+        QS_ACCEPTANCES: ${{ inputs.acceptances }}
+        QS_FAIL_ON: ${{ inputs.fail-on }}
+        QS_MAX_COMMANDS: ${{ inputs.max-commands }}
+        QS_MAX_ROWS: ${{ inputs.max-rows }}
+        QS_MAX_MS: ${{ inputs.max-duration-ms }}
+        QS_ALLOWED_WARNING: ${{ inputs.allow-new-warning }}
       run: |
+        args=("$QS_COMMAND" --project "$QS_PROJECT")
+        if [[ -n "$QS_TEST" ]]; then args+=(--test "$QS_TEST"); fi
+        case "$QS_COMMAND" in
+          report)
+            args+=(--markdown --fail-on "$QS_FAIL_ON")
+            if [[ -n "$QS_ACCEPTANCES" ]]; then args+=(--acceptances "$QS_ACCEPTANCES"); fi
+            ;;
+          verify)
+            args+=(--format markdown)
+            if [[ "$QS_FROM_DIAGNOSIS" == true ]]; then args+=(--patch-from-diagnosis); else args+=(--patch "$QS_PATCH"); fi
+            if [[ -n "$QS_MAX_COMMANDS" ]]; then args+=(--max-commands "$QS_MAX_COMMANDS"); fi
+            if [[ -n "$QS_MAX_ROWS" ]]; then args+=(--max-rows "$QS_MAX_ROWS"); fi
+            if [[ -n "$QS_MAX_MS" ]]; then args+=(--max-duration-ms "$QS_MAX_MS"); fi
+            if [[ -n "$QS_ALLOWED_WARNING" ]]; then args+=(--allow-new-warning "$QS_ALLOWED_WARNING"); fi
+            ;;
+          scale) args+=(--sizes "$QS_SIZES" --json) ;;
+          reduce) args+=(--out "$QS_OUT" --max-attempts "$QS_ATTEMPTS" --json) ;;
+          doctor) args+=(--json) ;;
+          *) echo 'Unknown QueryShape command.' >&2; exit 2 ;;
+        esac
         set +e
-        if [ "${{ inputs.command }}" = "verify" ]; then
-          if [ "${{ inputs.patch-from-diagnosis }}" = "true" ]; then
-            dotnet queryshape verify --project "${{ inputs.project }}" --test "${{ inputs.test }}" --patch-from-diagnosis --format markdown > queryshape.md
-          else
-            dotnet queryshape verify --project "${{ inputs.project }}" --test "${{ inputs.test }}" --patch "${{ inputs.patch }}" --format markdown > queryshape.md
-          fi
-        else
-          if [ -n "${{ inputs.test }}" ]; then
-            dotnet queryshape report --project "${{ inputs.project }}" --test "${{ inputs.test }}" --markdown > queryshape.md
-          else
-            dotnet queryshape report --project "${{ inputs.project }}" --markdown > queryshape.md
-          fi
-        fi
+        "$QS_TOOL_DIRECTORY/dotnet-queryshape" "${args[@]}" > queryshape-output.txt
         code=$?
+        set -e
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        if [[ "$QS_COMMAND" == report || "$QS_COMMAND" == verify ]]; then
+          cp queryshape-output.txt queryshape.md
+        else
+          { printf 'QueryShape %s\n\n```json\n' "$QS_COMMAND"; cat queryshape-output.txt; printf '\n```\n'; } > queryshape.md
+        fi
         cat queryshape.md >> "$GITHUB_STEP_SUMMARY"
         cat queryshape.md
-        exit 0
     - name: Comment on the pull request
-      if: inputs.comment == 'true' && github.event_name == 'pull_request'
+      if: inputs.comment == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         github-token: ${{ inputs.github-token }}
         script: |
           const fs = require('fs');
-          const body = fs.readFileSync('queryshape.md', 'utf8') + '\n<!-- queryshape-action -->';
+          const marker = '<!-- queryshape-action -->';
+          const body = fs.readFileSync('queryshape.md', 'utf8').slice(0, 60000) + '\n' + marker;
           const { owner, repo } = context.repo;
           const issue_number = context.payload.pull_request.number;
-          const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
-          const mine = comments.data.find(c => c.body && c.body.includes('<!-- queryshape-action -->'));
-          if (mine) {
-            await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
-          } else {
-            await github.rest.issues.createComment({ owner, repo, issue_number, body });
-          }
-    - name: Fail the job when QueryShape reported errors or no improvement
+          const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+          const mine = comments.find(c => c.user?.type === 'Bot' && c.body?.includes(marker));
+          if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+          else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+    - name: Propagate QueryShape status
       if: steps.run.outputs.exit-code != '0'
       shell: bash
-      run: exit ${{ steps.run.outputs.exit-code }}
+      env:
+        QS_EXIT_CODE: ${{ steps.run.outputs.exit-code }}
+      run: |
+        case "$QS_EXIT_CODE" in 1|2) exit "$QS_EXIT_CODE" ;; *) exit 2 ;; esac

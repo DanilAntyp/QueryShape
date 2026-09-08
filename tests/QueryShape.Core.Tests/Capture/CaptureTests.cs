@@ -10,6 +10,38 @@ public class CaptureTests : IDisposable
 {
     private readonly SqliteShop _shop = new();
 
+    [Fact]
+    public async Task Optional_filters_optimized_away_keep_expression_and_warnings_on_cold_and_cached_queries()
+    {
+        for (var run = 0; run < 2; run++)
+        {
+            using var scope = QueryShapeScope.Begin(options: _shop.Options);
+            await using var ctx = _shop.CreateContext();
+            int? id = null;
+            string? country = null;
+            await ctx.Customers.Where(c => (!id.HasValue || c.Id == id) &&
+                (country == null || c.Country == country)).Take(3).ToListAsync();
+
+            var command = scope.Commands.Should().ContainSingle().Subject;
+            command.Shape.Should().NotContain("WHERE");
+            command.Query.Should().NotBeNull("EF can remove an always-true optional filter without losing the query's origin");
+            command.Query!.HasFilter.Should().BeFalse();
+            scope.Analyze().Should().Contain(d => d.RuleId == "QS011").And.Contain(d => d.RuleId == "QS005");
+        }
+    }
+
+    [Fact]
+    public async Task Included_rows_are_not_reported_as_counts_of_root_entities()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+        var customer = await ctx.Customers.Include(c => c.Orders).FirstAsync(c => c.Id == 1);
+        customer.Orders.Should().HaveCountGreaterThan(1);
+        var diagnosis = scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS005").Subject;
+        diagnosis.Title.Should().NotContain(scope.Commands[0].RowsReturned + " Customer entities");
+        diagnosis.Title.Should().Contain("Customer entities");
+    }
+
     public void Dispose() => _shop.Dispose();
 
     [Fact]

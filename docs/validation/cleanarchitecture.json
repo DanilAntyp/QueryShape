@@ -1,0 +1,148 @@
+{
+  "repository": {
+    "url": "https://github.com/ardalis/CleanArchitecture",
+    "commit": "fbdc0951879f5e8dca1bebc273d4b28cb2934469"
+  },
+  "environment": {
+    "provider": "SQLite in-memory",
+    "efCore": "10.0.11",
+    "data": "synthetic with explicit positive fixture IDs"
+  },
+  "tests": {
+    "Passed": 2
+  },
+  "capture": {
+    "scopes": 94,
+    "commands": 92,
+    "diagnoses": {},
+    "complete": true
+  },
+  "scaling": [
+    {
+      "scenario": "clean-contributor-page",
+      "dimension": "items",
+      "points": [
+        {
+          "size": 0,
+          "run": 1,
+          "commands": 2,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "0",
+          "elapsedMs": 3.5708,
+          "metrics": {}
+        },
+        {
+          "size": 0,
+          "run": 2,
+          "commands": 2,
+          "rows": 1,
+          "complete": true,
+          "origins": [],
+          "case": "0",
+          "elapsedMs": 0.9272,
+          "metrics": {}
+        },
+        {
+          "size": 1,
+          "run": 1,
+          "commands": 2,
+          "rows": 2,
+          "complete": true,
+          "origins": [],
+          "case": "1",
+          "elapsedMs": 1.2541,
+          "metrics": {}
+        },
+        {
+          "size": 1,
+          "run": 2,
+          "commands": 2,
+          "rows": 2,
+          "complete": true,
+          "origins": [],
+          "case": "1",
+          "elapsedMs": 1.241,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 2,
+          "rows": 5,
+          "complete": true,
+          "origins": [],
+          "case": "10",
+          "elapsedMs": 1.586,
+          "metrics": {}
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 2,
+          "rows": 5,
+          "complete": true,
+          "origins": [],
+          "case": "10",
+          "elapsedMs": 0.839,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 2,
+          "rows": 5,
+          "complete": true,
+          "origins": [],
+          "case": "100",
+          "elapsedMs": 1.2603,
+          "metrics": {}
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 2,
+          "rows": 5,
+          "complete": true,
+          "origins": [],
+          "case": "100",
+          "elapsedMs": 1.0346,
+          "metrics": {}
+        }
+      ],
+      "violations": [],
+      "passed": true
+    }
+  ],
+  "reduction": {
+    "name": "clean-dropped-phone-less-contributor",
+    "failure": "result",
+    "originalComplexity": 12,
+    "reducedComplexity": 1,
+    "attempts": 19,
+    "complete": true,
+    "regressionFile": "/private/tmp/queryshape-cleanarchitecture-reduced/QueryShapeRegression_3edc1623f68946ae9c2125d0376e7671.cs",
+    "passed": true,
+    "savedRegressionFile": "docs/validation/cleanarchitecture-reproducer/QueryShapeRegression_3edc1623f68946ae9c2125d0376e7671.cs",
+    "negativeControl": true
+  },
+  "observedQueryShapes": [
+    {
+      "fingerprint": "ad50df38595a",
+      "shape": "SELECT COUNT(*) FROM \"Contributors\" AS \"t0\"",
+      "source": "Linq",
+      "count": 1,
+      "durationMs": 0.01
+    },
+    {
+      "fingerprint": "f7c282093f56",
+      "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Name\", \"t1\".\"Id\", \"t1\".\"PhoneNumber_CountryCode\", \"t1\".\"PhoneNumber_Extension\", \"t1\".\"PhoneNumber_Number\" FROM ( SELECT Id, Name, PhoneNumber_CountryCode, PhoneNumber_Number, PhoneNumber_Extension FROM Contributors ) AS \"t0\" LEFT JOIN \"Contributors\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"Id\" ORDER BY \"t0\".\"Id\" LIMIT @p0 OFFSET @p1",
+      "source": "Linq",
+      "count": 1,
+      "durationMs": 0.07
+    }
+  ],
+  "rawReports": "/private/var/folders/1c/7k95888d4m92nbyv3vr1cgfw0000gn/T/queryshape-scaling/391c213fc92443abb854eb67871e27f0",
+  "rawReductionReports": "/private/var/folders/1c/7k95888d4m92nbyv3vr1cgfw0000gn/T/queryshape-reduction/b7ebed7118c543e38f6fdc933ef1e86e"
+}

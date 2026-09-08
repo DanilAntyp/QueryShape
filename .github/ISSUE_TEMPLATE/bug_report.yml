@@ -1,0 +1,27 @@
+name: Bug or unexpected finding
+description: Report a missed regression, noisy diagnostic, or problem trying QueryShape.
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for trying QueryShape. Use synthetic data and redact credentials, connection strings and private source before sharing reports."
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: QueryShape version or commit, .NET / EF Core versions, database provider and OS.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce
+      description: Selected test or CLI command, fixture setup, and a small query example or reproduction repository.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+      description: Include the rule ID or error output. For an intentional query, explain why its behavior is needed.
+    validations:
+      required: true

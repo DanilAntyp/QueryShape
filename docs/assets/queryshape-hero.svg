@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+  <title id="title">QueryShape — Your tests pass. Do your queries scale?</title>
+  <desc id="desc">EF Core query contracts, behavior checks, and failure reduction. An illustrated query graph shows one operation issuing multiple database calls.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#10182e"/><stop offset="1" stop-color="#090d18"/></linearGradient>
+    <linearGradient id="accent"><stop stop-color="#a398ff"/><stop offset="1" stop-color="#60e7cf"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#aab9ff" stroke-opacity=".04"/></pattern>
+  </defs>
+  <rect width="1280" height="520" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="520" rx="24" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1278" height="518" rx="24" fill="none" stroke="#28334e"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <path d="M60 65h24l14 14v24H74L60 89Z" fill="none" stroke="url(#accent)" stroke-width="4"/>
+    <path d="m81 86 19 19" stroke="#60e7cf" stroke-width="4"/>
+    <text x="117" y="97" fill="#f2f5ff" font-size="33" font-weight="700" letter-spacing="-.8">QueryShape</text>
+    <text x="60" y="180" fill="#8d9fbd" font-size="14" font-weight="700" letter-spacing="3">QUERY REGRESSION TESTING FOR EF CORE</text>
+    <text x="56" y="250" fill="#f4f6ff" font-size="57" font-weight="700" letter-spacing="-2">Your tests pass.</text>
+    <text x="56" y="320" fill="url(#accent)" font-size="57" font-weight="700" letter-spacing="-2">Do your queries scale?</text>
+    <text x="60" y="371" fill="#a8b7d0" font-size="21">Turn database behavior into a contract you can test.</text>
+    <rect x="60" y="414" width="170" height="40" rx="20" fill="#a398ff" fill-opacity=".1" stroke="#625990"/>
+    <text x="145" y="440" fill="#c9c2ff" text-anchor="middle" font-size="15">Query snapshots</text>
+    <rect x="244" y="414" width="170" height="40" rx="20" fill="#60e7cf" fill-opacity=".07" stroke="#315e60"/>
+    <text x="329" y="440" fill="#8ce9d9" text-anchor="middle" font-size="15">Behavior checks</text>
+    <rect x="428" y="414" width="170" height="40" rx="20" fill="#a398ff" fill-opacity=".07" stroke="#424361"/>
+    <text x="513" y="440" fill="#c4cce0" text-anchor="middle" font-size="15">Failure reduction</text>
+    <rect x="852" y="65" width="368" height="389" rx="18" fill="#111b2c" stroke="#2e3b54"/>
+    <circle cx="878" cy="93" r="5" fill="#ff878c"/><circle cx="896" cy="93" r="5" fill="#f3c969"/><circle cx="914" cy="93" r="5" fill="#60e7cf"/>
+    <text x="1193" y="98" text-anchor="end" fill="#8093b1" font-size="12" letter-spacing="1">ONE OPERATION</text>
+    <path d="M875 118h322" stroke="#29354b"/>
+    <text x="882" y="153" fill="#adbcd3" font-size="15">Queries that grow with your data</text>
+    <g fill="none" stroke="#9588ee" stroke-width="2">
+      <path d="M902 216h38M940 177v78M940 177h55M940 216h55M940 255h55M1040 177h60M1040 216h60M1040 255h60"/>
+    </g>
+    <rect x="884" y="202" width="28" height="28" rx="7" fill="#a398ff"/>
+    <g fill="#272440" stroke="#9588ee"><rect x="995" y="166" width="45" height="22" rx="5"/><rect x="995" y="205" width="45" height="22" rx="5"/><rect x="995" y="244" width="45" height="22" rx="5"/></g>
+    <g fill="#1a3140" stroke="#60e7cf"><ellipse cx="1121" cy="171" rx="21" ry="8"/><path d="M1100 171v88c0 11 42 11 42 0v-88"/><path d="M1100 200c0 11 42 11 42 0M1100 229c0 11 42 11 42 0" fill="none"/></g>
+    <text x="883" y="305" fill="#7f92b1" font-size="13">CAPTURE</text><text x="997" y="305" fill="#7f92b1" font-size="13">COMPARE</text><text x="1110" y="305" fill="#7f92b1" font-size="13">REDUCE</text>
+    <path d="M883 324h302" stroke="#29354b"/>
+    <rect x="878" y="345" width="316" height="77" rx="10" fill="#60e7cf" fill-opacity=".06"/>
+    <text x="897" y="375" fill="#79e5ce" font-size="17" font-weight="700">Make growth visible.</text>
+    <text x="897" y="400" fill="#a8b7d0" font-size="15">Keep regressions reproducible.</text>
+  </g>
+</svg>

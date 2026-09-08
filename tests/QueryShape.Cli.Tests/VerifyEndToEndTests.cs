@@ -7,6 +7,7 @@ namespace QueryShape.Cli.Tests;
 /// Slow (builds the solution in a worktree); skipped outside a git checkout or when QUERYSHAPE_SKIP_E2E is set.
 /// </summary>
 [Trait("Category", "Slow")]
+[Collection("Isolated verify repository")]
 public class VerifyEndToEndTests
 {
     public static string? SkipReason
@@ -63,9 +64,10 @@ public class VerifyEndToEndTests
             var code = await new VerifyCommand
             {
                 Project = "tests/QueryShape.SampleApp.Tests",
-                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix",
+                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_behavior_is_preserved",
                 PatchPath = patch,
                 Runs = 3,
+                Policy = new VerificationPolicy { AllowedNewWarningRules = ["QS004"] },
                 AllowDirty = true,   // local dev loops have uncommitted work; tracked changes are carried into the worktree
             }.ExecuteAsync(out_, err, CancellationToken.None);
 
@@ -75,7 +77,7 @@ public class VerifyEndToEndTests
             compact.Should().Contain("\nqueries 41 1 -40\n");
             compact.Should().Contain("\nQS001 N+1 query 1 0 ✓\n");
             compact.Should().Contain("\nnew diagnostics - 0 ✓\n");
-            text.Should().Contain("note: dotnet test exited with code 1 after the patch");
+            text.Should().Contain("Behavior observations preserved");
             text.Should().Contain("verdict: improved", err.ToString());
             code.Should().Be(0, err.ToString());
         }
@@ -87,6 +89,7 @@ public class VerifyEndToEndTests
     }
 }
 
+[Collection("Isolated verify repository")]
 public class VerifyFromDiagnosisEndToEndTests
 {
     [SkippableFact]
@@ -103,10 +106,11 @@ public class VerifyFromDiagnosisEndToEndTests
             var code = await new VerifyCommand
             {
                 Project = "tests/QueryShape.SampleApp.Tests",
-                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix",
+                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_behavior_is_preserved",
                 PatchFromDiagnosis = true,
                 RuleFilter = "QS001",
                 Runs = 2,
+                Policy = new VerificationPolicy { AllowedNewWarningRules = ["QS004"] },
                 AllowDirty = true,
             }.ExecuteAsync(out_, err, CancellationToken.None);
 

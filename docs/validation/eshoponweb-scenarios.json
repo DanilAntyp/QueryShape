@@ -1,0 +1,699 @@
+{
+  "repository": {
+    "url": "https://github.com/dotnet-architecture/eShopOnWeb",
+    "commit": "4da8212117e87d808d4bbc7da6286fd2147ce606"
+  },
+  "environment": {
+    "date": "2026-09-08",
+    "provider": "SQLite in-memory",
+    "efCore": "8.0.30",
+    "testTarget": "net8.0",
+    "runtimeRollForward": "net10.0",
+    "data": "synthetic, original service/query code"
+  },
+  "validation": {
+    "tests": {
+      "Passed": 15
+    },
+    "scalingCliExitCode": 1,
+    "reductionTests": {
+      "Passed": 1
+    },
+    "reductionCliExitCode": 0,
+    "scalingExecutions": 24,
+    "rawReportDirectory": "/private/var/folders/1c/7k95888d4m92nbyv3vr1cgfw0000gn/T/queryshape-scaling/28a6cca3e8484cbaae94a82016f38268",
+    "reductionReportDirectory": "/private/var/folders/1c/7k95888d4m92nbyv3vr1cgfw0000gn/T/queryshape-reduction/fae97e1d40e94f55a07987ab0217ceb1"
+  },
+  "capture": {
+    "scopes": 180,
+    "commands": 240,
+    "overflowedScopes": 0,
+    "diagnosticsBySeverity": {
+      "Warning": 58,
+      "Info": 222
+    }
+  },
+  "scaling": [
+    {
+      "scenario": "eshop-catalog-products",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 4,
+          "rows": 16,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-basket-count",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 1,
+          "rows": 1,
+          "complete": true,
+          "origins": []
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-basket",
+      "dimension": "products",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 2,
+          "rows": 20,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ]
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 2,
+          "rows": 20,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 2,
+          "rows": 200,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 2,
+          "rows": 200,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 2,
+          "rows": 1002,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 2,
+          "rows": 1002,
+          "complete": true,
+          "origins": [
+            "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+            "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser"
+          ]
+        }
+      ],
+      "violations": [],
+      "passed": true
+    },
+    {
+      "scenario": "eshop-catalog-lookups",
+      "dimension": "brands-and-types-each",
+      "points": [
+        {
+          "size": 10,
+          "run": 1,
+          "commands": 4,
+          "rows": 25,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 10,
+          "run": 2,
+          "commands": 4,
+          "rows": 25,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 1,
+          "commands": 4,
+          "rows": 205,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ]
+        },
+        {
+          "size": 100,
+          "run": 2,
+          "commands": 4,
+          "rows": 205,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 1,
+          "commands": 4,
+          "rows": 1007,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ]
+        },
+        {
+          "size": 501,
+          "run": 2,
+          "commands": 4,
+          "rows": 1007,
+          "complete": true,
+          "origins": [
+            "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+            "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+            "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems"
+          ]
+        }
+      ],
+      "violations": [
+        "Rows read change with dataset size or repetition."
+      ],
+      "passed": false
+    }
+  ],
+  "equivalence": [
+    {
+      "size": 10,
+      "Equivalent": true,
+      "Differences": [],
+      "BeforeCommands": 4,
+      "AfterCommands": 4,
+      "BeforeRows": 16,
+      "AfterRows": 16
+    },
+    {
+      "size": 100,
+      "Equivalent": true,
+      "Differences": [],
+      "BeforeCommands": 4,
+      "AfterCommands": 4,
+      "BeforeRows": 16,
+      "AfterRows": 16
+    },
+    {
+      "size": 501,
+      "Equivalent": true,
+      "Differences": [],
+      "BeforeCommands": 4,
+      "AfterCommands": 4,
+      "BeforeRows": 16,
+      "AfterRows": 16
+    }
+  ],
+  "trackingChecks": [
+    {
+      "scope": "catalog-tracking/10",
+      "queryCount": 4,
+      "QS005": 3
+    },
+    {
+      "scope": "catalog-no-tracking/10",
+      "queryCount": 4,
+      "QS005": 0
+    },
+    {
+      "scope": "catalog-tracking/100",
+      "queryCount": 4,
+      "QS005": 3
+    },
+    {
+      "scope": "catalog-no-tracking/100",
+      "queryCount": 4,
+      "QS005": 0
+    },
+    {
+      "scope": "catalog-tracking/501",
+      "queryCount": 4,
+      "QS005": 3
+    },
+    {
+      "scope": "catalog-no-tracking/501",
+      "queryCount": 4,
+      "QS005": 0
+    }
+  ],
+  "reduction": {
+    "name": "eshop-basket-QS007",
+    "failure": "QS007",
+    "originalComplexity": 1000,
+    "reducedComplexity": 501,
+    "attempts": 42,
+    "complete": true,
+    "regressionFile": "/private/tmp/queryshape-eshop-reduced-20260908/QueryShapeRegression_300d75c053c8447db5e6513f58a10a13.cs",
+    "passed": true,
+    "savedRegressionFile": "docs/validation/eshoponweb-reproducer/QueryShapeRegression_300d75c053c8447db5e6513f58a10a13.cs",
+    "boundary500TriggersQS007": false
+  },
+  "diagnosticExamples": [
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS011",
+      "severity": "Warning",
+      "title": "Non-deterministic paging: Skip/Take without OrderBy on CatalogItem at CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+      "explanation": "A relational table has no inherent order: without an ORDER BY the database returns rows in whatever order the chosen plan produces, and that order changes with indexes, statistics, parallelism and concurrent writes. Skip/Take on an unordered query therefore pages over a moving target: rows can appear on two pages or on none, and the same request can return different results minutes apart. EF Core translates the query faithfully (OFFSET/LIMIT with no ORDER BY) and logs RowLimitingOperationWithoutOrderByWarning at compile time; QueryShape picked that warning up for this query.",
+      "callSite": "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 49,
+      "fingerprints": [
+        "401fb9bdfb9a"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"CatalogBrandId\", \"t0\".\"CatalogTypeId\", \"t0\".\"Description\", \"t0\".\"Name\", \"t0\".\"PictureUri\", \"t0\".\"Price\" FROM \"Catalog\" AS \"t0\" LIMIT @p0",
+      "sampleExpression": "DbSet<CatalogItem>()\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "fixSummary": "Add .OrderBy(ci => ci.Id) (or an order that matches the UI) before the Skip/Take",
+      "fixRationale": "An explicit, total order (a unique key or a sort plus the key as tie-breaker) makes paging stable and the picked row deterministic. Order by an indexed column so the database does not have to sort the whole table to find the page.",
+      "fixBefore": "DbSet<CatalogItem>()\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "fixAfter": "DbSet<CatalogItem>()\n    .OrderBy(ci => ci.Id)\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS011.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS004",
+      "severity": "Info",
+      "title": "Unbounded query: loads every CatalogBrand row (6 rows) at CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "explanation": "The LINQ query has no Where and no Take/First/Single, so EF Core translates it to a SELECT with no WHERE clause and no row limit; the database returns every row in CatalogBrands. EF Core then materializes each row into a CatalogBrand and registers it in the change tracker, which keeps a snapshot of every property for change detection. That work is linear in the table size, so a query that is fine with today's 6 rows becomes the slowest thing in the request as data accumulates, and a large table can exhaust memory outright. Today's result is below 20 rows (UnboundedMinimumRows), the size of a lookup table, so this is reported at Info level; it is still unbounded and grows with the table.",
+      "callSite": "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 83,
+      "fingerprints": [
+        "7950fc99407f"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Brand\" FROM \"CatalogBrands\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogBrand>()",
+      "fixSummary": "Filter the CatalogBrand query (.Where) or page it (.OrderBy(cb => cb.Id).Take(n))",
+      "fixRationale": "A bounded query does a fixed amount of work no matter how large the table grows. If every row really is needed (exports, batch jobs), stream with AsAsyncEnumerable() and add AsNoTracking() so memory stays flat; if this is a small lookup table you can suppress this rule for the query.",
+      "fixBefore": "DbSet<CatalogBrand>()",
+      "fixAfter": "DbSet<CatalogBrand>()\n    .Where(cb => /* filter */)\n    .OrderBy(cb => cb.Id)\n    .Take(100)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS004.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS004",
+      "severity": "Info",
+      "title": "Unbounded query: loads every CatalogType row (5 rows) at CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "explanation": "The LINQ query has no Where and no Take/First/Single, so EF Core translates it to a SELECT with no WHERE clause and no row limit; the database returns every row in CatalogTypes. EF Core then materializes each row into a CatalogType and registers it in the change tracker, which keeps a snapshot of every property for change detection. That work is linear in the table size, so a query that is fine with today's 5 rows becomes the slowest thing in the request as data accumulates, and a large table can exhaust memory outright. Today's result is below 20 rows (UnboundedMinimumRows), the size of a lookup table, so this is reported at Info level; it is still unbounded and grows with the table.",
+      "callSite": "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 99,
+      "fingerprints": [
+        "b6c1cb15fb11"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Type\" FROM \"CatalogTypes\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogType>()",
+      "fixSummary": "Filter the CatalogType query (.Where) or page it (.OrderBy(ct => ct.Id).Take(n))",
+      "fixRationale": "A bounded query does a fixed amount of work no matter how large the table grows. If every row really is needed (exports, batch jobs), stream with AsAsyncEnumerable() and add AsNoTracking() so memory stays flat; if this is a small lookup table you can suppress this rule for the query.",
+      "fixBefore": "DbSet<CatalogType>()",
+      "fixAfter": "DbSet<CatalogType>()\n    .Where(ct => /* filter */)\n    .OrderBy(ct => ct.Id)\n    .Take(100)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS004.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: 4 CatalogItem entities loaded with change tracking but never modified at CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+      "explanation": "Queries that return entity types are tracked by default: for every CatalogItem it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for CatalogItem, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "CatalogViewModelService.cs:49 CatalogViewModelService.GetCatalogItems",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 49,
+      "fingerprints": [
+        "401fb9bdfb9a"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"CatalogBrandId\", \"t0\".\"CatalogTypeId\", \"t0\".\"Description\", \"t0\".\"Name\", \"t0\".\"PictureUri\", \"t0\".\"Price\" FROM \"Catalog\" AS \"t0\" LIMIT @p0",
+      "sampleExpression": "DbSet<CatalogItem>()\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "fixSummary": "Add .AsNoTracking() to the CatalogItem query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each CatalogItem, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same CatalogItem appears several times in the result and you want one instance (ci references stay consistent).",
+      "fixBefore": "DbSet<CatalogItem>()\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "fixAfter": "DbSet<CatalogItem>()\n    .AsNoTracking()\n    .Where(i => True && True)\n    .Take(__p_0)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: 6 CatalogBrand entities loaded with change tracking but never modified at CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "explanation": "Queries that return entity types are tracked by default: for every CatalogBrand it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for CatalogBrand, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 83,
+      "fingerprints": [
+        "7950fc99407f"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Brand\" FROM \"CatalogBrands\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogBrand>()",
+      "fixSummary": "Add .AsNoTracking() to the CatalogBrand query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each CatalogBrand, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same CatalogBrand appears several times in the result and you want one instance (cb references stay consistent).",
+      "fixBefore": "DbSet<CatalogBrand>()",
+      "fixAfter": "DbSet<CatalogBrand>()\n    .AsNoTracking()",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "eshop-catalog-products/before",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: 5 CatalogType entities loaded with change tracking but never modified at CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "explanation": "Queries that return entity types are tracked by default: for every CatalogType it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for CatalogType, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 99,
+      "fingerprints": [
+        "b6c1cb15fb11"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Type\" FROM \"CatalogTypes\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogType>()",
+      "fixSummary": "Add .AsNoTracking() to the CatalogType query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each CatalogType, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same CatalogType appears several times in the result and you want one instance (ct references stay consistent).",
+      "fixBefore": "DbSet<CatalogType>()",
+      "fixAfter": "DbSet<CatalogType>()\n    .AsNoTracking()",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "basket/run-1",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: Basket entities and included entities loaded with change tracking but never modified at BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+      "explanation": "Queries that return entity types are tracked by default: for every Basket it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for Basket, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "BasketViewModelService.cs:31 BasketViewModelService.GetOrCreateBasketForUser",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/BasketViewModelService.cs",
+      "callSiteLine": 31,
+      "fingerprints": [
+        "3a8f7bb3ff86"
+      ],
+      "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"BuyerId\", \"t2\".\"Id\", \"t2\".\"BasketId\", \"t2\".\"CatalogItemId\", \"t2\".\"Quantity\", \"t2\".\"UnitPrice\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"BuyerId\" FROM \"Baskets\" AS \"t0\" WHERE \"t0\".\"BuyerId\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"BasketItems\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"BasketId\" ORDER BY \"t1\".\"Id\"",
+      "sampleExpression": "DbSet<Basket>()\n    .Where(b => b.BuyerId == __buyerId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "fixSummary": "Add .AsNoTracking() to the Basket query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each Basket, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same Basket appears several times in the result and you want one instance (b references stay consistent).",
+      "fixBefore": "DbSet<Basket>()\n    .Where(b => b.BuyerId == __buyerId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "fixAfter": "DbSet<Basket>()\n    .AsNoTracking()\n    .Where(b => b.BuyerId == __buyerId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "basket/run-1",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: 3 CatalogItem entities loaded with change tracking but never modified at BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+      "explanation": "Queries that return entity types are tracked by default: for every CatalogItem it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for CatalogItem, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/BasketViewModelService.cs",
+      "callSiteLine": 56,
+      "fingerprints": [
+        "948ac7732c2a"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"CatalogBrandId\", \"t0\".\"CatalogTypeId\", \"t0\".\"Description\", \"t0\".\"Name\", \"t0\".\"PictureUri\", \"t0\".\"Price\" FROM \"Catalog\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" )",
+      "sampleExpression": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixSummary": "Add .AsNoTracking() to the CatalogItem query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each CatalogItem, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same CatalogItem appears several times in the result and you want one instance (ci references stay consistent).",
+      "fixBefore": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixAfter": "DbSet<CatalogItem>()\n    .AsNoTracking()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "order-history/run-1",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: Order entities and included entities loaded with change tracking but never modified at ShopTests.cs:91 ShopTests.Exercise",
+      "explanation": "Queries that return entity types are tracked by default: for every Order it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for Order, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "ShopTests.cs:91 ShopTests.Exercise",
+      "callSiteFile": "/Users/mac/RiderProjects/QueryShape/scripts/real-world/eShopOnWeb/ShopTests.cs",
+      "callSiteLine": 91,
+      "fingerprints": [
+        "68055d85a13b"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"BuyerId\", \"t0\".\"OrderDate\", \"t0\".\"ShipToAddress_City\", \"t0\".\"ShipToAddress_Country\", \"t0\".\"ShipToAddress_State\", \"t0\".\"ShipToAddress_Street\", \"t0\".\"ShipToAddress_ZipCode\", \"t1\".\"Id\", \"t1\".\"OrderId\", \"t1\".\"UnitPrice\", \"t1\".\"Units\", \"t1\".\"ItemOrdered_CatalogItemId\", \"t1\".\"ItemOrdered_PictureUri\", \"t1\".\"ItemOrdered_ProductName\" FROM \"Orders\" AS \"t0\" LEFT JOIN \"OrderItems\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"OrderId\" WHERE \"t0\".\"BuyerId\" = @p0 ORDER BY \"t0\".\"Id\"",
+      "sampleExpression": "DbSet<Order>()\n    .Where(o => o.BuyerId == __buyerId_0)\n    .Include(o => o.OrderItems)\n    .ThenInclude(i => i.ItemOrdered)",
+      "fixSummary": "Add .AsNoTracking() to the Order query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each Order, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same Order appears several times in the result and you want one instance (o references stay consistent).",
+      "fixBefore": "DbSet<Order>()\n    .Where(o => o.BuyerId == __buyerId_0)\n    .Include(o => o.OrderItems)\n    .ThenInclude(i => i.ItemOrdered)",
+      "fixAfter": "DbSet<Order>()\n    .AsNoTracking()\n    .Where(o => o.BuyerId == __buyerId_0)\n    .Include(o => o.OrderItems)\n    .ThenInclude(i => i.ItemOrdered)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "basket-501-items/run-1",
+      "ruleId": "QS007",
+      "severity": "Warning",
+      "title": "Contains over 501 values on the CatalogItem query (threshold 500) at BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+      "explanation": "Where(ci => list.Contains(ci.Key)) makes EF Core send the whole in-memory list to the database, here 501 values as a JSON array parameter unpacked with json_each. The database has no statistics for values that arrive in a parameter or literal list, so it cannot pick a good plan, the statement text or parameter grows with the list (SQL Server refuses more than 2 100 parameters, and every distinct inline list is a new plan to compile and cache), and the values travel over the network on every call. Lists this size usually come from data that already lives in the database, which means the filter can be expressed as a join or subquery instead.",
+      "callSite": "BasketViewModelService.cs:56 BasketViewModelService.GetBasketItems",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/BasketViewModelService.cs",
+      "callSiteLine": 56,
+      "fingerprints": [
+        "948ac7732c2a"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"CatalogBrandId\", \"t0\".\"CatalogTypeId\", \"t0\".\"Description\", \"t0\".\"Name\", \"t0\".\"PictureUri\", \"t0\".\"Price\" FROM \"Catalog\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" )",
+      "sampleExpression": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixSummary": "Replace the in-memory list with a query the database can join (subquery on the source table), or process the list in chunks of 500",
+      "fixRationale": "A correlated subquery or join lets the optimizer use indexes and statistics on both sides and keeps the statement constant. When the values truly originate on the client (a file, an API call), chunk them (ids.Chunk(500)) or bulk-insert them into a temporary table and join against it.",
+      "fixBefore": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixAfter": "DbSet<CatalogItem>()\n    .Where(ci => DbSet<Source>().Where(...).Select(s => s.Key).Contains(ci.Key))",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS007.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "catalog-large-lookups/run-1",
+      "ruleId": "QS004",
+      "severity": "Warning",
+      "title": "Unbounded query: loads every CatalogBrand row (30 rows) at CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "explanation": "The LINQ query has no Where and no Take/First/Single, so EF Core translates it to a SELECT with no WHERE clause and no row limit; the database returns every row in CatalogBrands. EF Core then materializes each row into a CatalogBrand. That work is linear in the table size, so a query that is fine with today's 30 rows becomes the slowest thing in the request as data accumulates, and a large table can exhaust memory outright.",
+      "callSite": "CatalogViewModelService.cs:83 CatalogViewModelService.GetBrands",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 83,
+      "fingerprints": [
+        "7950fc99407f"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Brand\" FROM \"CatalogBrands\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogBrand>()",
+      "fixSummary": "Filter the CatalogBrand query (.Where) or page it (.OrderBy(cb => cb.Id).Take(n))",
+      "fixRationale": "A bounded query does a fixed amount of work no matter how large the table grows. If every row really is needed (exports, batch jobs), stream with AsAsyncEnumerable() and add AsNoTracking() so memory stays flat; if this is a small lookup table you can suppress this rule for the query.",
+      "fixBefore": "DbSet<CatalogBrand>()",
+      "fixAfter": "DbSet<CatalogBrand>()\n    .Where(cb => /* filter */)\n    .OrderBy(cb => cb.Id)\n    .Take(100)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS004.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "catalog-large-lookups/run-1",
+      "ruleId": "QS004",
+      "severity": "Warning",
+      "title": "Unbounded query: loads every CatalogType row (25 rows) at CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "explanation": "The LINQ query has no Where and no Take/First/Single, so EF Core translates it to a SELECT with no WHERE clause and no row limit; the database returns every row in CatalogTypes. EF Core then materializes each row into a CatalogType. That work is linear in the table size, so a query that is fine with today's 25 rows becomes the slowest thing in the request as data accumulates, and a large table can exhaust memory outright.",
+      "callSite": "CatalogViewModelService.cs:99 CatalogViewModelService.GetTypes",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/Web/Services/CatalogViewModelService.cs",
+      "callSiteLine": 99,
+      "fingerprints": [
+        "b6c1cb15fb11"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"Type\" FROM \"CatalogTypes\" AS \"t0\"",
+      "sampleExpression": "DbSet<CatalogType>()",
+      "fixSummary": "Filter the CatalogType query (.Where) or page it (.OrderBy(ct => ct.Id).Take(n))",
+      "fixRationale": "A bounded query does a fixed amount of work no matter how large the table grows. If every row really is needed (exports, batch jobs), stream with AsAsyncEnumerable() and add AsNoTracking() so memory stays flat; if this is a small lookup table you can suppress this rule for the query.",
+      "fixBefore": "DbSet<CatalogType>()",
+      "fixAfter": "DbSet<CatalogType>()\n    .Where(ct => /* filter */)\n    .OrderBy(ct => ct.Id)\n    .Take(100)",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS004.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "checkout/run-1",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: Basket entities and included entities loaded with change tracking but never modified at OrderService.cs:33 OrderService.CreateOrderAsync",
+      "explanation": "Queries that return entity types are tracked by default: for every Basket it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for Basket, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "OrderService.cs:33 OrderService.CreateOrderAsync",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/ApplicationCore/Services/OrderService.cs",
+      "callSiteLine": 33,
+      "fingerprints": [
+        "c9eb5b265e8b"
+      ],
+      "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"BuyerId\", \"t2\".\"Id\", \"t2\".\"BasketId\", \"t2\".\"CatalogItemId\", \"t2\".\"Quantity\", \"t2\".\"UnitPrice\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"BuyerId\" FROM \"Baskets\" AS \"t0\" WHERE \"t0\".\"Id\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"BasketItems\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"BasketId\" ORDER BY \"t1\".\"Id\"",
+      "sampleExpression": "DbSet<Basket>()\n    .Where(b => b.Id == __basketId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "fixSummary": "Add .AsNoTracking() to the Basket query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each Basket, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same Basket appears several times in the result and you want one instance (b references stay consistent).",
+      "fixBefore": "DbSet<Basket>()\n    .Where(b => b.Id == __basketId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "fixAfter": "DbSet<Basket>()\n    .AsNoTracking()\n    .Where(b => b.Id == __basketId_0)\n    .Include(b => b.Items)\n    .FirstOrDefault()",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    },
+    {
+      "scope": "checkout/run-1",
+      "ruleId": "QS005",
+      "severity": "Info",
+      "title": "Tracked read-only query: 3 CatalogItem entities loaded with change tracking but never modified at OrderService.cs:39 OrderService.CreateOrderAsync",
+      "explanation": "Queries that return entity types are tracked by default: for every CatalogItem it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for CatalogItem, so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+      "callSite": "OrderService.cs:39 OrderService.CreateOrderAsync",
+      "callSiteFile": "/private/tmp/queryshape-eshoponweb/src/ApplicationCore/Services/OrderService.cs",
+      "callSiteLine": 39,
+      "fingerprints": [
+        "948ac7732c2a"
+      ],
+      "sampleSql": "SELECT \"t0\".\"Id\", \"t0\".\"CatalogBrandId\", \"t0\".\"CatalogTypeId\", \"t0\".\"Description\", \"t0\".\"Name\", \"t0\".\"PictureUri\", \"t0\".\"Price\" FROM \"Catalog\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" )",
+      "sampleExpression": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixSummary": "Add .AsNoTracking() to the CatalogItem query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+      "fixRationale": "No-tracking queries skip the change-tracker entry and the property snapshot for each CatalogItem, which is the whole cost. Use AsNoTrackingWithIdentityResolution() if the same CatalogItem appears several times in the result and you want one instance (ci references stay consistent).",
+      "fixBefore": "DbSet<CatalogItem>()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "fixAfter": "DbSet<CatalogItem>()\n    .AsNoTracking()\n    .Where(c => __ids_0\n        .Contains(c.Id))",
+      "docsUrl": "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS005.md",
+      "fixIsPartial": false
+    }
+  ]
+}

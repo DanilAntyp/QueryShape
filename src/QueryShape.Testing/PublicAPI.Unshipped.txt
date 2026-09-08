@@ -1,4 +1,46 @@
 #nullable enable
+QueryShape.Testing.BehaviorComparison
+QueryShape.Testing.BehaviorComparison.<Clone>$() -> QueryShape.Testing.BehaviorComparison!
+QueryShape.Testing.BehaviorComparison.AfterCommands.get -> int
+QueryShape.Testing.BehaviorComparison.AfterCommands.init -> void
+QueryShape.Testing.BehaviorComparison.AfterRows.get -> long
+QueryShape.Testing.BehaviorComparison.AfterRows.init -> void
+QueryShape.Testing.BehaviorComparison.AssertEquivalent() -> void
+QueryShape.Testing.BehaviorComparison.BeforeCommands.get -> int
+QueryShape.Testing.BehaviorComparison.BeforeCommands.init -> void
+QueryShape.Testing.BehaviorComparison.BeforeRows.get -> long
+QueryShape.Testing.BehaviorComparison.BeforeRows.init -> void
+QueryShape.Testing.BehaviorComparison.BehaviorComparison(bool Equivalent, System.Collections.Generic.IReadOnlyList<string!>! Differences, int BeforeCommands, int AfterCommands, long BeforeRows, long AfterRows) -> void
+QueryShape.Testing.BehaviorComparison.Coverage.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.BehaviorComparison.Coverage.init -> void
+QueryShape.Testing.BehaviorComparison.Deconstruct(out bool Equivalent, out System.Collections.Generic.IReadOnlyList<string!>! Differences, out int BeforeCommands, out int AfterCommands, out long BeforeRows, out long AfterRows) -> void
+QueryShape.Testing.BehaviorComparison.Differences.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.BehaviorComparison.Differences.init -> void
+QueryShape.Testing.BehaviorComparison.Equals(QueryShape.Testing.BehaviorComparison? other) -> bool
+QueryShape.Testing.BehaviorComparison.Equivalent.get -> bool
+QueryShape.Testing.BehaviorComparison.Equivalent.init -> void
+QueryShape.Testing.BehaviorComparison.LocalDifferences.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.BehaviorDifference!>!
+QueryShape.Testing.BehaviorComparison.LocalDifferences.init -> void
+QueryShape.Testing.BehaviorDiffOptions
+QueryShape.Testing.BehaviorDiffOptions.BehaviorDiffOptions() -> void
+QueryShape.Testing.BehaviorDiffOptions.IncludeValues.get -> bool
+QueryShape.Testing.BehaviorDiffOptions.IncludeValues.init -> void
+QueryShape.Testing.BehaviorDiffOptions.MaxDifferences.get -> int
+QueryShape.Testing.BehaviorDiffOptions.MaxDifferences.init -> void
+QueryShape.Testing.BehaviorDiffOptions.RedactPath.get -> System.Func<string!, bool>?
+QueryShape.Testing.BehaviorDiffOptions.RedactPath.init -> void
+QueryShape.Testing.BehaviorDifference
+QueryShape.Testing.BehaviorDifference.<Clone>$() -> QueryShape.Testing.BehaviorDifference!
+QueryShape.Testing.BehaviorDifference.After.get -> string!
+QueryShape.Testing.BehaviorDifference.After.init -> void
+QueryShape.Testing.BehaviorDifference.Before.get -> string!
+QueryShape.Testing.BehaviorDifference.Before.init -> void
+QueryShape.Testing.BehaviorDifference.BehaviorDifference(string! Path, string! Before, string! After) -> void
+QueryShape.Testing.BehaviorDifference.Deconstruct(out string! Path, out string! Before, out string! After) -> void
+QueryShape.Testing.BehaviorDifference.Equals(QueryShape.Testing.BehaviorDifference? other) -> bool
+QueryShape.Testing.BehaviorDifference.Path.get -> string!
+QueryShape.Testing.BehaviorDifference.Path.init -> void
+QueryShape.Testing.QueryBehavior
 QueryShape.Testing.QueryBudget
 QueryShape.Testing.QueryBudget.BuildMessage(string! testName, QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<string!>! violations, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> string!
 QueryShape.Testing.QueryBudget.Evaluate(QueryShape.QueryShapeScope! scope, out System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! failingDiagnoses) -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -14,6 +56,8 @@ QueryShape.Testing.QueryBudgetExceededException
 QueryShape.Testing.QueryBudgetExceededException.QueryBudgetExceededException(string! message, System.Collections.Generic.IReadOnlyList<string!>! violations) -> void
 QueryShape.Testing.QueryBudgetExceededException.Violations.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.Testing.QueryBudgetExtensions
+QueryShape.Testing.QueryContractException
+QueryShape.Testing.QueryContractException.QueryContractException(string! message) -> void
 QueryShape.Testing.QueryDelta
 QueryShape.Testing.QueryDelta.<Clone>$() -> QueryShape.Testing.QueryDelta!
 QueryShape.Testing.QueryDelta.ActualCount.get -> int
@@ -31,6 +75,30 @@ QueryShape.Testing.QueryDelta.Shape.get -> string!
 QueryShape.Testing.QueryDelta.Shape.init -> void
 QueryShape.Testing.QueryDelta.Source.get -> string!
 QueryShape.Testing.QueryDelta.Source.init -> void
+QueryShape.Testing.QueryEquivalence
+QueryShape.Testing.QueryReduction
+QueryShape.Testing.QueryScaling
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.CaptureOptions.get -> QueryShape.QueryShapeOptions!
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.CaptureOptions.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ExecuteAsync.get -> System.Func<TFixture, System.Threading.CancellationToken, System.Threading.Tasks.Task<TResult>!>!
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ExecuteAsync.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.Name.get -> string!
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.Name.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.NormalizeResult.get -> System.Func<TResult, object?>?
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.NormalizeResult.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ObserveMetricsAsync.get -> System.Func<TFixture, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string!, double>!>!>?
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ObserveMetricsAsync.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ObserveStateAsync.get -> System.Func<TFixture, System.Threading.CancellationToken, System.Threading.Tasks.Task<object?>!>?
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ObserveStateAsync.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.PrepareAsync.get -> System.Func<TInput, System.Threading.CancellationToken, System.Threading.Tasks.Task<TFixture>!>!
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.PrepareAsync.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.QueryScenario() -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ResultOrder.get -> QueryShape.Testing.ResultOrder
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.ResultOrder.init -> void
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.RunAsync(TInput input, string? caseName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<QueryShape.Testing.ScenarioRun<TResult>!>!
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.StateDescription.get -> string?
+QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>.StateDescription.init -> void
 QueryShape.Testing.QueryShapeScopeSnapshotExtensions
 QueryShape.Testing.QueryShapeTest
 QueryShape.Testing.QueryShapeTestScope
@@ -59,6 +127,174 @@ QueryShape.Testing.QuerySnapshotMismatchException.SnapshotPath.get -> string!
 QueryShape.Testing.QuerySnapshotMissingException
 QueryShape.Testing.QuerySnapshotMissingException.QuerySnapshotMissingException(string! message, string! snapshotPath) -> void
 QueryShape.Testing.QuerySnapshotMissingException.SnapshotPath.get -> string!
+QueryShape.Testing.ReductionOptions
+QueryShape.Testing.ReductionOptions.ArtifactDirectory.get -> string?
+QueryShape.Testing.ReductionOptions.ArtifactDirectory.init -> void
+QueryShape.Testing.ReductionOptions.Confirmations.get -> int
+QueryShape.Testing.ReductionOptions.Confirmations.init -> void
+QueryShape.Testing.ReductionOptions.Framework.get -> QueryShape.Testing.RegressionFramework
+QueryShape.Testing.ReductionOptions.Framework.init -> void
+QueryShape.Testing.ReductionOptions.MaxAttempts.get -> int
+QueryShape.Testing.ReductionOptions.MaxAttempts.init -> void
+QueryShape.Testing.ReductionOptions.ReductionOptions() -> void
+QueryShape.Testing.ReductionOptions.ReplayMethod.get -> string?
+QueryShape.Testing.ReductionOptions.ReplayMethod.init -> void
+QueryShape.Testing.ReductionResult<T>
+QueryShape.Testing.ReductionResult<T>.<Clone>$() -> QueryShape.Testing.ReductionResult<T>!
+QueryShape.Testing.ReductionResult<T>.Deconstruct(out T Input, out QueryShape.Testing.ReductionSummary! Summary) -> void
+QueryShape.Testing.ReductionResult<T>.Equals(QueryShape.Testing.ReductionResult<T>? other) -> bool
+QueryShape.Testing.ReductionResult<T>.Input.get -> T
+QueryShape.Testing.ReductionResult<T>.Input.init -> void
+QueryShape.Testing.ReductionResult<T>.ReductionResult(T Input, QueryShape.Testing.ReductionSummary! Summary) -> void
+QueryShape.Testing.ReductionResult<T>.Summary.get -> QueryShape.Testing.ReductionSummary!
+QueryShape.Testing.ReductionResult<T>.Summary.init -> void
+QueryShape.Testing.ReductionResult<T>.WriteRegressionAsync(string! directory, string! replayMethod, QueryShape.Testing.RegressionFramework framework = QueryShape.Testing.RegressionFramework.Xunit, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string!>!
+QueryShape.Testing.ReductionSummary
+QueryShape.Testing.ReductionSummary.<Clone>$() -> QueryShape.Testing.ReductionSummary!
+QueryShape.Testing.ReductionSummary.Attempts.get -> int
+QueryShape.Testing.ReductionSummary.Attempts.init -> void
+QueryShape.Testing.ReductionSummary.Complete.get -> bool
+QueryShape.Testing.ReductionSummary.Complete.init -> void
+QueryShape.Testing.ReductionSummary.Deconstruct(out string! Name, out string! Failure, out long OriginalComplexity, out long ReducedComplexity, out int Attempts, out bool Complete, out string? RegressionFile) -> void
+QueryShape.Testing.ReductionSummary.Equals(QueryShape.Testing.ReductionSummary? other) -> bool
+QueryShape.Testing.ReductionSummary.Failure.get -> string!
+QueryShape.Testing.ReductionSummary.Failure.init -> void
+QueryShape.Testing.ReductionSummary.Name.get -> string!
+QueryShape.Testing.ReductionSummary.Name.init -> void
+QueryShape.Testing.ReductionSummary.OriginalComplexity.get -> long
+QueryShape.Testing.ReductionSummary.OriginalComplexity.init -> void
+QueryShape.Testing.ReductionSummary.Passed.get -> bool
+QueryShape.Testing.ReductionSummary.ReducedComplexity.get -> long
+QueryShape.Testing.ReductionSummary.ReducedComplexity.init -> void
+QueryShape.Testing.ReductionSummary.ReductionSummary(string! Name, string! Failure, long OriginalComplexity, long ReducedComplexity, int Attempts, bool Complete, string? RegressionFile) -> void
+QueryShape.Testing.ReductionSummary.RegressionFile.get -> string?
+QueryShape.Testing.ReductionSummary.RegressionFile.init -> void
+QueryShape.Testing.ReductionSummary.ToJson() -> string!
+QueryShape.Testing.ReductionSummary.ToText() -> string!
+QueryShape.Testing.ReductionTrial
+QueryShape.Testing.ReductionTrial.<Clone>$() -> QueryShape.Testing.ReductionTrial!
+QueryShape.Testing.ReductionTrial.Deconstruct(out bool Valid, out string? Failure) -> void
+QueryShape.Testing.ReductionTrial.Equals(QueryShape.Testing.ReductionTrial? other) -> bool
+QueryShape.Testing.ReductionTrial.Failure.get -> string?
+QueryShape.Testing.ReductionTrial.Failure.init -> void
+QueryShape.Testing.ReductionTrial.ReductionTrial(bool Valid, string? Failure) -> void
+QueryShape.Testing.ReductionTrial.Valid.get -> bool
+QueryShape.Testing.ReductionTrial.Valid.init -> void
+QueryShape.Testing.RegressionFramework
+QueryShape.Testing.RegressionFramework.MSTest = 2 -> QueryShape.Testing.RegressionFramework
+QueryShape.Testing.RegressionFramework.NUnit = 1 -> QueryShape.Testing.RegressionFramework
+QueryShape.Testing.RegressionFramework.Xunit = 0 -> QueryShape.Testing.RegressionFramework
+QueryShape.Testing.RelationalInput<TParent, TChild>
+QueryShape.Testing.RelationalInput<TParent, TChild>.<Clone>$() -> QueryShape.Testing.RelationalInput<TParent, TChild>!
+QueryShape.Testing.RelationalInput<TParent, TChild>.Children.get -> System.Collections.Generic.IReadOnlyList<TChild>!
+QueryShape.Testing.RelationalInput<TParent, TChild>.Children.init -> void
+QueryShape.Testing.RelationalInput<TParent, TChild>.Deconstruct(out System.Collections.Generic.IReadOnlyList<TParent>! Parents, out System.Collections.Generic.IReadOnlyList<TChild>! Children) -> void
+QueryShape.Testing.RelationalInput<TParent, TChild>.Equals(QueryShape.Testing.RelationalInput<TParent, TChild>? other) -> bool
+QueryShape.Testing.RelationalInput<TParent, TChild>.Parents.get -> System.Collections.Generic.IReadOnlyList<TParent>!
+QueryShape.Testing.RelationalInput<TParent, TChild>.Parents.init -> void
+QueryShape.Testing.RelationalInput<TParent, TChild>.RelationalInput(System.Collections.Generic.IReadOnlyList<TParent>! Parents, System.Collections.Generic.IReadOnlyList<TChild>! Children) -> void
+QueryShape.Testing.RelationalReduction
+QueryShape.Testing.ResultOrder
+QueryShape.Testing.ResultOrder.Ignore = 1 -> QueryShape.Testing.ResultOrder
+QueryShape.Testing.ResultOrder.Preserve = 0 -> QueryShape.Testing.ResultOrder
+QueryShape.Testing.ScalingCase<TInput>
+QueryShape.Testing.ScalingCase<TInput>.<Clone>$() -> QueryShape.Testing.ScalingCase<TInput>!
+QueryShape.Testing.ScalingCase<TInput>.Deconstruct(out string! Name, out int Size, out TInput Input) -> void
+QueryShape.Testing.ScalingCase<TInput>.Equals(QueryShape.Testing.ScalingCase<TInput>? other) -> bool
+QueryShape.Testing.ScalingCase<TInput>.Input.get -> TInput
+QueryShape.Testing.ScalingCase<TInput>.Input.init -> void
+QueryShape.Testing.ScalingCase<TInput>.Name.get -> string!
+QueryShape.Testing.ScalingCase<TInput>.Name.init -> void
+QueryShape.Testing.ScalingCase<TInput>.ScalingCase(string! Name, int Size, TInput Input) -> void
+QueryShape.Testing.ScalingCase<TInput>.Size.get -> int
+QueryShape.Testing.ScalingCase<TInput>.Size.init -> void
+QueryShape.Testing.ScalingOptions
+QueryShape.Testing.ScalingOptions.ConstantCommands.get -> bool
+QueryShape.Testing.ScalingOptions.ConstantCommands.init -> void
+QueryShape.Testing.ScalingOptions.ConstantRows.get -> bool
+QueryShape.Testing.ScalingOptions.ConstantRows.init -> void
+QueryShape.Testing.ScalingOptions.Dimension.get -> string!
+QueryShape.Testing.ScalingOptions.Dimension.init -> void
+QueryShape.Testing.ScalingOptions.MaxCommands.get -> int?
+QueryShape.Testing.ScalingOptions.MaxCommands.init -> void
+QueryShape.Testing.ScalingOptions.MaxCommandsForSize.get -> System.Func<int, int>?
+QueryShape.Testing.ScalingOptions.MaxCommandsForSize.init -> void
+QueryShape.Testing.ScalingOptions.MaxRows.get -> long?
+QueryShape.Testing.ScalingOptions.MaxRows.init -> void
+QueryShape.Testing.ScalingOptions.MaxRowsForSize.get -> System.Func<int, long>?
+QueryShape.Testing.ScalingOptions.MaxRowsForSize.init -> void
+QueryShape.Testing.ScalingOptions.MaxRowsPerItem.get -> double?
+QueryShape.Testing.ScalingOptions.MaxRowsPerItem.init -> void
+QueryShape.Testing.ScalingOptions.Repeats.get -> int
+QueryShape.Testing.ScalingOptions.Repeats.init -> void
+QueryShape.Testing.ScalingOptions.ScalingOptions() -> void
+QueryShape.Testing.ScalingOptions.ValidatePoint.get -> System.Func<QueryShape.Testing.ScalingPoint!, System.Collections.Generic.IEnumerable<string!>!>?
+QueryShape.Testing.ScalingOptions.ValidatePoint.init -> void
+QueryShape.Testing.ScalingPoint
+QueryShape.Testing.ScalingPoint.<Clone>$() -> QueryShape.Testing.ScalingPoint!
+QueryShape.Testing.ScalingPoint.Case.get -> string?
+QueryShape.Testing.ScalingPoint.Case.init -> void
+QueryShape.Testing.ScalingPoint.Commands.get -> int
+QueryShape.Testing.ScalingPoint.Commands.init -> void
+QueryShape.Testing.ScalingPoint.Complete.get -> bool
+QueryShape.Testing.ScalingPoint.Complete.init -> void
+QueryShape.Testing.ScalingPoint.Deconstruct(out int Size, out int Run, out int Commands, out long Rows, out bool Complete, out System.Collections.Generic.IReadOnlyList<string!>! Origins) -> void
+QueryShape.Testing.ScalingPoint.ElapsedMs.get -> double
+QueryShape.Testing.ScalingPoint.ElapsedMs.init -> void
+QueryShape.Testing.ScalingPoint.Equals(QueryShape.Testing.ScalingPoint? other) -> bool
+QueryShape.Testing.ScalingPoint.Metrics.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
+QueryShape.Testing.ScalingPoint.Metrics.init -> void
+QueryShape.Testing.ScalingPoint.Origins.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.ScalingPoint.Origins.init -> void
+QueryShape.Testing.ScalingPoint.Rows.get -> long
+QueryShape.Testing.ScalingPoint.Rows.init -> void
+QueryShape.Testing.ScalingPoint.Run.get -> int
+QueryShape.Testing.ScalingPoint.Run.init -> void
+QueryShape.Testing.ScalingPoint.ScalingPoint(int Size, int Run, int Commands, long Rows, bool Complete, System.Collections.Generic.IReadOnlyList<string!>! Origins) -> void
+QueryShape.Testing.ScalingPoint.Size.get -> int
+QueryShape.Testing.ScalingPoint.Size.init -> void
+QueryShape.Testing.ScalingReport
+QueryShape.Testing.ScalingReport.<Clone>$() -> QueryShape.Testing.ScalingReport!
+QueryShape.Testing.ScalingReport.AssertSatisfied() -> void
+QueryShape.Testing.ScalingReport.Deconstruct(out string! Scenario, out string! Dimension, out System.Collections.Generic.IReadOnlyList<QueryShape.Testing.ScalingPoint!>! Points, out System.Collections.Generic.IReadOnlyList<string!>! Violations) -> void
+QueryShape.Testing.ScalingReport.Dimension.get -> string!
+QueryShape.Testing.ScalingReport.Dimension.init -> void
+QueryShape.Testing.ScalingReport.Equals(QueryShape.Testing.ScalingReport? other) -> bool
+QueryShape.Testing.ScalingReport.Passed.get -> bool
+QueryShape.Testing.ScalingReport.Points.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.ScalingPoint!>!
+QueryShape.Testing.ScalingReport.Points.init -> void
+QueryShape.Testing.ScalingReport.ScalingReport(string! Scenario, string! Dimension, System.Collections.Generic.IReadOnlyList<QueryShape.Testing.ScalingPoint!>! Points, System.Collections.Generic.IReadOnlyList<string!>! Violations) -> void
+QueryShape.Testing.ScalingReport.Scenario.get -> string!
+QueryShape.Testing.ScalingReport.Scenario.init -> void
+QueryShape.Testing.ScalingReport.ToJson() -> string!
+QueryShape.Testing.ScalingReport.ToText() -> string!
+QueryShape.Testing.ScalingReport.Violations.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Testing.ScalingReport.Violations.init -> void
+QueryShape.Testing.ScenarioRun<TResult>
+QueryShape.Testing.ScenarioRun<TResult>.<Clone>$() -> QueryShape.Testing.ScenarioRun<TResult>!
+QueryShape.Testing.ScenarioRun<TResult>.Commands.get -> int
+QueryShape.Testing.ScenarioRun<TResult>.Commands.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Complete.get -> bool
+QueryShape.Testing.ScenarioRun<TResult>.Complete.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Deconstruct(out TResult Result, out string! ResultDigest, out string? StateBeforeDigest, out string? StateAfterDigest, out int Commands, out long Rows, out bool Complete, out QueryShape.Reporting.ScopeReport! Report) -> void
+QueryShape.Testing.ScenarioRun<TResult>.ElapsedMs.get -> double
+QueryShape.Testing.ScenarioRun<TResult>.ElapsedMs.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Equals(QueryShape.Testing.ScenarioRun<TResult>? other) -> bool
+QueryShape.Testing.ScenarioRun<TResult>.Metrics.get -> System.Collections.Generic.IReadOnlyDictionary<string!, double>!
+QueryShape.Testing.ScenarioRun<TResult>.Metrics.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Report.get -> QueryShape.Reporting.ScopeReport!
+QueryShape.Testing.ScenarioRun<TResult>.Report.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Result.get -> TResult
+QueryShape.Testing.ScenarioRun<TResult>.Result.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.ResultDigest.get -> string!
+QueryShape.Testing.ScenarioRun<TResult>.ResultDigest.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.Rows.get -> long
+QueryShape.Testing.ScenarioRun<TResult>.Rows.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.ScenarioRun(TResult Result, string! ResultDigest, string? StateBeforeDigest, string? StateAfterDigest, int Commands, long Rows, bool Complete, QueryShape.Reporting.ScopeReport! Report) -> void
+QueryShape.Testing.ScenarioRun<TResult>.StateAfterDigest.get -> string?
+QueryShape.Testing.ScenarioRun<TResult>.StateAfterDigest.init -> void
+QueryShape.Testing.ScenarioRun<TResult>.StateBeforeDigest.get -> string?
+QueryShape.Testing.ScenarioRun<TResult>.StateBeforeDigest.init -> void
 QueryShape.Testing.SnapshotComparison
 QueryShape.Testing.SnapshotComparison.ActualQueryCount.get -> int
 QueryShape.Testing.SnapshotComparison.ActualQueryCount.init -> void
@@ -134,9 +370,39 @@ QueryShape.Testing.SnapshotSerializer
 const QueryShape.Testing.QuerySnapshot.CurrentVersion = 1 -> int
 const QueryShape.Testing.SnapshotOptions.CiEnvironmentVariable = "CI" -> string!
 const QueryShape.Testing.SnapshotOptions.UpdateEnvironmentVariable = "QUERYSHAPE_UPDATE_SNAPSHOTS" -> string!
+override QueryShape.Testing.BehaviorComparison.Equals(object? obj) -> bool
+override QueryShape.Testing.BehaviorComparison.GetHashCode() -> int
+override QueryShape.Testing.BehaviorComparison.ToString() -> string!
+override QueryShape.Testing.BehaviorDifference.Equals(object? obj) -> bool
+override QueryShape.Testing.BehaviorDifference.GetHashCode() -> int
+override QueryShape.Testing.BehaviorDifference.ToString() -> string!
 override QueryShape.Testing.QueryDelta.Equals(object? obj) -> bool
 override QueryShape.Testing.QueryDelta.GetHashCode() -> int
 override QueryShape.Testing.QueryDelta.ToString() -> string!
+override QueryShape.Testing.ReductionResult<T>.Equals(object? obj) -> bool
+override QueryShape.Testing.ReductionResult<T>.GetHashCode() -> int
+override QueryShape.Testing.ReductionResult<T>.ToString() -> string!
+override QueryShape.Testing.ReductionSummary.Equals(object? obj) -> bool
+override QueryShape.Testing.ReductionSummary.GetHashCode() -> int
+override QueryShape.Testing.ReductionSummary.ToString() -> string!
+override QueryShape.Testing.ReductionTrial.Equals(object? obj) -> bool
+override QueryShape.Testing.ReductionTrial.GetHashCode() -> int
+override QueryShape.Testing.ReductionTrial.ToString() -> string!
+override QueryShape.Testing.RelationalInput<TParent, TChild>.Equals(object? obj) -> bool
+override QueryShape.Testing.RelationalInput<TParent, TChild>.GetHashCode() -> int
+override QueryShape.Testing.RelationalInput<TParent, TChild>.ToString() -> string!
+override QueryShape.Testing.ScalingCase<TInput>.Equals(object? obj) -> bool
+override QueryShape.Testing.ScalingCase<TInput>.GetHashCode() -> int
+override QueryShape.Testing.ScalingCase<TInput>.ToString() -> string!
+override QueryShape.Testing.ScalingPoint.Equals(object? obj) -> bool
+override QueryShape.Testing.ScalingPoint.GetHashCode() -> int
+override QueryShape.Testing.ScalingPoint.ToString() -> string!
+override QueryShape.Testing.ScalingReport.Equals(object? obj) -> bool
+override QueryShape.Testing.ScalingReport.GetHashCode() -> int
+override QueryShape.Testing.ScalingReport.ToString() -> string!
+override QueryShape.Testing.ScenarioRun<TResult>.Equals(object? obj) -> bool
+override QueryShape.Testing.ScenarioRun<TResult>.GetHashCode() -> int
+override QueryShape.Testing.ScenarioRun<TResult>.ToString() -> string!
 override QueryShape.Testing.SnapshotDiagnostic.Equals(object? obj) -> bool
 override QueryShape.Testing.SnapshotDiagnostic.GetHashCode() -> int
 override QueryShape.Testing.SnapshotDiagnostic.ToString() -> string!
@@ -146,12 +412,24 @@ override QueryShape.Testing.SnapshotQuery.ToString() -> string!
 override QueryShape.Testing.SnapshotResult.Equals(object? obj) -> bool
 override QueryShape.Testing.SnapshotResult.GetHashCode() -> int
 override QueryShape.Testing.SnapshotResult.ToString() -> string!
+static QueryShape.Testing.BehaviorComparison.operator !=(QueryShape.Testing.BehaviorComparison? left, QueryShape.Testing.BehaviorComparison? right) -> bool
+static QueryShape.Testing.BehaviorComparison.operator ==(QueryShape.Testing.BehaviorComparison? left, QueryShape.Testing.BehaviorComparison? right) -> bool
+static QueryShape.Testing.BehaviorDifference.operator !=(QueryShape.Testing.BehaviorDifference? left, QueryShape.Testing.BehaviorDifference? right) -> bool
+static QueryShape.Testing.BehaviorDifference.operator ==(QueryShape.Testing.BehaviorDifference? left, QueryShape.Testing.BehaviorDifference? right) -> bool
+static QueryShape.Testing.QueryBehavior.Compare<T>(T before, T after, QueryShape.Testing.BehaviorDiffOptions? options = null) -> System.Collections.Generic.IReadOnlyList<QueryShape.Testing.BehaviorDifference!>!
+static QueryShape.Testing.QueryBehavior.Digest<T>(T value, QueryShape.Testing.ResultOrder order = QueryShape.Testing.ResultOrder.Preserve) -> string!
+static QueryShape.Testing.QueryBehavior.Observe<T>(this QueryShape.QueryShapeScope! scope, string! name, T value, QueryShape.Testing.ResultOrder order = QueryShape.Testing.ResultOrder.Preserve) -> void
 static QueryShape.Testing.QueryBudgetEnforcer.Begin(System.Reflection.MethodInfo! method, QueryShape.QueryShapeOptions? options = null) -> QueryShape.QueryShapeScope!
 static QueryShape.Testing.QueryBudgetEnforcer.Discard(System.Reflection.MethodInfo! method) -> void
 static QueryShape.Testing.QueryBudgetEnforcer.End(System.Reflection.MethodInfo! method, QueryShape.Testing.QueryBudget! budget) -> void
 static QueryShape.Testing.QueryBudgetExtensions.AssertBudget(this QueryShape.QueryShapeScope! scope, QueryShape.Testing.QueryBudget! budget, string? testName = null) -> void
 static QueryShape.Testing.QueryDelta.operator !=(QueryShape.Testing.QueryDelta? left, QueryShape.Testing.QueryDelta? right) -> bool
 static QueryShape.Testing.QueryDelta.operator ==(QueryShape.Testing.QueryDelta? left, QueryShape.Testing.QueryDelta? right) -> bool
+static QueryShape.Testing.QueryEquivalence.CompareAsync<TInput, TFixture, TResult>(QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>! before, QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>! after, TInput input, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), QueryShape.Testing.BehaviorDiffOptions? localDifferences = null) -> System.Threading.Tasks.Task<QueryShape.Testing.BehaviorComparison!>!
+static QueryShape.Testing.QueryReduction.MinimizeAsync<T>(string! name, T input, System.Func<T, System.Collections.Generic.IEnumerable<T>!>! candidates, System.Func<T, long>! complexity, System.Func<T, System.Threading.CancellationToken, System.Threading.Tasks.Task<QueryShape.Testing.ReductionTrial!>!>! evaluateAsync, QueryShape.Testing.ReductionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<QueryShape.Testing.ReductionResult<T>!>!
+static QueryShape.Testing.QueryReduction.RemoveChunks<T>(System.Collections.Generic.IReadOnlyList<T>! input) -> System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyList<T>!>!
+static QueryShape.Testing.QueryScaling.RunAsync<TFixture, TResult>(QueryShape.Testing.QueryScenario<int, TFixture, TResult>! scenario, System.Collections.Generic.IReadOnlyList<int>! sizes, QueryShape.Testing.ScalingOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<QueryShape.Testing.ScalingReport!>!
+static QueryShape.Testing.QueryScaling.RunCasesAsync<TInput, TFixture, TResult>(QueryShape.Testing.QueryScenario<TInput, TFixture, TResult>! scenario, System.Collections.Generic.IReadOnlyList<QueryShape.Testing.ScalingCase<TInput>!>! cases, QueryShape.Testing.ScalingOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<QueryShape.Testing.ScalingReport!>!
 static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshot(this QueryShape.QueryShapeScope! scope, string? name = null, QueryShape.Testing.SnapshotOptions? options = null, string! callerFilePath = "", string! callerMemberName = "") -> QueryShape.Testing.SnapshotResult!
 static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshotAsync(this QueryShape.QueryShapeScope! scope, string? name = null, QueryShape.Testing.SnapshotOptions? options = null, string! callerFilePath = "", string! callerMemberName = "") -> System.Threading.Tasks.Task<QueryShape.Testing.SnapshotResult!>!
 static QueryShape.Testing.QueryShapeScopeSnapshotExtensions.MatchSnapshotFileAsync(this QueryShape.QueryShapeScope! scope, string! snapshotPath, string! testName, QueryShape.Testing.SnapshotOptions? options = null) -> System.Threading.Tasks.Task<QueryShape.Testing.SnapshotResult!>!
@@ -160,6 +438,26 @@ static QueryShape.Testing.QueryShapeTest.Begin(string? name = null, QueryShape.Q
 static QueryShape.Testing.QueryShapeTest.DefaultOptions.get -> QueryShape.QueryShapeOptions!
 static QueryShape.Testing.QueryShapeTest.DefaultOptions.set -> void
 static QueryShape.Testing.QuerySnapshot.FromScope(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>? diagnoses = null) -> QueryShape.Testing.QuerySnapshot!
+static QueryShape.Testing.ReductionResult<T>.operator !=(QueryShape.Testing.ReductionResult<T>? left, QueryShape.Testing.ReductionResult<T>? right) -> bool
+static QueryShape.Testing.ReductionResult<T>.operator ==(QueryShape.Testing.ReductionResult<T>? left, QueryShape.Testing.ReductionResult<T>? right) -> bool
+static QueryShape.Testing.ReductionSummary.operator !=(QueryShape.Testing.ReductionSummary? left, QueryShape.Testing.ReductionSummary? right) -> bool
+static QueryShape.Testing.ReductionSummary.operator ==(QueryShape.Testing.ReductionSummary? left, QueryShape.Testing.ReductionSummary? right) -> bool
+static QueryShape.Testing.ReductionTrial.Fail(string! signature) -> QueryShape.Testing.ReductionTrial!
+static QueryShape.Testing.ReductionTrial.Invalid.get -> QueryShape.Testing.ReductionTrial!
+static QueryShape.Testing.ReductionTrial.Pass.get -> QueryShape.Testing.ReductionTrial!
+static QueryShape.Testing.ReductionTrial.operator !=(QueryShape.Testing.ReductionTrial? left, QueryShape.Testing.ReductionTrial? right) -> bool
+static QueryShape.Testing.ReductionTrial.operator ==(QueryShape.Testing.ReductionTrial? left, QueryShape.Testing.ReductionTrial? right) -> bool
+static QueryShape.Testing.RelationalInput<TParent, TChild>.operator !=(QueryShape.Testing.RelationalInput<TParent, TChild>? left, QueryShape.Testing.RelationalInput<TParent, TChild>? right) -> bool
+static QueryShape.Testing.RelationalInput<TParent, TChild>.operator ==(QueryShape.Testing.RelationalInput<TParent, TChild>? left, QueryShape.Testing.RelationalInput<TParent, TChild>? right) -> bool
+static QueryShape.Testing.RelationalReduction.RemoveParentGroups<TParent, TChild, TKey>(QueryShape.Testing.RelationalInput<TParent, TChild>! input, System.Func<TParent, TKey>! parentKey, System.Func<TChild, TKey>! foreignKey) -> System.Collections.Generic.IEnumerable<QueryShape.Testing.RelationalInput<TParent, TChild>!>!
+static QueryShape.Testing.ScalingCase<TInput>.operator !=(QueryShape.Testing.ScalingCase<TInput>? left, QueryShape.Testing.ScalingCase<TInput>? right) -> bool
+static QueryShape.Testing.ScalingCase<TInput>.operator ==(QueryShape.Testing.ScalingCase<TInput>? left, QueryShape.Testing.ScalingCase<TInput>? right) -> bool
+static QueryShape.Testing.ScalingPoint.operator !=(QueryShape.Testing.ScalingPoint? left, QueryShape.Testing.ScalingPoint? right) -> bool
+static QueryShape.Testing.ScalingPoint.operator ==(QueryShape.Testing.ScalingPoint? left, QueryShape.Testing.ScalingPoint? right) -> bool
+static QueryShape.Testing.ScalingReport.operator !=(QueryShape.Testing.ScalingReport? left, QueryShape.Testing.ScalingReport? right) -> bool
+static QueryShape.Testing.ScalingReport.operator ==(QueryShape.Testing.ScalingReport? left, QueryShape.Testing.ScalingReport? right) -> bool
+static QueryShape.Testing.ScenarioRun<TResult>.operator !=(QueryShape.Testing.ScenarioRun<TResult>? left, QueryShape.Testing.ScenarioRun<TResult>? right) -> bool
+static QueryShape.Testing.ScenarioRun<TResult>.operator ==(QueryShape.Testing.ScenarioRun<TResult>? left, QueryShape.Testing.ScenarioRun<TResult>? right) -> bool
 static QueryShape.Testing.SnapshotComparison.Compare(QueryShape.Testing.QuerySnapshot! expected, QueryShape.Testing.QuerySnapshot! actual, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses, System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>! commands, QueryShape.Severity failOn) -> QueryShape.Testing.SnapshotComparison!
 static QueryShape.Testing.SnapshotDiagnostic.operator !=(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool
 static QueryShape.Testing.SnapshotDiagnostic.operator ==(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool

@@ -10,6 +10,7 @@ internal sealed class RunMetrics
     public int Queries { get; init; }
 
     public double DurationMs { get; init; }
+    public long? RowsReturned { get; init; }
 
     public IReadOnlyDictionary<string, int> Fingerprints { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -50,8 +51,9 @@ internal sealed class RunMetrics
             Scopes = reports.Count,
             Queries = reports.Sum(r => r.QueryCount),
             DurationMs = reports.Sum(r => r.CommandDurationMs),
+            RowsReturned = reports.All(r => r.RowsReturned.HasValue) ? reports.Sum(r => r.RowsReturned!.Value) : null,
             Fingerprints = fingerprints,
-            Diagnostics = reports.SelectMany(r => r.Diagnostics).ToList(),
+            Diagnostics = reports.SelectMany(r => r.Diagnostics).Where(d => d.Disposition != "accepted").ToList(),
             Reports = reports,
         };
     }
@@ -70,6 +72,7 @@ internal sealed class RunMetrics
                 Scopes = mid.Scopes,
                 Queries = mid.Queries,
                 DurationMs = (lower.DurationMs + mid.DurationMs) / 2,
+                RowsReturned = mid.RowsReturned,
                 Fingerprints = mid.Fingerprints,
                 Diagnostics = mid.Diagnostics,
                 Reports = mid.Reports,

@@ -28,7 +28,7 @@ public sealed class MaterializedQueryOperatorAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true,
         description: "ToList()/ToArray() executes the query and loads every row; a Where/First/OrderBy/Take/Count applied to that list is LINQ-to-Objects and never reaches EF Core. " +
                      "Put the operator before the materializer so the database does the filtering. Use AsEnumerable() when client evaluation is intended.",
-        helpLinkUri: "https://github.com/queryshape/QueryShape/blob/main/docs/rules/QSA001.md");
+        helpLinkUri: "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QSA001.md");
 
     private static readonly HashSet<string> s_materializers = new(System.StringComparer.Ordinal) { "ToList", "ToListAsync", "ToArray", "ToArrayAsync" };
 

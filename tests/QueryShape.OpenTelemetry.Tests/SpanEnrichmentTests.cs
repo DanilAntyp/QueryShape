@@ -97,7 +97,7 @@ public sealed class SpanEnrichmentTests : IDisposable
         ((string)n1["queryshape.title"]!).Should().StartWith("N+1 query: Order by CustomerId executed 40 times");
         ((string)n1["queryshape.callsite"]!).Should().StartWith("BadEndpoints.cs:");
         ((string)n1["queryshape.fix.summary"]!).Should().StartWith("Add .Include(c => c.Orders) to the Customer query");
-        n1["queryshape.docs_url"].Should().Be("https://github.com/queryshape/QueryShape/blob/main/docs/rules/QS001.md");
+        n1["queryshape.docs_url"].Should().Be("https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS001.md");
     }
 
     [RuntimeMatchedTheory]

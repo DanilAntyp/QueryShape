@@ -45,17 +45,19 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                 continue;
             }
 
-            var rowsText = c.RowsReturned is { } r ? RuleHelpers.N(r) + " " + root + (r == 1 ? " entity" : " entities") : root + " entities";
+            // A collection include repeats the root per child row. Reader rows are not an entity count.
+            var rowsText = q.CollectionIncludes.Count > 0 ? root + " entities and included entities"
+                : c.RowsReturned is { } r ? RuleHelpers.N(r) + " " + root + (r == 1 ? " entity" : " entities") : root + " entities";
             var x = RuleHelpers.LambdaName(root);
 
             yield return new Diagnosis(
                 RuleId,
                 DefaultSeverity,
-                $"Tracked read-only query: {rowsText} loaded with change tracking but never modified{RuleHelpers.AtCallSite(c)}",
+                $"Tracked read-only query: {rowsText} loaded with change tracking; no save observed in this scope{RuleHelpers.AtCallSite(c)}",
                 $"Queries that return entity types are tracked by default: for every {root} it materializes, EF Core also creates an entry in the change tracker " +
                 "with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for " + root +
-                ", so that bookkeeping was pure overhead: extra allocations per row, a DetectChanges pass over every tracked entity on the next SaveChanges, " +
-                "and identity-resolution lookups on every subsequent query for the same type. On read paths the cost is roughly proportional to the rows loaded.",
+                ", so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, " +
+                "but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
                 c.CallSite,
                 [c.Fingerprint],
                 new Evidence(
@@ -73,7 +75,7 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                     q.Expression,
                     RuleHelpers.InsertAfterRoot(q.Expression, "AsNoTracking()"),
                     c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsNoTracking()", q) : null,
-                    $"No-tracking queries skip the change-tracker entry and the property snapshot for each {root}, which is the whole cost. " +
+                    $"No-tracking queries can avoid change-tracker entries and snapshots for {root}; compare results and persisted state before accepting the change. " +
                     $"Use AsNoTrackingWithIdentityResolution() if the same {root} appears several times in the result and you want one instance ({x} references stay consistent).",
                     scope.Options.DocsUrlFor(RuleId)));
         }

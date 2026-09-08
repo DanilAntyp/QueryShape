@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <CleanArchitectureRoot Condition="'$(CleanArchitectureRoot)' == ''">/private/tmp/queryshape-cleanarchitecture-validation</CleanArchitectureRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
+    <ProjectReference Include="$(CleanArchitectureRoot)/src/Clean.Architecture.Infrastructure/Clean.Architecture.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

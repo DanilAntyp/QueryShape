@@ -1,0 +1,15 @@
+name: Idea or real application case study
+description: Share a developer workflow, feature request, or reproducible application trial.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the operation, regression risk or developer workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Proposed improvement or evidence
+      description: Include a public pinned repository and synthetic reproduction when available. Explain what was measured and what remains unknown.
