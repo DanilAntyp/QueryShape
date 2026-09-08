@@ -20,7 +20,7 @@ public sealed class ProviderShapeTests : IAsyncLifetime
         }
 
         _sqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
-        _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+        _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("queryshape_tests").Build();
         await Task.WhenAll(_sqlServer.StartAsync(), _postgres.StartAsync());
     }
 
@@ -41,7 +41,8 @@ public sealed class ProviderShapeTests : IAsyncLifetime
     public async Task SqlServer_shapes_and_n_plus_one()
     {
         var options = new QueryShapeOptions { CaptureCallSites = true };
-        var builder = new DbContextOptionsBuilder<ShopContext>().UseSqlServer(_sqlServer!.GetConnectionString()).UseQueryShape(options);
+        var connection = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(_sqlServer!.GetConnectionString()) { InitialCatalog = "QueryShapeTests" };
+        var builder = new DbContextOptionsBuilder<ShopContext>().UseSqlServer(connection.ConnectionString).UseQueryShape(options);
         await RunAsync(builder.Options, options, expectedShapeStart: "SELECT [t0].[Id], [t0].[CustomerId], [t0].[PlacedAt], [t0].[Total] FROM [Orders] AS [t0] WHERE [t0].[CustomerId] = @p0");
     }
 
@@ -57,7 +58,7 @@ public sealed class ProviderShapeTests : IAsyncLifetime
     {
         await using (var setup = new ShopContext(dbOptions))
         {
-            await setup.Database.EnsureDeletedAsync();
+            // Each test owns fresh containers. Never drop a provider's default/system database.
             await setup.Database.EnsureCreatedAsync();
             for (var c = 1; c <= 6; c++)
             {

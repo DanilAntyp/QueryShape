@@ -17,6 +17,10 @@ jobs:
   build-test:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      # Hosted Windows supplies a Windows-container daemon; these provider images require Linux.
+      # Both EF targets exercise the actual containers in the Ubuntu job.
+      QUERYSHAPE_SKIP_DOCKER: ${{ matrix.os == 'windows-latest' && '1' || '0' }}
     strategy:
       fail-fast: false
       matrix:

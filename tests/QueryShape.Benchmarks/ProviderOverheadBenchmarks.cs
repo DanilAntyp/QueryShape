@@ -27,11 +27,11 @@ public class ProviderOverheadBenchmarks
         {
             _sql = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
             await _sql.StartAsync();
-            connection = _sql.GetConnectionString();
+            connection = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(_sql.GetConnectionString()) { InitialCatalog = "QueryShapeBenchmarks" }.ConnectionString;
         }
         else
         {
-            _pg = new PostgreSqlBuilder("postgres:16-alpine").Build();
+            _pg = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("queryshape_benchmarks").Build();
             await _pg.StartAsync();
             connection = _pg.GetConnectionString();
         }

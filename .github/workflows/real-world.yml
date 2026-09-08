@@ -24,25 +24,24 @@ jobs:
           dotnet-version: |
             8.0.x
             10.0.x
-      - name: Check out pinned eShopOnWeb
-        if: matrix.application == 'eShopOnWeb'
-        uses: actions/checkout@v4
-        with:
-          repository: dotnet-architecture/eShopOnWeb
-          ref: 4da8212117e87d808d4bbc7da6286fd2147ce606
-          path: artifacts/upstream/eShopOnWeb
-      - name: Check out pinned CleanArchitecture
-        if: matrix.application == 'CleanArchitecture'
-        uses: actions/checkout@v4
-        with:
-          repository: ardalis/CleanArchitecture
-          ref: fbdc0951879f5e8dca1bebc273d4b28cb2934469
-          path: artifacts/upstream/CleanArchitecture
+      # Keep upstream outside this checkout so it cannot inherit our Directory.Build.props.
+      - name: Check out the pinned upstream application
+        env:
+          APPLICATION: ${{ matrix.application }}
+        run: |
+          case "$APPLICATION" in
+            eShopOnWeb) upstream=https://github.com/dotnet-architecture/eShopOnWeb.git; revision=4da8212117e87d808d4bbc7da6286fd2147ce606 ;;
+            CleanArchitecture) upstream=https://github.com/ardalis/CleanArchitecture.git; revision=fbdc0951879f5e8dca1bebc273d4b28cb2934469 ;;
+          esac
+          git init "$RUNNER_TEMP/$APPLICATION"
+          git -C "$RUNNER_TEMP/$APPLICATION" remote add origin "$upstream"
+          git -C "$RUNNER_TEMP/$APPLICATION" fetch --depth 1 origin "$revision"
+          git -C "$RUNNER_TEMP/$APPLICATION" checkout --detach FETCH_HEAD
       - name: Exercise original services with synthetic SQLite fixtures
         env:
           APPLICATION: ${{ matrix.application }}
-          EShopRoot: ${{ github.workspace }}/artifacts/upstream/eShopOnWeb
-          CleanArchitectureRoot: ${{ github.workspace }}/artifacts/upstream/CleanArchitecture
+          EShopRoot: ${{ runner.temp }}/eShopOnWeb
+          CleanArchitectureRoot: ${{ runner.temp }}/CleanArchitecture
           QUERYSHAPE_REPORT_DIR: ${{ github.workspace }}/artifacts/reports
         run: dotnet test "scripts/real-world/$APPLICATION/$APPLICATION.Tests.csproj" --logger trx --results-directory artifacts/test-results
       - name: Upload reports and test results

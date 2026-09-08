@@ -116,8 +116,8 @@ public class NPlusOneRuleTests
             fix.IsPartial.Should().BeFalse();
             fix.ManualStep.Should().BeNull();
             fix.UnifiedDiff.Should().Be(
-                "--- a/" + file.TrimStart('/') + "\n" +
-                "+++ b/" + file.TrimStart('/') + "\n" +
+                "--- a/" + file.Replace('\\', '/').TrimStart('/') + "\n" +
+                "+++ b/" + file.Replace('\\', '/').TrimStart('/') + "\n" +
                 "@@ -1,9 +1,9 @@\n" +
                 " public async Task<List<Customer>> GetAll()\n" +
                 " {\n" +
