@@ -3,6 +3,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace QueryShape.Benchmarks;
 
@@ -15,15 +16,21 @@ public static class LoadMeasurement
 {
     public static async Task RunAsync(int workers, int requestsPerWorker, TextWriter output)
     {
-        output.WriteLine($"Load: {workers} concurrent workers x {requestsPerWorker} requests per worker per endpoint, in-process TestServer, in-memory SQLite.");
+        output.WriteLine($"Load: {workers} concurrent workers x {requestsPerWorker} requests per worker per endpoint, in-process TestServer, SQLite file (WAL, pooled connections).");
+        output.WriteLine("Each off/on pair is measured twice and the second pass is reported, so JIT and cache warm-up do not favour whichever mode runs second.");
         output.WriteLine();
         output.WriteLine("| Endpoint | Mode | p50 (µs) | p95 (µs) | p99 (µs) | p99 ratio |");
         output.WriteLine("|---|---|---:|---:|---:|---:|");
 
         foreach (var path in new[] { "/good/n-plus-one", "/bad/n-plus-one" })
         {
-            var off = await MeasureAsync(path, enabled: false, workers, requestsPerWorker);
-            var on = await MeasureAsync(path, enabled: true, workers, requestsPerWorker);
+            Percentiles off = default!, on = default!;
+            for (var pass = 0; pass < 2; pass++)
+            {
+                off = await MeasureAsync(path, enabled: false, workers, requestsPerWorker);
+                on = await MeasureAsync(path, enabled: true, workers, requestsPerWorker);
+            }
+
             output.WriteLine($"| `{path}` | off | {Row(off)} | 1.00 |");
             output.WriteLine($"| `{path}` | on | {Row(on)} | {(on.P99 / off.P99).ToString("0.00", CultureInfo.InvariantCulture)} |");
         }
@@ -40,6 +47,7 @@ public static class LoadMeasurement
         {
             b.UseContentRoot(AppContext.BaseDirectory); // the sample app needs no content files; the default content root is relative to the working directory
             b.UseEnvironment("Production");
+            b.ConfigureLogging(l => l.ClearProviders());   // request logging would dominate the measurement and the output
             b.ConfigureServices(s => s.AddQueryShape(o =>
             {
                 o.Enabled = enabled;

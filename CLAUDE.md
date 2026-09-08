@@ -310,7 +310,7 @@ This runs inside other people's production apps. Treat it that way.
 - [x] `CI=true` behavior, `QUERYSHAPE_UPDATE_SNAPSHOTS`, and `QueryBudget` attribute all covered by tests.
 - [x] OTel: spans from SampleApp requests carry `queryshape.*` tags and `queryshape.diagnosis` events; verified with in-memory exporter.
 - [x] `dotnet queryshape verify` produces the before/after table for at least the QS001 SampleApp case (end-to-end test in `QueryShape.Cli.Tests`, Category=Slow).
-- [x] Benchmarks recorded (`docs/performance.md`). Overhead ≈ 4 µs per query: within the 3 % budget against networked databases, not against in-memory SQLite (see the doc for the reasoning).
+- [x] Benchmarks recorded (`docs/performance.md`): ≈ 3.5 µs per query (micro) and, under 8-way concurrent load through the sample app, p99 unchanged on the 41-query request and within noise (+6 % of a 0.6 ms request) on the single-query one. The < 3 % p99 budget holds for any request that does real database work; a sub-millisecond in-memory SQLite request cannot meet it by construction.
 - [x] README: 3-line setup, one screenshot-equivalent code block of a snapshot failure, one of a `verify` table, link to rules docs.
 - [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI). Workflow written; needs the first push to GitHub to confirm.
 
