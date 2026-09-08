@@ -312,7 +312,7 @@ This runs inside other people's production apps. Treat it that way.
 - [x] `dotnet queryshape verify` produces the before/after table for at least the QS001 SampleApp case (end-to-end test in `QueryShape.Cli.Tests`, Category=Slow).
 - [x] Benchmarks recorded (`docs/performance.md`): ≈ 3.5 µs per query (micro) and, under 8-way concurrent load through the sample app, p99 unchanged on the 41-query request and within noise (+6 % of a 0.6 ms request) on the single-query one. These workloads do not establish a universal overhead bound. The 3% figure remains a target; provider benchmarks need a Docker-enabled runner.
 - [x] README: 3-line setup, one screenshot-equivalent code block of a snapshot failure, one of a `verify` table, link to rules docs.
-- [ ] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes (no roll-forward in CI). Workflow written; needs the first push to GitHub to confirm.
+- [x] GitHub Actions CI green on Linux and Windows, with tests executed on the real .NET 8 and .NET 10 runtimes. Confirmed in run 34279175865 on 2026-09-08; Ubuntu also passed provider containers, slow CLI integration tests, and package creation.
 
 ### Decisions recorded outside ADRs
 - Scenarios (2026-09-08, user requested): implement scaling contracts, explicit result/database-state comparison, and failure reduction with generated replay tests in `QueryShape.Testing`, plus `scale`/`reduce` CLI commands. ADR-0011 defines their scope and limitations. No changes to runtime rule IDs or production capture are required.

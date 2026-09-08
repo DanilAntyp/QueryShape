@@ -16,10 +16,13 @@ To rerun both pinned external applications on Linux with native .NET 8 and .NET 
 
 The adoption audit added regression checks for fewer-but-slower queries, returned-row increases, legitimate budgeted split queries, relocated findings, test identity replacement, acceptance expiry/counts, missing instrumentation, local redaction and foreign-key-preserving shrink candidates.
 
+## Hosted runtime validation
+
+[CI passed on Linux and Windows on 2026-09-08](https://github.com/DanilAntyp/QueryShape/actions/runs/34279175865), against commit `87cd685`. Both jobs ran tests on native .NET 8 and .NET 10 runtimes. Ubuntu additionally passed the PostgreSQL/SQL Server container tests, all five slow CLI integration tests, and package creation. Windows skips the Linux-only provider containers. The README scaling and HTTP demos passed in a separate job.
+
 ## Release evidence still required
 
 - Run the provider benchmark workflow and retain the full artifacts, environment, workload and uncertainty. No universal percentage overhead claim is justified by the existing SQLite results.
-- Run CI on actual .NET 8 and .NET 10 runtimes on Linux and Windows. Local .NET 8 roll-forward does not substitute for that matrix.
 - Validate more applications and production-representative datasets. Record actionable findings, intentional patterns flagged, missed issues, integration effort and confirmed improvements. Two applications do not establish precision/recall or typical adoption effort.
 - Observe actual developers completing the first-run guide and maintaining contracts over time. Usability changes alone do not establish that developers will adopt the tool.
 
