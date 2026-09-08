@@ -7,12 +7,16 @@ namespace QueryShape.Normalization;
 /// Turns provider SQL into a deterministic <em>shape</em>: comments removed, whitespace collapsed,
 /// EF Core's generated table aliases (<c>[c]</c>, <c>"o0"</c>, <c>t</c>) renamed positionally to <c>t0</c>, <c>t1</c>…,
 /// and parameter names (<c>@__customerId_0</c> in EF Core 8, <c>@customerId</c> in EF Core 10) renamed positionally to <c>@p0</c>, <c>@p1</c>…
+/// String literals are recognized first and never touched by those passes (a <c>--</c>, an <c>@</c> or two spaces inside a literal stay as they are).
 /// EF Core sends values as parameters, so a LINQ query's text carries only the constants written in the source. Raw SQL can carry
 /// anything (a value concatenated into the text), so raw shapes additionally mask string and numeric literals as <c>?</c>.
 /// Two commands with the same shape are "the same query with different arguments". See ADR-0006.
 /// </summary>
 public static partial class SqlNormalizer
 {
+    /// <summary>Stands in for a string literal while the other passes run; restored (or masked) at the end.</summary>
+    private const char LiteralSentinel = '\uE000';
+
     /// <summary>Normalizes <paramref name="sql"/> and returns the shape plus any leading <c>TagWith</c> tags.</summary>
     public static NormalizedSql Normalize(string sql) => Normalize(sql, maskLiterals: false);
 
@@ -22,17 +26,17 @@ public static partial class SqlNormalizer
         ArgumentNullException.ThrowIfNull(sql);
 
         var tags = ExtractTags(sql, out var body);
-        body = BlockComment().Replace(body, " ");
-        body = LineComment().Replace(body, " ");
-        body = Whitespace().Replace(body, " ").Trim();
-        body = CanonicalizeAliases(body);
-        body = CanonicalizeParameters(body);
+        var literals = new List<string>();
+        var shaped = Tokenize(body, literals);
+        shaped = Whitespace().Replace(shaped, " ").Trim();
+        shaped = CanonicalizeAliases(shaped);
+        shaped = CanonicalizeParameters(shaped);
         if (maskLiterals)
         {
-            body = MaskLiterals(body);
+            shaped = NumericLiteral().Replace(shaped, "?");
         }
 
-        return new NormalizedSql(body, tags);
+        return new NormalizedSql(RestoreLiterals(shaped, literals, maskLiterals), tags);
     }
 
     /// <summary>Shape only, without tags.</summary>
@@ -80,9 +84,143 @@ public static partial class SqlNormalizer
         return tags;
     }
 
+    /// <summary>
+    /// One pass over the SQL: string literals (with <c>''</c> escapes and an optional <c>N</c> prefix) become a sentinel and are collected,
+    /// quoted identifiers (<c>"x"</c>, <c>[x]</c>, <c>`x`</c>) are copied verbatim, and line/block comments become a space.
+    /// A quote inside a comment or a bracketed identifier therefore never opens a literal, and a <c>--</c> inside a literal never opens a comment.
+    /// </summary>
+    private static string Tokenize(string body, List<string> literals)
+    {
+        var sb = new StringBuilder(body.Length);
+        for (var i = 0; i < body.Length; i++)
+        {
+            var ch = body[i];
+            switch (ch)
+            {
+                case '\'':
+                {
+                    var end = ScanStringLiteral(body, i);
+                    var start = i;
+                    // N'...' (SQL Server unicode literal): the prefix belongs to the literal.
+                    if (sb.Length > 0 && (sb[^1] == 'N' || sb[^1] == 'n') && (sb.Length == 1 || !IsWordChar(sb[^2])))
+                    {
+                        sb.Length--;
+                        start--;
+                    }
+
+                    literals.Add(body[start..(end + 1)]);
+                    sb.Append(LiteralSentinel);
+                    i = end;
+                    break;
+                }
+
+                case '"':
+                case '[':
+                case '`':
+                {
+                    var end = ScanQuotedIdentifier(body, i, ch == '[' ? ']' : ch);
+                    sb.Append(body, i, end - i + 1);
+                    i = end;
+                    break;
+                }
+
+                case '-' when i + 1 < body.Length && body[i + 1] == '-':
+                {
+                    var end = body.IndexOfAny(['\r', '\n'], i);
+                    sb.Append(' ');
+                    i = (end < 0 ? body.Length : end) - 1;
+                    break;
+                }
+
+                case '/' when i + 1 < body.Length && body[i + 1] == '*':
+                {
+                    var end = body.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                    sb.Append(' ');
+                    i = (end < 0 ? body.Length : end + 2) - 1;
+                    break;
+                }
+
+                default:
+                    sb.Append(ch);
+                    break;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private static int ScanStringLiteral(string text, int openIndex)
+    {
+        for (var i = openIndex + 1; i < text.Length; i++)
+        {
+            if (text[i] != '\'')
+            {
+                continue;
+            }
+
+            if (i + 1 < text.Length && text[i + 1] == '\'')
+            {
+                i++; // '' escape
+                continue;
+            }
+
+            return i;
+        }
+
+        return text.Length - 1; // unterminated: the rest of the text is the literal
+    }
+
+    private static int ScanQuotedIdentifier(string text, int openIndex, char close)
+    {
+        for (var i = openIndex + 1; i < text.Length; i++)
+        {
+            if (text[i] != close)
+            {
+                continue;
+            }
+
+            if (i + 1 < text.Length && text[i + 1] == close)
+            {
+                i++; // doubled closing quote escape
+                continue;
+            }
+
+            return i;
+        }
+
+        return text.Length - 1;
+    }
+
+    private static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c == '_';
+
+    private static string RestoreLiterals(string shaped, List<string> literals, bool mask)
+    {
+        if (literals.Count == 0)
+        {
+            return shaped;
+        }
+
+        var sb = new StringBuilder(shaped.Length + 16);
+        var next = 0;
+        foreach (var ch in shaped)
+        {
+            if (ch == LiteralSentinel)
+            {
+                sb.Append(mask ? "?" : next < literals.Count ? literals[next] : "?");
+                next++;
+            }
+            else
+            {
+                sb.Append(ch);
+            }
+        }
+
+        return sb.ToString();
+    }
+
     private static string CanonicalizeAliases(string sql)
     {
-        // Aliases introduced by "FROM x AS a", "JOIN x AS a", ") AS a" (derived tables / APPLY).
+        // Aliases introduced by "FROM x AS a", "JOIN x AS a", ") AS a" (derived tables / APPLY); x may be schema-qualified ([dbo].[Customers], public."Customers").
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (Match m in AliasIntroduction().Matches(sql))
         {
@@ -146,12 +284,6 @@ public static partial class SqlNormalizer
             ? id[1..^1]
             : id;
 
-    [GeneratedRegex(@"/\*.*?\*/", RegexOptions.Singleline)]
-    private static partial Regex BlockComment();
-
-    [GeneratedRegex(@"--[^\r\n]*")]
-    private static partial Regex LineComment();
-
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
 
@@ -159,8 +291,8 @@ public static partial class SqlNormalizer
     [GeneratedRegex(@"(?<![@\w])@(?<name>\w+)")]
     private static partial Regex Parameter();
 
-    // "FROM [Customers] AS [c]", "JOIN "Orders" AS o", ") AS [t0]", "APPLY (...) AS [t]"
-    [GeneratedRegex(@"(?:\b(?:FROM|JOIN)\s+(?:\[[^\]]+\]|""[^""]+""|`[^`]+`|[\w.]+)|\))\s+AS\s+(?<alias>\[[^\]]+\]|""[^""]+""|`[^`]+`|\w+)", RegexOptions.IgnoreCase)]
+    // "FROM [Customers] AS [c]", "FROM [dbo].[Customers] AS [c]", "JOIN "Orders" AS o", ") AS [t0]", "APPLY (...) AS [t]"
+    [GeneratedRegex(@"(?:\b(?:FROM|JOIN)\s+(?:(?:\[[^\]]+\]|""[^""]+""|`[^`]+`|\w+)\.)*(?:\[[^\]]+\]|""[^""]+""|`[^`]+`|\w+)|\))\s+AS\s+(?<alias>\[[^\]]+\]|""[^""]+""|`[^`]+`|\w+)", RegexOptions.IgnoreCase)]
     private static partial Regex AliasIntroduction();
 
     // An identifier that is quoted, or bare and preceded by AS, or bare and followed by a dot.
@@ -168,7 +300,7 @@ public static partial class SqlNormalizer
     private static partial Regex AliasReference();
 
     // 'text' with '' escapes (also N'text').
-    [GeneratedRegex(@"'(?:[^']|'')*'")]
+    [GeneratedRegex(@"N?'(?:[^']|'')*'")]
     private static partial Regex StringLiteral();
 
     // Numbers that are not part of an identifier or a parameter name (@p0, t0, [c1]).

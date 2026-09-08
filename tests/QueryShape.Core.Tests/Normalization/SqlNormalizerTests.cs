@@ -87,4 +87,33 @@ public class SqlNormalizerTests
         Fingerprint.Compute("SELECT 1").Should().Be(fp);
         Fingerprint.Compute("SELECT 2").Should().NotBe(fp);
     }
+
+    [Fact]
+    public void String_literals_are_left_alone_by_the_comment_whitespace_and_parameter_passes()
+    {
+        SqlNormalizer.Shape("SELECT * FROM T WHERE A = 'x -- not a comment' AND B = 'y /* nor this */'")
+            .Should().Be("SELECT * FROM T WHERE A = 'x -- not a comment' AND B = 'y /* nor this */'");
+        SqlNormalizer.Shape("SELECT 'two  spaces', 'it''s', N'unicode' FROM T").Should().Be("SELECT 'two  spaces', 'it''s', N'unicode' FROM T");
+        SqlNormalizer.Shape("SELECT * FROM T WHERE Email = 'a@b.com' AND Id = @id").Should().Be("SELECT * FROM T WHERE Email = 'a@b.com' AND Id = @p0");
+        SqlNormalizer.Shape("SELECT 1 -- it's a comment\nFROM T").Should().Be("SELECT 1 FROM T", "a quote inside a comment does not open a literal");
+        SqlNormalizer.Shape("SELECT [it's] FROM [T] AS [t]").Should().Be("SELECT [it's] FROM [T] AS [t0]", "a quote inside a bracketed identifier does not open a literal");
+        SqlNormalizer.Shape("SELECT \"say \"\"hi\"\"\" FROM \"T\" AS t").Should().Be("SELECT \"say \"\"hi\"\"\" FROM \"T\" AS t0");
+    }
+
+    [Fact]
+    public void Schema_qualified_tables_get_canonical_aliases()
+    {
+        SqlNormalizer.Shape("SELECT [c].[Id] FROM [dbo].[Customers] AS [c] INNER JOIN [sales].[Orders] AS [o] ON [o].[CustomerId] = [c].[Id]")
+            .Should().Be("SELECT [t0].[Id] FROM [dbo].[Customers] AS [t0] INNER JOIN [sales].[Orders] AS [t1] ON [t1].[CustomerId] = [t0].[Id]");
+        SqlNormalizer.Shape("SELECT c.\"Id\" FROM public.\"Customers\" AS c").Should().Be("SELECT t0.\"Id\" FROM public.\"Customers\" AS t0");
+    }
+
+    [Fact]
+    public void Masked_shapes_replace_string_and_numeric_literals_but_keep_identifiers_and_parameters()
+    {
+        SqlNormalizer.Normalize("SELECT * FROM Customers AS c WHERE Name = 'O''Brien' AND Age > 30 AND Id = @id", maskLiterals: true).Shape
+            .Should().Be("SELECT * FROM Customers AS t0 WHERE Name = ? AND Age > ? AND Id = @p0");
+        SqlNormalizer.Normalize("SELECT [t0].[D2], N'x' FROM [T1] AS [t0]", maskLiterals: true).Shape.Should().Be("SELECT [t0].[D2], ? FROM [T1] AS [t0]");
+        SqlNormalizer.Normalize("SELECT 'a', 'b'", maskLiterals: false).Shape.Should().Be("SELECT 'a', 'b'");
+    }
 }
