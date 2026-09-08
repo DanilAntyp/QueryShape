@@ -8,7 +8,7 @@ namespace QueryShape.Capture;
 /// Wraps a <see cref="DbDataReader"/> to count rows actually read and report once on close/dispose.
 /// EF Core's own read counter counts calls (including the final false), so we count ourselves.
 /// </summary>
-internal sealed class CountingDataReader : DbDataReader
+internal sealed class CountingDataReader : DbDataReader, IDbColumnSchemaGenerator
 {
     private readonly DbDataReader _inner;
     private readonly Action<int, int, int?> _onClosed;
@@ -17,6 +17,7 @@ internal sealed class CountingDataReader : DbDataReader
     private int _distinctFirstColumn;
     private object? _lastFirstColumn;
     private bool _reported;
+    private bool _disposed;
 
     /// <param name="inner">The provider reader.</param>
     /// <param name="onClosed">(rows read, records affected, distinct first-column values or null).</param>
@@ -104,6 +105,9 @@ internal sealed class CountingDataReader : DbDataReader
 
     public override DataTable? GetSchemaTable() => _inner.GetSchemaTable();
 
+    /// <summary><c>reader.GetColumnSchema()</c> is an extension that needs this interface on the outermost reader.</summary>
+    public System.Collections.ObjectModel.ReadOnlyCollection<DbColumn> GetColumnSchema() => _inner.GetColumnSchema();
+
     public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default) => _inner.GetSchemaTableAsync(cancellationToken);
 
     public override Task<System.Collections.ObjectModel.ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default) => _inner.GetColumnSchemaAsync(cancellationToken);
@@ -164,31 +168,42 @@ internal sealed class CountingDataReader : DbDataReader
     public override void Close()
     {
         Report();
-        _inner.Close();
+        if (!_disposed)
+        {
+            _inner.Close();
+        }
     }
 
     public override async Task CloseAsync()
     {
         Report();
-        await _inner.CloseAsync().ConfigureAwait(false);
+        if (!_disposed)
+        {
+            await _inner.CloseAsync().ConfigureAwait(false);
+        }
     }
 
+    // The base implementations of Dispose(bool)/DisposeAsync() call Close() and Dispose() again; the provider's reader must see each exactly once.
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && !_disposed)
         {
+            _disposed = true;
             Report();
             _inner.Dispose();
         }
-
-        base.Dispose(disposing);
     }
 
     public override async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         Report();
         await _inner.DisposeAsync().ConfigureAwait(false);
-        await base.DisposeAsync().ConfigureAwait(false);
     }
 
     private void Report()

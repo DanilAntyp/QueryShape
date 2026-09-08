@@ -44,7 +44,16 @@ public sealed class QueryShapeDbConnection : DbConnection
     public override int ConnectionTimeout => Inner.ConnectionTimeout;
 
     /// <inheritdoc />
+    public override bool CanCreateBatch => false; // a batch from the inner connection would bypass capture; callers fall back to commands
+
+    /// <inheritdoc />
+    protected override DbProviderFactory? DbProviderFactory => DbProviderFactories.GetFactory(Inner);
+
+    /// <inheritdoc />
     public override void ChangeDatabase(string databaseName) => Inner.ChangeDatabase(databaseName);
+
+    /// <inheritdoc />
+    public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => Inner.ChangeDatabaseAsync(databaseName, cancellationToken);
 
     /// <inheritdoc />
     public override void Close() => Inner.Close();
@@ -71,7 +80,21 @@ public sealed class QueryShapeDbConnection : DbConnection
     public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => Inner.GetSchema(collectionName, restrictionValues);
 
     /// <inheritdoc />
-    protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => Inner.BeginTransaction(isolationLevel);
+    public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default) => Inner.GetSchemaAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public override Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default) => Inner.GetSchemaAsync(collectionName, cancellationToken);
+
+    /// <inheritdoc />
+    public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
+        => Inner.GetSchemaAsync(collectionName, restrictionValues, cancellationToken);
+
+    /// <inheritdoc />
+    protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => new QueryShapeDbTransaction(Inner.BeginTransaction(isolationLevel), this);
+
+    /// <inheritdoc />
+    protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        => new QueryShapeDbTransaction(await Inner.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false), this);
 
     /// <inheritdoc />
     protected override DbCommand CreateDbCommand()
@@ -103,15 +126,74 @@ public sealed class QueryShapeDbConnection : DbConnection
 
     internal void ReaderClosed(Guid commandId, int rows, int recordsAffected) => QueryShapeInterceptor.Instance.Capturer.ReaderClosed(commandId, rows, recordsAffected);
 
+    /// <summary>A transaction begun on the wrapper: its <c>Connection</c> is the wrapper, so code that checks <c>tx.Connection == connection</c> keeps working.</summary>
+    private sealed class QueryShapeDbTransaction : DbTransaction
+    {
+        private readonly QueryShapeDbConnection _owner;
+
+        public QueryShapeDbTransaction(DbTransaction inner, QueryShapeDbConnection owner)
+        {
+            Inner = inner;
+            _owner = owner;
+        }
+
+        public DbTransaction Inner { get; }
+
+        public override IsolationLevel IsolationLevel => Inner.IsolationLevel;
+
+        protected override DbConnection? DbConnection => _owner;
+
+        public override bool SupportsSavepoints => Inner.SupportsSavepoints;
+
+        public override void Commit() => Inner.Commit();
+
+        public override Task CommitAsync(CancellationToken cancellationToken = default) => Inner.CommitAsync(cancellationToken);
+
+        public override void Rollback() => Inner.Rollback();
+
+        public override Task RollbackAsync(CancellationToken cancellationToken = default) => Inner.RollbackAsync(cancellationToken);
+
+        public override void Save(string savepointName) => Inner.Save(savepointName);
+
+        public override Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => Inner.SaveAsync(savepointName, cancellationToken);
+
+        public override void Rollback(string savepointName) => Inner.Rollback(savepointName);
+
+        public override Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => Inner.RollbackAsync(savepointName, cancellationToken);
+
+        public override void Release(string savepointName) => Inner.Release(savepointName);
+
+        public override Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => Inner.ReleaseAsync(savepointName, cancellationToken);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Inner.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await Inner.DisposeAsync().ConfigureAwait(false);
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
     private sealed class QueryShapeDbCommand : DbCommand
     {
         private readonly DbCommand _inner;
         private readonly QueryShapeDbConnection _owner;
+        private DbConnection? _connection;
+        private DbTransaction? _transaction;
 
         public QueryShapeDbCommand(DbCommand inner, QueryShapeDbConnection owner)
         {
             _inner = inner;
             _owner = owner;
+            _connection = owner;
         }
 
         [System.Diagnostics.CodeAnalysis.AllowNull]
@@ -125,19 +207,35 @@ public sealed class QueryShapeDbConnection : DbConnection
 
         public override UpdateRowSource UpdatedRowSource { get => _inner.UpdatedRowSource; set => _inner.UpdatedRowSource = value; }
 
+        /// <summary>Reports what was assigned (the wrapper by default); the inner command always gets the unwrapped connection.</summary>
         protected override DbConnection? DbConnection
         {
-            get => _owner;
-            set => _inner.Connection = value is QueryShapeDbConnection w ? w.Inner : value;
+            get => _connection;
+            set
+            {
+                _connection = value;
+                _inner.Connection = value is QueryShapeDbConnection w ? w.Inner : value;
+            }
         }
 
         protected override DbParameterCollection DbParameterCollection => _inner.Parameters;
 
-        protected override DbTransaction? DbTransaction { get => _inner.Transaction; set => _inner.Transaction = value; }
+        /// <summary>Reports what was assigned; the inner command always gets the unwrapped transaction.</summary>
+        protected override DbTransaction? DbTransaction
+        {
+            get => _transaction ?? _inner.Transaction;
+            set
+            {
+                _transaction = value;
+                _inner.Transaction = value is QueryShapeDbTransaction t ? t.Inner : value;
+            }
+        }
 
         public override void Cancel() => _inner.Cancel();
 
         public override void Prepare() => _inner.Prepare();
+
+        public override Task PrepareAsync(CancellationToken cancellationToken = default) => _inner.PrepareAsync(cancellationToken);
 
         protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
 

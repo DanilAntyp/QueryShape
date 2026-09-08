@@ -548,7 +548,9 @@ const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
 override QueryShape.CallSite.Equals(object? obj) -> bool
 override QueryShape.CallSite.GetHashCode() -> int
 override QueryShape.CallSite.ToString() -> string!
+override QueryShape.Capture.QueryShapeDbConnection.CanCreateBatch.get -> bool
 override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabase(string! databaseName) -> void
+override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabaseAsync(string! databaseName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 override QueryShape.Capture.QueryShapeDbConnection.Close() -> void
 override QueryShape.Capture.QueryShapeDbConnection.CloseAsync() -> System.Threading.Tasks.Task!
 override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.get -> string!
@@ -561,6 +563,9 @@ override QueryShape.Capture.QueryShapeDbConnection.EnlistTransaction(System.Tran
 override QueryShape.Capture.QueryShapeDbConnection.GetSchema() -> System.Data.DataTable!
 override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName) -> System.Data.DataTable!
 override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName, string?[]! restrictionValues) -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(string! collectionName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(string! collectionName, string?[]! restrictionValues, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
 override QueryShape.Capture.QueryShapeDbConnection.Open() -> void
 override QueryShape.Capture.QueryShapeDbConnection.OpenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 override QueryShape.Capture.QueryShapeDbConnection.ServerVersion.get -> string!

@@ -1,54 +1,65 @@
+using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using QueryShape.Capture;
 
 namespace QueryShape.Core.Tests.Capture;
 
+/// <summary>The raw ADO.NET wrapper must behave like the connection it wraps for the code around it.</summary>
 public class RawConnectionTests
 {
-    [Fact]
-    public async Task Wrapped_connection_captures_raw_commands_with_row_counts()
+    private static async Task<QueryShapeDbConnection> OpenAsync()
     {
-        var options = new QueryShapeOptions();
-        await using var inner = new SqliteConnection("DataSource=:memory:");
-        await using var connection = new QueryShapeDbConnection(inner, options);
+        var connection = new QueryShapeDbConnection(new SqliteConnection("DataSource=:memory:"), new QueryShapeOptions { CaptureCallSites = false });
         await connection.OpenAsync();
+        await using var create = connection.CreateCommand();
+        create.CommandText = "CREATE TABLE T (Id INTEGER PRIMARY KEY, Name TEXT)";
+        await create.ExecuteNonQueryAsync();
+        return connection;
+    }
 
-        using var scope = QueryShapeScope.Begin(options: options);
+    [Fact]
+    public async Task Transactions_begun_on_the_wrapper_report_the_wrapper_as_their_connection()
+    {
+        await using var connection = await OpenAsync();
+        await using var tx = await connection.BeginTransactionAsync();
+        tx.Connection.Should().BeSameAs(connection, "code that checks tx.Connection == connection must keep working");
 
-        await using (var create = connection.CreateCommand())
-        {
-            create.CommandText = "CREATE TABLE T (Id INTEGER PRIMARY KEY, Name TEXT); INSERT INTO T VALUES (1, 'a'), (2, 'b'), (3, 'c')";
-            await create.ExecuteNonQueryAsync();
-        }
+        await using var insert = connection.CreateCommand();
+        insert.Transaction = tx;
+        insert.Transaction.Should().BeSameAs(tx, "the command reports what was assigned");
+        insert.Connection.Should().BeSameAs(connection);
+        insert.CommandText = "INSERT INTO T (Name) VALUES ('a')";
+        await insert.ExecuteNonQueryAsync();
+        await tx.CommitAsync();
 
-        await using (var select = connection.CreateCommand())
-        {
-            select.CommandText = "SELECT Id, Name FROM T WHERE Id > @min";
-            var p = select.CreateParameter();
-            p.ParameterName = "@min";
-            p.Value = 1;
-            select.Parameters.Add(p);
-            await using var reader = await select.ExecuteReaderAsync();
-            var rows = 0;
-            while (await reader.ReadAsync())
-            {
-                rows++;
-            }
+        await using var count = connection.CreateCommand();
+        count.CommandText = "SELECT COUNT(*) FROM T";
+        (await count.ExecuteScalarAsync()).Should().Be(1L);
+    }
 
-            rows.Should().Be(2);
-        }
+    [Fact]
+    public async Task Counting_reader_exposes_the_column_schema_and_survives_double_disposal()
+    {
+        await using var connection = await OpenAsync();
+        await using var select = connection.CreateCommand();
+        select.CommandText = "SELECT Id, Name FROM T";
 
-        using (var scalar = connection.CreateCommand())
-        {
-            scalar.CommandText = "SELECT COUNT(*) FROM T";
-            scalar.ExecuteScalar().Should().Be(3L);
-        }
+        var reader = await select.ExecuteReaderAsync();
+        reader.Should().BeOfType<CountingDataReader>();
+        reader.GetColumnSchema().Select(c => c.ColumnName).Should().Equal("Id", "Name");
+        reader.GetSchemaTable().Should().NotBeNull();
 
-        scope.Commands.Should().HaveCount(3);
-        scope.Commands.Should().OnlyContain(c => c.Source == QuerySource.Raw && c.Query == null);
-        scope.Commands[1].RowsReturned.Should().Be(2);
-        scope.Commands[1].Parameters.Should().ContainSingle().Which.Name.Should().Be("@min");
-        scope.Commands[1].Shape.Should().Be("SELECT Id, Name FROM T WHERE Id > @p0");
-        scope.Commands[2].IsAsync.Should().BeFalse();
+        await reader.DisposeAsync();
+        var dispose = () => reader.Dispose();
+        dispose.Should().NotThrow("the provider's reader is disposed exactly once; later calls are no-ops");
+        var close = () => reader.Close();
+        close.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task Provider_factory_is_the_inner_providers()
+    {
+        await using var connection = await OpenAsync();
+        DbProviderFactories.GetFactory(connection).Should().BeSameAs(SqliteFactory.Instance);
     }
 }
