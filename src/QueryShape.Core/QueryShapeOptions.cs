@@ -36,6 +36,13 @@ public sealed class QueryShapeOptions
     /// <summary>Walk the stack on every command to find the user frame. Expensive: on for tests, off for production. Default off.</summary>
     public bool CaptureCallSites { get; set; }
 
+    /// <summary>
+    /// Production alternative to <see cref="CaptureCallSites"/>: walk the stack for the first execution of every query shape and then for one in every
+    /// N executions of that shape (0 = off, default). Commands in between reuse the last sampled call site (<see cref="CallSiteOrigin.Cached"/>),
+    /// which rules use but the OpenTelemetry listener does not export. Costs ≈ 15 µs per sampled command; nothing otherwise.
+    /// </summary>
+    public int CallSiteSamplingInterval { get; set; }
+
     /// <summary>Keep parameter values on captured commands. PII risk: values end up in snapshots, logs and telemetry. Default off.</summary>
     public bool IncludeParameterValues { get; set; }
 

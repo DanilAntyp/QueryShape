@@ -81,8 +81,11 @@ public sealed class CapturedCommand
     /// <summary>Facts from the LINQ expression, when the command could be correlated with a compilation. Always <c>null</c> for raw commands.</summary>
     public QueryInfo? Query { get; init; }
 
-    /// <summary>First user-code frame, when call-site capture is on.</summary>
+    /// <summary>First user-code frame, when known (see <see cref="CallSiteOrigin"/>).</summary>
     public CallSite? CallSite { get; init; }
+
+    /// <summary>How <see cref="CallSite"/> was obtained.</summary>
+    public CallSiteOrigin CallSiteOrigin { get; init; }
 
     /// <summary>EF Core's command id.</summary>
     public Guid CommandId { get; init; }
@@ -114,6 +117,25 @@ public sealed class CapturedCommand
 
     /// <inheritdoc />
     public override string ToString() => $"#{Sequence} {Source} {Fingerprint} {Duration.TotalMilliseconds:0.0}ms {Shape}";
+}
+
+/// <summary>Where a command's call site came from.</summary>
+public enum CallSiteOrigin
+{
+    /// <summary>No call site.</summary>
+    None = 0,
+
+    /// <summary>EF Core's <c>TagWithCallSite()</c> tag in the SQL (zero cost).</summary>
+    Tag = 1,
+
+    /// <summary>Stack walk because <see cref="QueryShapeOptions.CaptureCallSites"/> is on.</summary>
+    StackWalk = 2,
+
+    /// <summary>Stack walk because this execution was the sampled one (<see cref="QueryShapeOptions.CallSiteSamplingInterval"/>).</summary>
+    Sampled = 3,
+
+    /// <summary>Reused from an earlier sampled execution of the same query shape; not exported to telemetry.</summary>
+    Cached = 4,
 }
 
 /// <summary>A <c>SaveChanges</c> call observed in a scope.</summary>

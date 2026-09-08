@@ -313,6 +313,7 @@ This runs inside other people's production apps. Treat it that way.
 
 ### Decisions recorded outside ADRs
 - `QueryShapeOptions.Enabled` is a master kill switch (default on) so production can turn capture off without redeploying.
+- `QueryShapeOptions.CallSiteSamplingInterval` (2026-09-08): per-shape sampled stack walks for production; cached call sites are marked `CallSiteOrigin.Cached` and never exported to telemetry.
 - Scopes write JSON reports when `QUERYSHAPE_REPORT_DIR` is set; this is the contract between test runs and `dotnet queryshape` (no I/O otherwise).
 - `verify` measures database time summed over the scope's commands (EF Core's execute duration), not wall time; a delta must beat the run-to-run spread, 10 % of the baseline and 1 ms to count.
 - Local runs of the sample-app tests on the net8.0 target are skipped when rolled forward to .NET 10 (TestHost 8 cannot serve JSON on System.Text.Json 9+); CI runs them on the real runtime.

@@ -62,6 +62,13 @@ CLAUDE.md asks for **< 3 % p99 latency with call-site capture off**. The relativ
 Against any networked database the budget holds with room to spare; against an in-memory SQLite the budget cannot be met by design
 because the queries themselves cost only a few microseconds. Treat 4 µs/query as the number to watch.
 
+### Call sites in production
+
+`CaptureCallSites` walks the stack on every command (≈ 15 µs each) and is meant for tests. For production, `CallSiteSamplingInterval = N` walks the
+stack for the first execution of each query shape and then one in every N executions of that shape; commands in between carry the last sampled
+call site marked `Cached`, which rules use but the OpenTelemetry listener does not export (so the `queryshape.callsite` attribute stays at sample rate).
+The walk happens synchronously inside the interceptor on the request's own path, sampled or not; there is no background work.
+
 ### Not measured yet
 
 - p99 under concurrent load (the numbers above are single-request means); the `Meter("QueryShape")` histogram makes this observable in a real deployment.

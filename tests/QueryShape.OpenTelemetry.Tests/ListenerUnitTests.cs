@@ -46,6 +46,33 @@ public sealed class ListenerUnitTests : IDisposable
     }
 
     [Fact]
+    public async Task Cached_call_sites_from_sampling_are_not_exported()
+    {
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = s => s.Name == "test-sampling",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+        using var source = new ActivitySource("test-sampling");
+
+        var options = new QueryShapeOptions { CallSiteSamplingInterval = 2 }.AddOpenTelemetry();
+        using var scope = QueryShapeScope.Begin(options: options);
+        using var span = source.StartActivity("request");
+        await using var ctx = _shop.CreateContext(options);
+        for (var i = 0; i < 3; i++)
+        {
+            var id = i;
+            await ctx.Orders.Where(o => o.CustomerId == id && o.Total > -777).ToListAsync();
+        }
+
+        scope.Commands.Select(c => c.CallSiteOrigin).Should().Equal(CallSiteOrigin.Sampled, CallSiteOrigin.Cached, CallSiteOrigin.Sampled);
+        var events = span!.Events.Where(e => e.Name == "queryshape.query").ToList();
+        events.Should().HaveCount(3);
+        events.Select(e => e.Tags.Any(t => t.Key == "queryshape.callsite")).Should().Equal(true, false, true);
+    }
+
+    [Fact]
     public async Task Unsampled_span_gets_only_cheap_tags()
     {
         using var listener = new ActivityListener

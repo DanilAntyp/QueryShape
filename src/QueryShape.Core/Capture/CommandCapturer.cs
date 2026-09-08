@@ -23,6 +23,8 @@ internal sealed class CommandCapturer
     private readonly ConditionalWeakTable<DbContext, ContextState> _contexts = new();
     private readonly ConcurrentDictionary<string, NormalizedSql> _normalized = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
+    private readonly ConcurrentDictionary<string, int> _sampleCounts = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, CallSite> _sampledCallSites = new(StringComparer.Ordinal);
     private int _unscopedSequence;
 
     public ExpressionCorrelator Correlator { get; } = new();
@@ -128,8 +130,7 @@ internal sealed class CommandCapturer
             // Tags: the expression tree has them exactly; the SQL comment block is the fallback (EF Core joins tags into one block).
             var tags = query is { Tags.Count: > 0 } ? query.Tags : normalized.Tags;
 
-            var wantCallSite = options.CaptureCallSites || (scope?.Options.CaptureCallSites ?? false);
-            var callSite = CallSiteCapture.FromTags(tags) ?? (wantCallSite ? CallSiteCapture.Capture() : null);
+            var (callSite, callSiteOrigin) = ResolveCallSite(options, scope, tags, normalized.Fingerprint);
 
             var parameters = CaptureParameters(command, options.IncludeParameterValues, out var parameterHash, out var maxCollectionCount);
             maxCollectionCount ??= InlineListCount(normalized.Shape);
@@ -151,6 +152,7 @@ internal sealed class CommandCapturer
                 ProviderName = contextState is null ? null : (contextState.ProviderName ??= SafeProviderName(context)),
                 Query = query,
                 CallSite = callSite,
+                CallSiteOrigin = callSiteOrigin,
                 CommandId = commandId,
                 ConnectionId = connectionId,
                 ContextId = context?.ContextId.InstanceId,
@@ -251,6 +253,52 @@ internal sealed class CommandCapturer
         {
             Log.Swallowed(null, "reader closed", ex);
         }
+    }
+
+    /// <summary>Tag first (free), then a full stack walk when asked for, then sampling: first execution of a shape and every N-th after it.</summary>
+    private (CallSite? Site, CallSiteOrigin Origin) ResolveCallSite(QueryShapeOptions options, QueryShapeScope? scope, IReadOnlyList<string> tags, string fingerprint)
+    {
+        if (CallSiteCapture.FromTags(tags) is { } tagged)
+        {
+            return (tagged, CallSiteOrigin.Tag);
+        }
+
+        if (options.CaptureCallSites || (scope?.Options.CaptureCallSites ?? false))
+        {
+            var walked = CallSiteCapture.Capture();
+            return (walked, walked is null ? CallSiteOrigin.None : CallSiteOrigin.StackWalk);
+        }
+
+        var interval = options.CallSiteSamplingInterval;
+        if (interval <= 0)
+        {
+            return (null, CallSiteOrigin.None);
+        }
+
+        if (_sampleCounts.Count >= NormalizationCacheLimit)
+        {
+            _sampleCounts.Clear();
+        }
+
+        var count = _sampleCounts.AddOrUpdate(fingerprint, 0, static (_, c) => c + 1);
+        if (count % interval == 0)
+        {
+            var sampled = CallSiteCapture.Capture();
+            if (sampled is not null)
+            {
+                if (_sampledCallSites.Count >= NormalizationCacheLimit)
+                {
+                    _sampledCallSites.Clear();
+                }
+
+                _sampledCallSites[fingerprint] = sampled;
+                return (sampled, CallSiteOrigin.Sampled);
+            }
+
+            return (null, CallSiteOrigin.None);
+        }
+
+        return _sampledCallSites.TryGetValue(fingerprint, out var cached) ? (cached, CallSiteOrigin.Cached) : (null, CallSiteOrigin.None);
     }
 
     /// <summary>The same SQL text is executed over and over (compiled query cache); normalize each distinct text once.</summary>

@@ -243,7 +243,7 @@ public sealed class QueryShapeOpenTelemetryListener : IQueryShapeListener
         }
 
         activity.SetTag(Attributes.Shape, Truncate(command.Shape));
-        if (command.CallSite is not null)
+        if (command.CallSite is not null && command.CallSiteOrigin != CallSiteOrigin.Cached)
         {
             activity.SetTag(Attributes.CallSite, command.CallSite.ToString());
         }
@@ -263,8 +263,9 @@ public sealed class QueryShapeOpenTelemetryListener : IQueryShapeListener
             { Attributes.Source, command.Source.ToString() },
             { Attributes.DurationMs, Math.Round(command.Duration.TotalMilliseconds, 3) },
         };
-        if (command.CallSite is not null)
+        if (command.CallSite is not null && command.CallSiteOrigin != CallSiteOrigin.Cached)
         {
+            // Sampled call sites are exported for the sampled command only; cached ones would put the tag on every command at full rate.
             tags.Add(Attributes.CallSite, command.CallSite.ToString());
         }
 

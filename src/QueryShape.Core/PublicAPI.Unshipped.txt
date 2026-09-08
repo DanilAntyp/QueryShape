@@ -11,6 +11,12 @@ QueryShape.CallSite.Line.get -> int
 QueryShape.CallSite.Line.init -> void
 QueryShape.CallSite.Member.get -> string!
 QueryShape.CallSite.Member.init -> void
+QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Cached = 4 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.None = 0 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Sampled = 3 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.StackWalk = 2 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Tag = 1 -> QueryShape.CallSiteOrigin
 QueryShape.Capture.QueryShapeDbConnection
 QueryShape.Capture.QueryShapeDbConnection.Inner.get -> System.Data.Common.DbConnection!
 QueryShape.Capture.QueryShapeDbConnection.QueryShapeDbConnection(System.Data.Common.DbConnection! inner, QueryShape.QueryShapeOptions? options = null) -> void
@@ -31,6 +37,8 @@ QueryShape.Capture.QueryShapeInterceptor.ScalarExecutedAsync(System.Data.Common.
 QueryShape.CapturedCommand
 QueryShape.CapturedCommand.CallSite.get -> QueryShape.CallSite?
 QueryShape.CapturedCommand.CallSite.init -> void
+QueryShape.CapturedCommand.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
+QueryShape.CapturedCommand.CallSiteOrigin.init -> void
 QueryShape.CapturedCommand.CapturedCommand() -> void
 QueryShape.CapturedCommand.CommandId.get -> System.Guid
 QueryShape.CapturedCommand.CommandId.init -> void
@@ -255,6 +263,8 @@ QueryShape.QueryInfo.Tags.init -> void
 QueryShape.QueryInfo.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryShapeDbContextOptionsBuilderExtensions
 QueryShape.QueryShapeOptions
+QueryShape.QueryShapeOptions.CallSiteSamplingInterval.get -> int
+QueryShape.QueryShapeOptions.CallSiteSamplingInterval.set -> void
 QueryShape.QueryShapeOptions.CaptureCallSites.get -> bool
 QueryShape.QueryShapeOptions.CaptureCallSites.set -> void
 QueryShape.QueryShapeOptions.CartesianExplosionFactor.get -> int

@@ -147,7 +147,7 @@ curl -sD - -o /dev/null http://localhost:5000/bad/n-plus-one | grep X-QueryShape
 
 ## Safety and performance
 
-QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, never walks stack traces unless `CaptureCallSites` is on (tests turn it on; production leaves it off and can use EF Core's `TagWithCallSite()` instead), and has a kill switch (`QueryShapeOptions.Enabled = false`).
+QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, never walks stack traces unless `CaptureCallSites` is on (tests turn it on; production leaves it off and can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
 
 Capture costs about 4 µs and 3 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
 

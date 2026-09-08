@@ -55,6 +55,7 @@ public class CaptureTests : IDisposable
         cmd.ExecuteMethod.Should().Be(DbCommandMethod.ExecuteReader, "EF Core runs scalar LINQ queries through a reader");
         cmd.RowsReturned.Should().Be(1);
         cmd.CallSite.Should().NotBeNull();
+        cmd.CallSiteOrigin.Should().Be(CallSiteOrigin.StackWalk);
         cmd.CallSite!.Member.Should().Be("CaptureTests.Captures_call_site_when_enabled");
         cmd.CallSite.FileName.Should().Be("CaptureTests.cs");
         cmd.CallSite.Line.Should().BeGreaterThan(0);
@@ -86,6 +87,38 @@ public class CaptureTests : IDisposable
         => QueryShape.Capture.CallSiteCapture.LogicalName(generated).Should().Be(expected);
 
     [Fact]
+    public async Task Sampled_call_sites_are_walked_first_then_every_nth_and_cached_in_between()
+    {
+        var options = new QueryShapeOptions { CaptureCallSites = false, CallSiteSamplingInterval = 3 };
+        using var scope = QueryShapeScope.Begin(options: options);
+        await using var ctx = _shop.CreateContext(options);
+
+        for (var i = 1; i <= 7; i++)
+        {
+            var id = i;
+            await ctx.Orders.Where(o => o.CustomerId == id && o.Total > -12345).ToListAsync();   // a shape private to this test
+        }
+
+        await ctx.Products.Where(p => p.Price > -54321).CountAsync();                          // another shape: sampled on its first execution
+
+        var orders = scope.Commands.Take(7).ToList();
+        orders.Select(c => c.CallSiteOrigin).Should().Equal(
+            CallSiteOrigin.Sampled, CallSiteOrigin.Cached, CallSiteOrigin.Cached,
+            CallSiteOrigin.Sampled, CallSiteOrigin.Cached, CallSiteOrigin.Cached,
+            CallSiteOrigin.Sampled);
+        orders.Should().OnlyContain(c => c.CallSite != null && c.CallSite.Member == "CaptureTests.Sampled_call_sites_are_walked_first_then_every_nth_and_cached_in_between");
+        scope.Commands[7].CallSiteOrigin.Should().Be(CallSiteOrigin.Sampled);
+
+        // Nothing is walked when both switches are off.
+        var off = new QueryShapeOptions();
+        using var quiet = QueryShapeScope.Begin(options: off);
+        await using var ctx2 = _shop.CreateContext(off);
+        await ctx2.Products.CountAsync();
+        quiet.Commands.Single().CallSiteOrigin.Should().Be(CallSiteOrigin.None);
+        quiet.Commands.Single().CallSite.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Honors_ef_TagWithCallSite_without_stack_walking()
     {
         var options = new QueryShapeOptions { CaptureCallSites = false };
@@ -97,6 +130,7 @@ public class CaptureTests : IDisposable
         var cmd = scope.Commands.Should().ContainSingle().Subject;
         cmd.Tags.Should().HaveCount(2).And.Contain("lookup");
         cmd.Tags[1].Should().StartWith("File: ").And.EndWith(".cs:" + cmd.CallSite!.Line);
+        cmd.CallSiteOrigin.Should().Be(CallSiteOrigin.Tag);
         cmd.CallSite.Should().NotBeNull();
         cmd.CallSite!.FileName.Should().Be("CaptureTests.cs");
         cmd.CallSite.Line.Should().BeGreaterThan(0);
