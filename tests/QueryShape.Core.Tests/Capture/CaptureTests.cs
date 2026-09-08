@@ -88,6 +88,16 @@ public class CaptureTests : IDisposable
     public void Logical_names_are_extracted_from_compiler_generated_names(string generated, string? expected)
         => QueryShape.Capture.CallSiteCapture.LogicalName(generated).Should().Be(expected);
 
+    [Theory]
+    [InlineData(typeof(QueryShapeScope), true)]                           // QueryShape's own assembly
+    [InlineData(typeof(DbContext), true)]                                 // Microsoft.EntityFrameworkCore
+    [InlineData(typeof(Microsoft.Data.Sqlite.SqliteConnection), true)]   // a provider
+    [InlineData(typeof(string), true)]                                    // System.Private.CoreLib
+    [InlineData(typeof(CaptureTests), false)]                             // user code (the test assembly is not one of ours)
+    [InlineData(typeof(System.Fake.UserCodeInASystemNamespace), false)]  // user code that happens to use a System.* namespace
+    public void Frames_are_skipped_by_assembly_not_namespace(Type type, bool skipped)
+        => QueryShape.Capture.CallSiteCapture.ShouldSkip(type).Should().Be(skipped);
+
     [Fact]
     public async Task Sampled_call_sites_are_walked_first_then_every_nth_and_cached_in_between()
     {
@@ -130,8 +140,7 @@ public class CaptureTests : IDisposable
         await ctx.Products.TagWith("lookup").TagWithCallSite().ToListAsync();
 
         var cmd = scope.Commands.Should().ContainSingle().Subject;
-        cmd.Tags.Should().HaveCount(2).And.Contain("lookup");
-        cmd.Tags[1].Should().StartWith("File: ").And.EndWith(".cs:" + cmd.CallSite!.Line);
+        cmd.Tags.Should().Equal("lookup");   // the File: tag became the call site; a machine path is not a tag worth exporting or snapshotting
         cmd.CallSiteOrigin.Should().Be(CallSiteOrigin.Tag);
         cmd.CallSite.Should().NotBeNull();
         cmd.CallSite!.FileName.Should().Be("CaptureTests.cs");

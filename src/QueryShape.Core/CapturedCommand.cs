@@ -29,7 +29,7 @@ public sealed class CapturedCommand
     /// <summary>SHA-256 of <see cref="Shape"/>, first 12 hex characters.</summary>
     public required string Fingerprint { get; init; }
 
-    /// <summary>Tags found in leading <c>-- </c> comments (from <c>TagWith</c>).</summary>
+    /// <summary>Tags from <c>TagWith</c>. EF Core's <c>TagWithCallSite()</c> tag is parsed into <see cref="CallSite"/> instead of being listed here (it holds a machine-specific path).</summary>
     public IReadOnlyList<string> Tags { get; init; } = [];
 
     /// <summary>Where the command came from.</summary>

@@ -7,17 +7,32 @@ namespace QueryShape.Capture;
 /// <summary>Finds the first user-code frame above EF Core / QueryShape, or parses EF Core's own <c>TagWithCallSite</c> tag.</summary>
 internal static partial class CallSiteCapture
 {
-    private static readonly Assembly s_self = typeof(CallSiteCapture).Assembly;
+    /// <summary>QueryShape's own assemblies (never user code), by assembly name. The test projects and the sample app keep their names deliberately distinct.</summary>
+    private static readonly string[] s_ownAssemblies =
+    [
+        "QueryShape.Core",
+        "QueryShape.Testing",
+        "QueryShape.Testing.Xunit",
+        "QueryShape.Testing.NUnit",
+        "QueryShape.Testing.MSTest",
+        "QueryShape.AspNetCore",
+        "QueryShape.OpenTelemetry",
+    ];
 
-    private static readonly string[] s_skippedNamespacePrefixes =
+    /// <summary>Frameworks and providers that sit between QueryShape and the user's code on the stack, by assembly-name prefix (not namespace: user code may live in a Microsoft.* or System.* namespace).</summary>
+    private static readonly string[] s_skippedAssemblyPrefixes =
     [
         "Microsoft.",
         "System.",
+        "netstandard",
+        "mscorlib",
         "Npgsql",
         "MySqlConnector",
+        "MySql.",
         "Dapper",
         "Oracle.",
         "Pomelo.",
+        "SQLitePCLRaw",
     ];
 
     /// <summary>Walks the stack. Expensive (needs file info); only call when call-site capture is enabled.</summary>
@@ -68,17 +83,36 @@ internal static partial class CallSiteCapture
         return null;
     }
 
-    private static bool ShouldSkip(Type type)
+    /// <summary>Whether a tag is EF Core's <c>TagWithCallSite()</c> tag. Such tags become <see cref="CallSite"/>s and are not listed among a command's tags (they hold a machine-specific path).</summary>
+    public static bool IsCallSiteTag(string tag) => CallSiteTag().IsMatch(tag);
+
+    /// <summary>Removes call-site tags; returns the same list when there are none (no allocation on the common path).</summary>
+    public static IReadOnlyList<string> WithoutCallSiteTags(IReadOnlyList<string> tags)
     {
-        if (type.Assembly == s_self)
+        var any = false;
+        foreach (var tag in tags)
+        {
+            if (IsCallSiteTag(tag))
+            {
+                any = true;
+                break;
+            }
+        }
+
+        return any ? tags.Where(t => !IsCallSiteTag(t)).ToArray() : tags;
+    }
+
+    internal static bool ShouldSkip(Type type)
+    {
+        var assembly = type.Assembly.GetName().Name ?? string.Empty;
+        if (Array.IndexOf(s_ownAssemblies, assembly) >= 0)
         {
             return true;
         }
 
-        var ns = type.Namespace ?? string.Empty;
-        foreach (var prefix in s_skippedNamespacePrefixes)
+        foreach (var prefix in s_skippedAssemblyPrefixes)
         {
-            if (ns.StartsWith(prefix, StringComparison.Ordinal))
+            if (assembly.StartsWith(prefix, StringComparison.Ordinal))
             {
                 return true;
             }

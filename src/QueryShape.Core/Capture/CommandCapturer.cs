@@ -157,7 +157,7 @@ internal sealed class CommandCapturer
 
             var normalized = Normalize(command.CommandText ?? string.Empty, maskLiterals: source == QuerySource.Raw);
             var (callSite, origin) = ResolveCallSite(options, scope, normalized.Tags, normalized.Fingerprint);
-            var start = new CommandStart(commandId, normalized.Fingerprint, normalized.Shape, source, normalized.Tags, callSite, origin, startTime);
+            var start = new CommandStart(commandId, normalized.Fingerprint, normalized.Shape, source, CallSiteCapture.WithoutCallSiteTags(normalized.Tags), callSite, origin, startTime);
 
             if (Interlocked.Increment(ref _pendingStartCount) > 10_000)
             {
@@ -228,7 +228,8 @@ internal sealed class CommandCapturer
             var contextState = context is null ? null : StateFor(context);
 
             // Tags: the expression tree has them exactly; the SQL comment block is the fallback (EF Core joins tags into one block).
-            var tags = query is { Tags.Count: > 0 } ? query.Tags : normalized.Tags;
+            var allTags = query is { Tags.Count: > 0 } ? query.Tags : normalized.Tags;
+            var tags = CallSiteCapture.WithoutCallSiteTags(allTags); // the TagWithCallSite tag becomes the call site below, not a tag with a machine path in it
 
             // The Executing side may have resolved the call site already (and consumed the sampling slot): reuse it rather than walking twice.
             CallSite? callSite;
@@ -240,7 +241,7 @@ internal sealed class CommandCapturer
             }
             else
             {
-                (callSite, callSiteOrigin) = ResolveCallSite(options, scope, tags, normalized.Fingerprint);
+                (callSite, callSiteOrigin) = ResolveCallSite(options, scope, allTags, normalized.Fingerprint);
             }
 
             var parameters = CaptureParameters(command, options.IncludeParameterValues, raw ? command.CommandText : null, out var parameterHash, out var maxCollectionCount);
