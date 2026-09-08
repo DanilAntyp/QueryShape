@@ -74,8 +74,8 @@ public class VerifyEndToEndTests
             var text = out_.ToString();
             text.Should().Contain("Fix: " + Path.GetFileName(patch), "stderr: " + err);
             var compact = System.Text.RegularExpressions.Regex.Replace(text, " +", " ");
-            compact.Should().Contain("\nqueries 41 1 -40\n");
-            compact.Should().Contain("\nQS001 N+1 query 1 0 ✓\n");
+            var targetCount = AssertNPlusOneReduction(text);
+            compact.Should().Contain($"\nQS001 N+1 query {targetCount} 0 ✓\n");
             compact.Should().Contain("\nnew diagnostics - 0 ✓\n");
             text.Should().Contain("Behavior observations preserved");
             text.Should().Contain("verdict: improved", err.ToString());
@@ -86,6 +86,17 @@ public class VerifyEndToEndTests
             Directory.SetCurrentDirectory(previousDir);
             File.Delete(patch);
         }
+    }
+    internal static int AssertNPlusOneReduction(string text)
+    {
+        var compact = System.Text.RegularExpressions.Regex.Replace(text, " +", " ");
+        var row = System.Text.RegularExpressions.Regex.Match(compact, @"\nqueries (\d+) (\d+) (-\d+)\n");
+        row.Success.Should().BeTrue("the verification table must include measured query counts");
+        var targets = int.Parse(row.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+        targets.Should().BeOneOf(1, 2); // Locally net8 may be skipped; CI executes both native runtimes.
+        int.Parse(row.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture).Should().Be(41 * targets);
+        int.Parse(row.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture).Should().Be(-40 * targets);
+        return targets;
     }
 }
 
@@ -115,11 +126,12 @@ public class VerifyFromDiagnosisEndToEndTests
             }.ExecuteAsync(out_, err, CancellationToken.None);
 
             var text = out_.ToString();
+            code.Should().Be(0, err.ToString());
             text.Should().NotContain("partial fix", "the sample loop has the shape QueryShape rewrites");
             text.Should().Contain("Fix: Add .Include(c => c.Orders) to the Customer query at BadEndpoints.cs:");
             var compact = System.Text.RegularExpressions.Regex.Replace(text, " +", " ");
-            compact.Should().Contain("\nqueries 41 1 -40\n");
-            compact.Should().Contain("\nQS001 N+1 query 1 0 ✓\n");
+            var targetCount = VerifyEndToEndTests.AssertNPlusOneReduction(text);
+            compact.Should().Contain($"\nQS001 N+1 query {targetCount} 0 ✓\n");
             text.Should().Contain("verdict: improved", err.ToString());
             code.Should().Be(0, err.ToString());
         }

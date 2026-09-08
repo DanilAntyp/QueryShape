@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/DanilAntyp/QueryShape/actions/workflows/ci.yml"><img src="https://github.com/DanilAntyp/QueryShape/actions/workflows/ci.yml/badge.svg" alt="Build and tests"></a>
+  <a href="https://github.com/DanilAntyp/QueryShape/actions/workflows/real-world.yml"><img src="https://github.com/DanilAntyp/QueryShape/actions/workflows/real-world.yml/badge.svg" alt="Real application validation"></a>
   <img src="https://img.shields.io/badge/.NET-8%20%7C%2010-8B7CFF" alt=".NET 8 and 10">
   <img src="https://img.shields.io/badge/EF%20Core-8%20%7C%2010-64DFC7" alt="EF Core 8 and 10">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-64DFC7" alt="MIT license"></a>
@@ -80,6 +81,8 @@ curl -i http://localhost:5077/good/n-plus-one
 ## Tested on real applications
 
 Actual upstream service code. Pinned revisions. Reproducible harnesses. Synthetic datasets, with the adaptations and measurement limits documented.
+
+**[Hosted validation: all 17 application tests passed →](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529)** Scope reports and test results are attached to the run.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/DanilAntyp/QueryShape/main/docs/assets/real-world-results.svg" alt="eShopOnWeb catalog lookup trial: at sizes 10, 100, and 501, commands stayed at 4 while returned rows increased from 25 to 205 to 1,007." width="100%">

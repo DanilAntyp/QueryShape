@@ -10,6 +10,15 @@ public class IsolatedVerifyCollection;
 [Collection("Isolated verify repository")]
 public class VerifyBehaviorTests
 {
+    [Fact]
+    public void Repeated_diagnoses_apply_identical_patches_once_without_losing_distinct_edits()
+    {
+        const string first = "--- a/first.cs\n+++ b/first.cs\n@@ -1 +1 @@\n-old\n+new\n";
+        const string second = "--- a/second.cs\n+++ b/second.cs\n@@ -1 +1 @@\n-before\n+after\n";
+        VerifyCommand.CombinePatches([first, first.Replace("\n", "\r\n"), second, first.TrimEnd('\n')])
+            .Should().Be(first + second);
+    }
+
     [Theory]
     [InlineData("same", false, 0)]
     [InlineData("changed", false, 1)]
@@ -64,6 +73,13 @@ public class VerifyBehaviorTests
             }
             finally { File.Delete(patch); }
         }
-        finally { Directory.SetCurrentDirectory(previous); Directory.Delete(repo, true); }
+        finally
+        {
+            Directory.SetCurrentDirectory(previous);
+            // Git object files in this disposable fixture are read-only on Windows.
+            foreach (var file in Directory.EnumerateFiles(repo, "*", SearchOption.AllDirectories))
+                File.SetAttributes(file, File.GetAttributes(file) & ~FileAttributes.ReadOnly);
+            Directory.Delete(repo, true);
+        }
     }
 }

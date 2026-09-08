@@ -156,7 +156,7 @@ internal sealed class VerifyCommand
             }
 
             patchFile = Path.Combine(work, "from-diagnosis.diff");
-            await File.WriteAllTextAsync(patchFile, string.Concat(diffs.Select(d => d.UnifiedDiff!.EndsWith('\n') ? d.UnifiedDiff : d.UnifiedDiff + "\n")), ct);
+            await File.WriteAllTextAsync(patchFile, CombinePatches(diffs.Select(d => d.UnifiedDiff!)), ct);
             fixTitle = string.Join(" | ", diffs.Select(d => d.FixSummary ?? d.Title).Distinct());
 
             var partial = diffs.Where(d => d.FixIsPartial).ToList();
@@ -292,6 +292,10 @@ internal sealed class VerifyCommand
 
     internal static bool SameTests(ProcessResult before, ProcessResult after) => before.ExecutedTestIdentities is { Count: > 0 } identities
         && after.ExecutedTestIdentities is { } actual && identities.SequenceEqual(actual);
+
+    // Repeated scopes and target frameworks can propose the same source edit. Apply it once.
+    internal static string CombinePatches(IEnumerable<string> patches)
+        => string.Concat(patches.Select(p => p.Replace("\r\n", "\n", StringComparison.Ordinal).TrimEnd('\n') + "\n").Distinct(StringComparer.Ordinal));
 
     /// <summary>Copies untracked, non-ignored files (git ls-files --others --exclude-standard) into the worktree so a patch that needs them builds there too.</summary>
     private static async Task<int> CopyUntrackedAsync(string repoRoot, string worktree)

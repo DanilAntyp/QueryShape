@@ -4,6 +4,8 @@ The current corpus covers two external application repositories, plus deliberate
 
 To rerun both pinned external applications on Linux with native .NET 8 and .NET 10 runtimes, use the repository's **Real application validation** workflow (`workflow_dispatch`). Each application uploads scope reports and TRX results. The harness READMEs also provide local commands.
 
+[Hosted application run on 2026-09-08](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529): all 15 eShopOnWeb tests passed on native .NET 8 and both CleanArchitecture tests passed on .NET 10, against QueryShape commit `d32934e`. Both jobs uploaded their scope reports and TRX results.
+
 | Corpus | What is exercised | Boundaries |
 |---|---|---|
 | [eShopOnWeb](eshoponweb-scenarios.md), pinned `4da8212117e87d808d4bbc7da6286fd2147ce606` | Catalog, basket, checkout, history; growth contracts; no-tracking result/state comparison; threshold reduction | EF8 with SQLite key-generation adaptation; cache and HTTP paths excluded |

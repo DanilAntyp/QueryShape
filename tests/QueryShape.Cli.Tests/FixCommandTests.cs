@@ -147,7 +147,7 @@ public class FixEndToEndTests
         text.Should().Contain("---- prompt sent to fake-model (user) ----", err).And.Contain("\"ruleId\": \"QS001\"").And.Contain("## Source: tests/QueryShape.SampleApp/BadEndpoints.cs");
         text.Should().Contain("==== LLM-proposed patch (fake-model) — generated, not yet verified");
         text.Should().Contain("Fix: LLM patch for QS001 (fake-model): Add .Include(c => c.Orders)");
-        System.Text.RegularExpressions.Regex.Replace(text, " +", " ").Should().Contain("\nqueries 41 1 -40\n");
+        VerifyEndToEndTests.AssertNPlusOneReduction(text);
         text.Should().Contain("verdict: improved", err);
         code.Should().Be(0, err);
     }
