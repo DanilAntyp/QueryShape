@@ -137,9 +137,11 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     /// <summary>Row counts come from our own wrapper: EF Core's <c>ReadCount</c> counts calls, including the final <c>false</c>.</summary>
     private DbDataReader Wrap(DbDataReader reader, Guid commandId, CapturedCommand? captured)
     {
-        if (captured is null)
+        if (captured is null || captured.Source == QuerySource.SaveChanges)
         {
-            return reader; // disabled or capture failed: never wrap for nothing
+            // Providers such as Npgsql cast write-batch readers to their concrete reader type.
+            // Keep write capture, but leave those readers untouched (they are not query-result rows).
+            return reader;
         }
 
         try

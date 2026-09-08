@@ -365,7 +365,8 @@ public class SnapshotTests : IDisposable
     [Fact]
     public void Resolve_path_puts_snapshots_next_to_the_test_file()
     {
-        var path = QueryShapeScopeSnapshotExtensions.ResolvePath("/repo/tests/OrderServiceTests.cs", "GetOrders_query_shape");
-        path.Should().Be(Path.Combine("/repo/tests", "__querysnapshots__", "OrderServiceTests.GetOrders_query_shape.json"));
+        var directory = Path.Combine(Path.GetTempPath(), "repo", "tests");
+        var path = QueryShapeScopeSnapshotExtensions.ResolvePath(Path.Combine(directory, "OrderServiceTests.cs"), "GetOrders_query_shape");
+        path.Should().Be(Path.Combine(directory, "__querysnapshots__", "OrderServiceTests.GetOrders_query_shape.json"));
     }
 }

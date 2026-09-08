@@ -282,7 +282,7 @@ internal sealed class CommandCapturer
             // Tracking: certain only from this context's own compilation; a cache hit may describe a differently-tracked variant with the same SQL.
             captured.IsTracking = resolution == ExpressionCorrelator.Resolution.OwnCompilation ? query!.ReturnsEntities && query.IsTracking : null;
 
-            if (executeMethod == DbCommandMethod.ExecuteReader && error is null)
+            if (executeMethod == DbCommandMethod.ExecuteReader && source != QuerySource.SaveChanges && error is null)
             {
                 if (contextState is not null)
                 {

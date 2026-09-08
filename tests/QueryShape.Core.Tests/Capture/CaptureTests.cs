@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -334,6 +335,49 @@ public class CaptureTests : IDisposable
         scope.SaveChanges.Should().ContainSingle().Which.ModifiedEntityTypes.Should().Equal(typeof(Product).FullName!);
         scope.Commands.Should().Contain(c => c.Source == QuerySource.SaveChanges && c.ExecuteMethod == DbCommandMethod.ExecuteReader);
         scope.Commands.Single(c => c.Source == QuerySource.Linq).Query!.HasLimit.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Save_changes_preserves_provider_reader_types_and_complete_query_capture(bool async)
+    {
+        await using var fixtureContext = _shop.CreateContext();
+        var observer = new WriteReaderObserver();
+        var options = new DbContextOptionsBuilder<ShopContext>()
+            .UseSqlite(fixtureContext.Database.GetDbConnection())
+            .UseQueryShape(_shop.Options)
+            .AddInterceptors(observer).Options;
+        await using var ctx = new ShopContext(options);
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        var product = await ctx.Products.FirstAsync();
+        product.Price += 1;
+        if (async) await ctx.SaveChangesAsync();
+        else ctx.SaveChanges();
+
+        observer.WriteReaders.Should().BeGreaterThan(0);
+        var writes = scope.Commands.Where(c => c.Source == QuerySource.SaveChanges).ToArray();
+        writes.Should().NotBeEmpty();
+        writes.Should().OnlyContain(c => c.RowsReturned == null);
+        var report = QueryShape.Reporting.ScopeReport.FromScope(scope, scope.Analyze());
+        report.CaptureComplete.Should().BeTrue();
+        report.RowsReturned.Should().Be(1);
+    }
+
+    private sealed class WriteReaderObserver : DbCommandInterceptor
+    {
+        public int WriteReaders { get; private set; }
+        public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
+        {
+            if (eventData.CommandSource == CommandSource.SaveChanges)
+            {
+                result.Should().BeOfType<SqliteDataReader>("providers may require their concrete reader for write batches");
+                WriteReaders++;
+            }
+            return result;
+        }
+        public override ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(ReaderExecuted(command, eventData, result));
     }
 
     [Fact]

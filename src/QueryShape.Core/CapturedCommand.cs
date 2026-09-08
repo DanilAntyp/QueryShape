@@ -53,7 +53,7 @@ public sealed class CapturedCommand
     /// <summary>Wall-clock time from execute to first result (EF Core's <c>Duration</c>).</summary>
     public TimeSpan Duration { get; init; }
 
-    /// <summary>Rows read by the data reader, known once the reader closes; <c>null</c> for non-reader commands or while the reader is open.</summary>
+    /// <summary>Rows read by a query data reader, known once it closes; <c>null</c> for SaveChanges, non-reader commands, or while the reader is open.</summary>
     public int? RowsReturned { get; internal set; }
 
     /// <summary>Rows affected as reported by the provider, when known.</summary>
