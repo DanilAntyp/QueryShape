@@ -6,16 +6,31 @@ using QueryShape.SampleApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// One shared in-memory SQLite database for the lifetime of the app.
-var connection = new SqliteConnection("DataSource=queryshape-sample;Mode=Memory;Cache=Shared");
-connection.Open();
-builder.Services.AddSingleton(connection);
+// One SQLite database file per app instance (temp directory, deleted on shutdown), pooled connections and WAL:
+// requests get their own connections, so concurrent requests really run concurrently (a single shared connection cannot).
+var dbPath = Path.Combine(Path.GetTempPath(), $"queryshape-sample-{Guid.NewGuid():N}.db");
+var connectionString = new SqliteConnectionStringBuilder { DataSource = dbPath, Pooling = true }.ToString();
 
 // --- QueryShape: the whole setup is these three lines (1/3 and 2/3 here, 3/3 below). ---
 builder.Services.AddQueryShape(o => { o.CaptureCallSites = builder.Environment.IsDevelopment(); });
-builder.Services.AddDbContext<ShopDbContext>((sp, o) => o.UseSqlite(sp.GetRequiredService<SqliteConnection>()).UseQueryShape());
+builder.Services.AddDbContext<ShopDbContext>(o => o.UseSqlite(connectionString).UseQueryShape());
 
 var app = builder.Build();
+app.Lifetime.ApplicationStopped.Register(() =>
+{
+    SqliteConnection.ClearAllPools();
+    foreach (var suffix in new[] { string.Empty, "-wal", "-shm" })
+    {
+        try
+        {
+            File.Delete(dbPath + suffix);
+        }
+        catch (IOException)
+        {
+            // Best-effort cleanup of a temp file.
+        }
+    }
+});
 
 app.UseQueryShape(o => o.EmitResponseHeader = true);   // 3/3
 
@@ -23,6 +38,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
     db.Database.EnsureCreated();
+    db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
     ShopDbContext.Seed(db);
 }
 
