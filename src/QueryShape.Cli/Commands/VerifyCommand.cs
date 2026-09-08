@@ -19,6 +19,9 @@ internal sealed class VerifyCommand
 
     public bool KeepWorktree { get; init; }
 
+    /// <summary>Run the after leg even when the diagnosis patch is partial (default: refuse, since the table would be misleading).</summary>
+    public bool RunPartial { get; init; }
+
     public async Task<int> ExecuteAsync(TextWriter out_, TextWriter err, CancellationToken ct)
     {
         if (PatchPath is null && !PatchFromDiagnosis)
@@ -86,6 +89,26 @@ internal sealed class VerifyCommand
             patchFile = Path.Combine(work, "from-diagnosis.diff");
             await File.WriteAllTextAsync(patchFile, string.Concat(diffs.Select(d => d.UnifiedDiff!.EndsWith('\n') ? d.UnifiedDiff : d.UnifiedDiff + "\n")), ct);
             fixTitle = string.Join(" | ", diffs.Select(d => d.FixSummary ?? d.Title).Distinct());
+
+            var partial = diffs.Where(d => d.FixIsPartial).ToList();
+            if (partial.Count > 0)
+            {
+                out_.WriteLine();
+                out_.WriteLine("partial fix, manual step required:");
+                foreach (var d in partial)
+                {
+                    out_.WriteLine($"  {d.RuleId}: {d.ManualStep ?? "see the diagnosis"}");
+                }
+
+                if (!RunPartial)
+                {
+                    out_.WriteLine();
+                    out_.WriteLine("The proposed patch is only part of the fix, so a before/after table would not measure the fix. Apply the manual step, commit, and verify with --patch, or pass --run-partial to measure the partial patch anyway.");
+                    return 2;
+                }
+
+                out_.WriteLine("  (--run-partial: measuring the partial patch anyway)");
+            }
         }
         else
         {

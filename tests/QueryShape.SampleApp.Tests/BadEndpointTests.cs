@@ -22,6 +22,8 @@ public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
         n1.Title.Should().StartWith("N+1 query: Order by CustomerId executed 40 times at BadEndpoints.cs:");
         n1.SuggestedFix!.Summary.Should().StartWith("Add .Include(c => c.Orders) to the Customer query at BadEndpoints.cs:");
         n1.SuggestedFix.UnifiedDiff.Should().Contain("+            var customers = await db.Customers.Include(c => c.Orders).ToListAsync();");
+        n1.SuggestedFix.UnifiedDiff.Should().Contain("+                var orders = customer.Orders;");
+        n1.SuggestedFix.IsPartial.Should().BeFalse();
     }
 
     [RuntimeMatchedFact]

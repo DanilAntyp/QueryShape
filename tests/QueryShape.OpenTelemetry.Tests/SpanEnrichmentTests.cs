@@ -58,7 +58,8 @@ public sealed class SpanEnrichmentTests : IDisposable
             _tracerProvider.ForceFlush();
             lock (_exported)
             {
-                candidates = _exported.Where(a => a.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.QueryCount) is not null).ToList();
+                // Only the hosting request span: providers are process-wide, so other tests' QueryShape scope spans land here too.
+                candidates = _exported.Where(a => a.Source.Name == "Microsoft.AspNetCore" && a.GetTagItem(QueryShapeOpenTelemetryListener.Attributes.QueryCount) is not null).ToList();
             }
 
             if (candidates.Count == 0)

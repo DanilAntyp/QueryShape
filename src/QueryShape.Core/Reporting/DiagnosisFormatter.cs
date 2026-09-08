@@ -60,11 +60,16 @@ public static class DiagnosisFormatter
 
             if (fix.UnifiedDiff is not null)
             {
-                sb.Append(indent).Append("       patch:\n");
+                sb.Append(indent).Append(fix.IsPartial ? "       patch (partial):\n" : "       patch:\n");
                 foreach (var line in fix.UnifiedDiff.TrimEnd('\n').Split('\n'))
                 {
                     sb.Append(indent).Append("         ").Append(line).Append('\n');
                 }
+            }
+
+            if (fix.ManualStep is not null)
+            {
+                AppendWrapped(sb, indent + "       manual step: ", indent + "                    ", fix.ManualStep);
             }
         }
 

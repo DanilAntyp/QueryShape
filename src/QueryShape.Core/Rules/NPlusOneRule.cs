@@ -125,8 +125,29 @@ public sealed class NPlusOneRule : IRule
 
                 string? before = parent?.Query?.Expression;
                 string? after = before is null ? null : RuleHelpers.InsertAfterRoot(before, include);
-                var diff = parent?.CallSite is { FilePath: not null } site
-                    ? SourcePatcher.TryInsertBeforeTerminalOperator(site, "." + include)
+
+                // Hunk 1: the Include on the parent query. Hunk 2: the loop reads the navigation instead of querying.
+                var edits = new List<SourcePatcher.LineEdit>();
+                if (parent?.CallSite is { FilePath: not null } parentSite && SourcePatcher.TryInsertBeforeTerminalOperatorEdit(parentSite, "." + include) is { } includeEdit)
+                {
+                    edits.Add(includeEdit);
+                }
+
+                string? parentVariable = null;
+                SourcePatcher.LineEdit? loopEdit = null;
+                if (edits.Count > 0 && repeated.CallSite is { FilePath: not null } loopSite)
+                {
+                    loopEdit = SourcePatcher.TryRewriteLoopQuery(loopSite, kf.PropertyName, kf.NavigationOnRelated!, navigationIsCollection: !kf.IsPrimaryKey, out parentVariable);
+                    if (loopEdit is not null)
+                    {
+                        edits.Add(loopEdit);
+                    }
+                }
+
+                var diff = edits.Count > 0 ? SourcePatcher.BuildDiff(edits) : null;
+                var partial = diff is not null && loopEdit is null;
+                var manualStep = loopEdit is null
+                    ? $"Inside the loop, replace the {root} query with a read of {(parentVariable ?? RuleHelpers.LambdaName(kf.RelatedEntityType!))}.{kf.NavigationOnRelated} (the Include now fills it); the patch only adds the Include."
                     : null;
 
                 var rationale = kf.IsPrimaryKey
@@ -136,7 +157,8 @@ public sealed class NPlusOneRule : IRule
                       $"The {count} per-{kf.RelatedEntityType} queries disappear once the loop reads the loaded navigation instead of running its own query. " +
                       $"If you only need a few columns, project them with Select instead of Include.";
 
-                return new Fix(summary, FixKind.CodeChange, before, after, diff, rationale, docs);
+                return new Fix(summary, FixKind.CodeChange, before, after, diff, rationale, docs) { IsPartial = partial, ManualStep = manualStep };
+
             }
 
             var pk = q.RootKeyProperties.FirstOrDefault() ?? "Id";

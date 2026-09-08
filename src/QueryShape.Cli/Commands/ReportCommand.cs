@@ -52,7 +52,9 @@ internal sealed class ReportCommand
 
                 if (d.UnifiedDiff is not null)
                 {
-                    out_.WriteLine("    patch available (use `queryshape verify --patch-from-diagnosis`)");
+                    out_.WriteLine(d.FixIsPartial
+                        ? "    partial patch available; manual step: " + d.ManualStep
+                        : "    patch available (use `queryshape verify --patch-from-diagnosis`)");
                 }
             }
 

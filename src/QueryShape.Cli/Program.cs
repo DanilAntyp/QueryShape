@@ -14,9 +14,10 @@ var fromDiagnosisOption = new Option<bool>("--patch-from-diagnosis") { Descripti
 var allowDirtyOption = new Option<bool>("--allow-dirty") { Description = "Proceed with uncommitted changes (they are carried into the worktree)." };
 var runsOption = new Option<int>("--runs") { Description = "How many times to run the patched tests; the median is reported.", DefaultValueFactory = _ => 3 };
 var keepOption = new Option<bool>("--keep-worktree") { Description = "Leave the temporary worktree in place for inspection." };
+var runPartialOption = new Option<bool>("--run-partial") { Description = "With --patch-from-diagnosis: measure even when the patch is only part of the fix." };
 var verify = new Command("verify", "Run tests before and after a patch and print a before/after table. Exit 0 when improved with no new Error diagnoses.")
 {
-    projectOption, testOption, patchOption, fromDiagnosisOption, ruleOption, allowDirtyOption, runsOption, keepOption,
+    projectOption, testOption, patchOption, fromDiagnosisOption, ruleOption, allowDirtyOption, runsOption, keepOption, runPartialOption,
 };
 verify.SetAction((parse, ct) => new VerifyCommand
 {
@@ -28,6 +29,7 @@ verify.SetAction((parse, ct) => new VerifyCommand
     AllowDirty = parse.GetValue(allowDirtyOption),
     Runs = parse.GetValue(runsOption),
     KeepWorktree = parse.GetValue(keepOption),
+    RunPartial = parse.GetValue(runPartialOption),
 }.ExecuteAsync(Console.Out, Console.Error, ct));
 root.Subcommands.Add(verify);
 

@@ -154,8 +154,12 @@ QueryShape.Fix.DocsUrl.get -> string!
 QueryShape.Fix.DocsUrl.init -> void
 QueryShape.Fix.Equals(QueryShape.Fix? other) -> bool
 QueryShape.Fix.Fix(string! Summary, QueryShape.FixKind Kind, string? BeforeSnippet, string? AfterSnippet, string? UnifiedDiff, string! Rationale, string! DocsUrl) -> void
+QueryShape.Fix.IsPartial.get -> bool
+QueryShape.Fix.IsPartial.init -> void
 QueryShape.Fix.Kind.get -> QueryShape.FixKind
 QueryShape.Fix.Kind.init -> void
+QueryShape.Fix.ManualStep.get -> string?
+QueryShape.Fix.ManualStep.init -> void
 QueryShape.Fix.Rationale.get -> string!
 QueryShape.Fix.Rationale.init -> void
 QueryShape.Fix.Summary.get -> string!
@@ -331,7 +335,7 @@ QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.get -> int
 QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.init -> void
-QueryShape.Reporting.ScopeReportDiagnosis.Deconstruct(out string! RuleId, out string! Severity, out string! Title, out string! Explanation, out string? CallSite, out string? CallSiteFile, out int CallSiteLine, out System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, out string? SampleSql, out string? SampleExpression, out string? FixSummary, out string? FixRationale, out string? FixBefore, out string? FixAfter, out string? UnifiedDiff, out string? DocsUrl) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Deconstruct(out string! RuleId, out string! Severity, out string! Title, out string! Explanation, out string? CallSite, out string? CallSiteFile, out int CallSiteLine, out System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, out string? SampleSql, out string? SampleExpression, out string? FixSummary, out string? FixRationale, out string? FixBefore, out string? FixAfter, out string? UnifiedDiff, out string? DocsUrl, out bool FixIsPartial, out string? ManualStep) -> void
 QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.Equals(QueryShape.Reporting.ScopeReportDiagnosis? other) -> bool
@@ -343,17 +347,21 @@ QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixIsPartial.get -> bool
+QueryShape.Reporting.ScopeReportDiagnosis.FixIsPartial.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.ManualStep.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.ManualStep.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.RuleId.get -> string!
 QueryShape.Reporting.ScopeReportDiagnosis.RuleId.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.init -> void
-QueryShape.Reporting.ScopeReportDiagnosis.ScopeReportDiagnosis(string! RuleId, string! Severity, string! Title, string! Explanation, string? CallSite, string? CallSiteFile, int CallSiteLine, System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, string? SampleSql, string? SampleExpression, string? FixSummary, string? FixRationale, string? FixBefore, string? FixAfter, string? UnifiedDiff, string? DocsUrl) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.ScopeReportDiagnosis(string! RuleId, string! Severity, string! Title, string! Explanation, string? CallSite, string? CallSiteFile, int CallSiteLine, System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, string? SampleSql, string? SampleExpression, string? FixSummary, string? FixRationale, string? FixBefore, string? FixAfter, string? UnifiedDiff, string? DocsUrl, bool FixIsPartial = false, string? ManualStep = null) -> void
 QueryShape.Reporting.ScopeReportDiagnosis.Severity.get -> string!
 QueryShape.Reporting.ScopeReportDiagnosis.Severity.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.Title.get -> string!

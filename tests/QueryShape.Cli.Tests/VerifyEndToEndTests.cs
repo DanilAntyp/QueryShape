@@ -87,6 +87,45 @@ public class VerifyEndToEndTests
     }
 }
 
+public class VerifyFromDiagnosisEndToEndTests
+{
+    [SkippableFact]
+    [Trait("Category", "Slow")]
+    public async Task Verify_with_the_patch_QueryShape_proposed_proves_the_n_plus_one_fix()
+    {
+        var repo = ScopeReportTests.FindRepoRoot();
+        var previousDir = Directory.GetCurrentDirectory();
+        Directory.SetCurrentDirectory(repo);
+        var out_ = new StringWriter();
+        var err = new StringWriter();
+        try
+        {
+            var code = await new VerifyCommand
+            {
+                Project = "tests/QueryShape.SampleApp.Tests",
+                TestFilter = "FullyQualifiedName~BadEndpointTests.N_plus_one_is_diagnosed_with_include_fix",
+                PatchFromDiagnosis = true,
+                RuleFilter = "QS001",
+                Runs = 2,
+                AllowDirty = true,
+            }.ExecuteAsync(out_, err, CancellationToken.None);
+
+            var text = out_.ToString();
+            text.Should().NotContain("partial fix", "the sample loop has the shape QueryShape rewrites");
+            text.Should().Contain("Fix: Add .Include(c => c.Orders) to the Customer query at BadEndpoints.cs:");
+            var compact = System.Text.RegularExpressions.Regex.Replace(text, " +", " ");
+            compact.Should().Contain("\nqueries 41 1 -40\n");
+            compact.Should().Contain("\nQS001 N+1 query 1 0 ✓\n");
+            text.Should().Contain("verdict: improved", err.ToString());
+            code.Should().Be(0, err.ToString());
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousDir);
+        }
+    }
+}
+
 public sealed class SkippableFactAttribute : FactAttribute
 {
     public SkippableFactAttribute() => Skip = VerifyEndToEndTests.SkipReason;

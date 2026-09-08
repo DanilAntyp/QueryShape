@@ -50,7 +50,14 @@ public sealed record Fix(
     string? AfterSnippet,
     string? UnifiedDiff,
     string Rationale,
-    string DocsUrl);
+    string DocsUrl)
+{
+    /// <summary><c>true</c> when <see cref="UnifiedDiff"/> is only part of the fix and <see cref="ManualStep"/> is still required. Tools must not present a partial patch as a complete fix.</summary>
+    public bool IsPartial { get; init; }
+
+    /// <summary>What a person still has to change by hand when the patch is partial (or when no patch could be produced).</summary>
+    public string? ManualStep { get; init; }
+}
 
 /// <summary>The facts a rule used to reach its conclusion.</summary>
 /// <param name="Count">How many commands were involved.</param>

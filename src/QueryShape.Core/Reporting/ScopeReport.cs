@@ -28,7 +28,9 @@ public sealed record ScopeReportDiagnosis(
     string? FixBefore,
     string? FixAfter,
     string? UnifiedDiff,
-    string? DocsUrl);
+    string? DocsUrl,
+    bool FixIsPartial = false,
+    string? ManualStep = null);
 
 /// <summary>
 /// Machine-readable summary of one completed scope. Written to <c>$QUERYSHAPE_REPORT_DIR/&lt;ticks&gt;-&lt;id&gt;.json</c> when that variable is set;
@@ -87,7 +89,9 @@ public sealed record ScopeReport(
             d.SuggestedFix?.BeforeSnippet,
             d.SuggestedFix?.AfterSnippet,
             d.SuggestedFix?.UnifiedDiff,
-            d.SuggestedFix?.DocsUrl)).ToArray();
+            d.SuggestedFix?.DocsUrl,
+            d.SuggestedFix?.IsPartial ?? false,
+            d.SuggestedFix?.ManualStep)).ToArray();
 
         return new ScopeReport(
             CurrentVersion,
