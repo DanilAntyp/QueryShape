@@ -32,6 +32,11 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                 continue; // unknown tracking (inferred from another context's compilation, nothing observed) stays silent: no false positives at any severity
             }
 
+            if (c.RowsReturned == 0 && c.TrackedEntities == 0)
+            {
+                continue; // nothing came back, so nothing was tracked: there is no overhead to report (a lookup that found no row)
+            }
+
             // The query loaded the root and everything it included; saving any of those types means the tracking was used.
             if (q.RootEntityType is { } full && modified.Contains(full) || modifiedShort.Contains(root)
                 || q.IncludedEntityTypes.Any(t => modified.Contains(t) || modifiedShort.Contains(ShortName(t)))

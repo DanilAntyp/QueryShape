@@ -215,7 +215,7 @@ public sealed class ListenerUnitTests : IDisposable
         exported.Should().BeEmpty("CreateActivitiesWhenNoneExist is off by default");
 
         var optIn = new QueryShapeOptions { CreateActivitiesWhenNoneExist = true }.AddOpenTelemetry();
-        using (var scope = QueryShapeScope.Begin(options: optIn))
+        using (var scope = QueryShapeScope.Begin("scope", optIn))   // an explicit name: Begin() would default it to this test method
         {
             await using var ctx = _shop.CreateContext(optIn);
             await ctx.Products.ToListAsync();

@@ -637,7 +637,7 @@ static QueryShape.Normalization.SqlNormalizer.Shape(string! sql) -> string!
 static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!
 static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape<TContext>(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>!
 static QueryShape.QueryShapeOptions.Default.get -> QueryShape.QueryShapeOptions!
-static QueryShape.QueryShapeScope.Begin(string? name = null, QueryShape.QueryShapeOptions? options = null) -> QueryShape.QueryShapeScope!
+static QueryShape.QueryShapeScope.Begin(string? name = null, QueryShape.QueryShapeOptions? options = null, string? callerMemberName = null) -> QueryShape.QueryShapeScope!
 static QueryShape.QueryShapeScope.Current.get -> QueryShape.QueryShapeScope?
 static QueryShape.QueryShapeServiceCollectionExtensions.AddQueryShape(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<QueryShape.QueryShapeOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static QueryShape.Reporting.DiagnosisFormatter.Format(QueryShape.Diagnosis! diagnosis, string! indent = "") -> string!

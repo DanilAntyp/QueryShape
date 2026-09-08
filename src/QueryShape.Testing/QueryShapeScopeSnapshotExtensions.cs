@@ -66,7 +66,10 @@ internal static class SnapshotEngine
             }
         }
 
-        scope.Name ??= testName; // an unnamed scope is this test's scope: reports and telemetry should say which one
+        if (scope.Name is null || scope.NameIsDefault)
+        {
+            scope.Name = testName; // the scope is this test's: reports and telemetry should carry the full test name, not the bare member name Begin() defaulted to
+        }
         scope.Annotate("snapshot.test", testName);
         scope.Annotate("snapshot.path", snapshotPath);
 

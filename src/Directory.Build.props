@@ -19,6 +19,7 @@
     <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/" Visible="false" />
     <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     <InternalsVisibleTo Include="QueryShape.Core.Tests" />
+    <InternalsVisibleTo Include="QueryShape.Testing" />
     <InternalsVisibleTo Include="QueryShape.Testing.Tests" />
     <InternalsVisibleTo Include="QueryShape.OpenTelemetry.Tests" />
     <InternalsVisibleTo Include="QueryShape.Cli.Tests" />

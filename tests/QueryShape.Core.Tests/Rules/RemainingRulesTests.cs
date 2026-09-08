@@ -89,6 +89,16 @@ public class TrackingOnReadOnlyQueryRuleTests
     }
 
     [Fact]
+    public void Silent_when_the_query_returned_no_rows()
+    {
+        using var scope = Synthetic.Scope();
+        var q = Synthetic.Query("DbSet<Product>()\n    .FirstOrDefault(p => p.Id == @__id_0)", "Product", hasFilter: true, hasLimit: true, tracking: true);
+        scope.Add("SELECT * FROM Products WHERE Id = @p LIMIT 1", query: q, rows: 0);
+
+        new TrackingOnReadOnlyQueryRule().Analyze(scope).Should().BeEmpty("a lookup that found nothing tracked nothing");
+    }
+
+    [Fact]
     public void Silent_when_the_entity_type_was_saved_or_query_is_untracked_or_a_projection()
     {
         using var scope = Synthetic.Scope();

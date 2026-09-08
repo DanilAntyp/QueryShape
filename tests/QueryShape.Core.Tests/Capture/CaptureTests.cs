@@ -384,6 +384,15 @@ public class CaptureTests : IDisposable
     }
 
     [Fact]
+    public void An_unnamed_scope_is_named_after_the_calling_member()
+    {
+        using var scope = QueryShapeScope.Begin();
+        scope.Name.Should().Be(nameof(An_unnamed_scope_is_named_after_the_calling_member));
+        using var named = QueryShapeScope.Begin("explicit");
+        named.Name.Should().Be("explicit");
+    }
+
+    [Fact]
     public async Task Nested_scope_overflow_does_not_stop_the_enclosing_scope()
     {
         await using var ctx = _shop.CreateContext();

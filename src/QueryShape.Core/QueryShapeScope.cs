@@ -25,9 +25,10 @@ public sealed class QueryShapeScope : IDisposable
     private int _nextSequence;
     private bool _disposed;
 
-    private QueryShapeScope(string? name, QueryShapeOptions options, QueryShapeScope? parent)
+    private QueryShapeScope(string? name, bool nameIsDefault, QueryShapeOptions options, QueryShapeScope? parent)
     {
-        Name = name;
+        _name = name;
+        NameIsDefault = nameIsDefault;
         Options = options;
         _parent = parent;
         StartedAt = DateTimeOffset.UtcNow;
@@ -37,17 +38,31 @@ public sealed class QueryShapeScope : IDisposable
     public static QueryShapeScope? Current => s_current.Value;
 
     /// <summary>Opens a scope and makes it current. Dispose it to close.</summary>
-    /// <param name="name">Optional label (test name, request path).</param>
+    /// <param name="name">Optional label (test name, request route). Defaults to the calling member's name, so a scope begun in a test is named after the test.</param>
     /// <param name="options">Thresholds and rules; defaults to <see cref="QueryShapeOptions.Default"/>.</param>
-    public static QueryShapeScope Begin(string? name = null, QueryShapeOptions? options = null)
+    /// <param name="callerMemberName">Filled in by the compiler.</param>
+    public static QueryShapeScope Begin(string? name = null, QueryShapeOptions? options = null, [System.Runtime.CompilerServices.CallerMemberName] string? callerMemberName = null)
     {
-        var scope = new QueryShapeScope(name, options ?? QueryShapeOptions.Default, s_current.Value);
+        var scope = new QueryShapeScope(name ?? callerMemberName, name is null && callerMemberName is not null, options ?? QueryShapeOptions.Default, s_current.Value);
         s_current.Value = scope;
         return scope;
     }
 
+    private string? _name;
+
     /// <summary>Optional label (test name, request route). Settable so a host can refine it once it knows more, e.g. the route template after routing.</summary>
-    public string? Name { get; set; }
+    public string? Name
+    {
+        get => _name;
+        set
+        {
+            _name = value;
+            NameIsDefault = false;
+        }
+    }
+
+    /// <summary><c>true</c> while the name is the one <see cref="Begin"/> defaulted from the calling member, i.e. nobody chose it; tools may replace it with something better (the full test name).</summary>
+    internal bool NameIsDefault { get; private set; }
 
     /// <summary>Options in effect for analysis.</summary>
     public QueryShapeOptions Options { get; }
