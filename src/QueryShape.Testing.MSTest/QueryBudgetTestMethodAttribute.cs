@@ -6,6 +6,7 @@ namespace QueryShape.Testing.MSTest;
 /// <summary>
 /// Replaces <c>[TestMethod]</c>: runs the test inside a <see cref="QueryShapeScope"/> and fails it when the budget is exceeded:
 /// <c>[QueryBudgetTestMethod(MaxQueries = 2, MaxDurationMs = 200, FailOn = Severity.Error)]</c>.
+/// MSTest runs <c>[TestInitialize]</c> and <c>[TestCleanup]</c> inside the attribute's execution, so queries they issue count against the budget.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class QueryBudgetTestMethodAttribute : TestMethodAttribute

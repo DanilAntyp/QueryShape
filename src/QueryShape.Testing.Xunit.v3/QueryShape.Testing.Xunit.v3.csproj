@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>QueryShape.Testing.Xunit.v3</AssemblyName>
+    <PackageId>QueryShape.Testing.Xunit.v3</PackageId>
+    <RootNamespace>QueryShape.Testing.Xunit.V3</RootNamespace>
+    <Description>xUnit v3 adapter for QueryShape.Testing: [QueryBudget(MaxQueries = 2, MaxDurationMs = 200)] on a test method. For xUnit v2 use QueryShape.Testing.Xunit.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../QueryShape.Testing/QueryShape.Testing.csproj" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+</Project>

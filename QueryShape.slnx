@@ -7,6 +7,7 @@
     <Project Path="src/QueryShape.OpenTelemetry/QueryShape.OpenTelemetry.csproj" />
     <Project Path="src/QueryShape.Testing.MSTest/QueryShape.Testing.MSTest.csproj" />
     <Project Path="src/QueryShape.Testing.NUnit/QueryShape.Testing.NUnit.csproj" />
+    <Project Path="src/QueryShape.Testing.Xunit.v3/QueryShape.Testing.Xunit.v3.csproj" />
     <Project Path="src/QueryShape.Testing.Xunit/QueryShape.Testing.Xunit.csproj" />
     <Project Path="src/QueryShape.Testing/QueryShape.Testing.csproj" />
   </Folder>
@@ -18,6 +19,9 @@
     <Project Path="tests/QueryShape.OpenTelemetry.Tests/QueryShape.OpenTelemetry.Tests.csproj" />
     <Project Path="tests/QueryShape.SampleApp.Tests/QueryShape.SampleApp.Tests.csproj" />
     <Project Path="tests/QueryShape.SampleApp/QueryShape.SampleApp.csproj" />
+    <Project Path="tests/QueryShape.Testing.MSTest.Tests/QueryShape.Testing.MSTest.Tests.csproj" />
+    <Project Path="tests/QueryShape.Testing.NUnit.Tests/QueryShape.Testing.NUnit.Tests.csproj" />
     <Project Path="tests/QueryShape.Testing.Tests/QueryShape.Testing.Tests.csproj" />
+    <Project Path="tests/QueryShape.Testing.Xunit.v3.Tests/QueryShape.Testing.Xunit.v3.Tests.csproj" />
   </Folder>
 </Solution>

@@ -51,7 +51,8 @@ queryshape/
 ├─ src/
 │  ├─ QueryShape.Core/                ← capture, normalization, rules engine, diagnosis model. No test/OTel deps.
 │  ├─ QueryShape.Testing/             ← snapshot testing API, framework-agnostic core (feature #1)
-│  ├─ QueryShape.Testing.Xunit/       ← [QueryBudget] attribute for xUnit (thin adapter)
+│  ├─ QueryShape.Testing.Xunit/       ← [QueryBudget] attribute for xUnit v2 (thin adapter)
+│  ├─ QueryShape.Testing.Xunit.v3/    ← the same for xUnit v3 (BeforeAfterTestAttribute moved to Xunit.v3)
 │  ├─ QueryShape.AspNetCore/          ← app.UseQueryShape() middleware (ADR-0001)
 │  ├─ QueryShape.Testing.NUnit/       ← [QueryBudget] for NUnit (ITestAction)
 │  ├─ QueryShape.Testing.MSTest/      ← [QueryBudgetTestMethod] for MSTest
@@ -61,6 +62,7 @@ queryshape/
 ├─ tests/
 │  ├─ QueryShape.Core.Tests/
 │  ├─ QueryShape.Testing.Tests/
+│  ├─ QueryShape.Testing.NUnit.Tests/ ← the adapters run under their own frameworks (also .MSTest.Tests, .Xunit.v3.Tests)
 │  ├─ QueryShape.OpenTelemetry.Tests/
 │  ├─ QueryShape.SampleApp/           ← small ASP.NET Core app with deliberately bad queries; used by tests AND as the README demo
 │  ├─ QueryShape.SampleApp.Tests/     ← one test per /bad endpoint (rule fires) and per /good twin (rule silent)

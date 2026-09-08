@@ -114,7 +114,7 @@ Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is s
 |---|---|
 | `QueryShape.Core` | capture, normalization, rules, diagnoses |
 | `QueryShape.Testing` | snapshot testing and `QueryBudget` (framework-agnostic) |
-| `QueryShape.Testing.Xunit` / `.NUnit` / `.MSTest` | `[QueryBudget]` attributes for each framework |
+| `QueryShape.Testing.Xunit` / `.Xunit.v3` / `.NUnit` / `.MSTest` | `[QueryBudget]` attributes for each framework (xUnit v2 and v3, NUnit, MSTest) |
 | `QueryShape.AspNetCore` | `app.UseQueryShape()` request scopes |
 | `QueryShape.OpenTelemetry` | span enrichment and metrics |
 | `QueryShape.Cli` | `dotnet queryshape` tool |

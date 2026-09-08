@@ -38,14 +38,14 @@ jobs:
       - name: Test (net8.0 on the .NET 8 runtime)
         shell: bash
         run: |
-          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
+          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.Testing.NUnit.Tests tests/QueryShape.Testing.MSTest.Tests tests/QueryShape.Testing.Xunit.v3.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
             dotnet test "$p" --configuration Release --no-build --framework net8.0 --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).net8.trx" --results-directory TestResults || exit 1
           done
 
       - name: Test (net10.0 on the .NET 10 runtime)
         shell: bash
         run: |
-          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
+          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.Testing.NUnit.Tests tests/QueryShape.Testing.MSTest.Tests tests/QueryShape.Testing.Xunit.v3.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
             dotnet test "$p" --configuration Release --no-build --framework net10.0 --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).net10.trx" --results-directory TestResults || exit 1
           done
 

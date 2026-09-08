@@ -12,7 +12,8 @@
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);CA1707;CA2007;CA1861;CA1848;CA1515</NoWarn>
   </PropertyGroup>
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(IsSampleApp)' != 'true' And '$(IsBenchmarkGenerated)' != 'true'">
+  <!-- xUnit v2 is the default test framework; a project that sets TestFramework (nunit, mstest, xunit.v3) brings its own packages. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(IsSampleApp)' != 'true' And '$(IsBenchmarkGenerated)' != 'true' And '$(TestFramework)' == ''">
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
