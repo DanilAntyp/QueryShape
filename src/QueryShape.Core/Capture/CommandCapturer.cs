@@ -301,7 +301,7 @@ internal sealed class CommandCapturer
             var value = p.Value;
             var isNull = value is null || value is DBNull;
             hash = Fnv.Add(hash, p.ParameterName);
-            hash = Fnv.Add(hash, isNull ? "NULL" : ValueToString(value!));
+            hash = isNull ? Fnv.Add(hash, "NULL") : Fnv.AddValue(hash, value!);
             list[i] = new CapturedParameter(p.ParameterName, p.DbType, p.Direction, includeValues && !isNull ? value : null, isNull);
 
             var elements = CollectionElementCount(value);
@@ -329,6 +329,60 @@ internal sealed class CommandCapturer
             }
 
             return (hash ^ 0x1F) * Prime; // separator
+        }
+
+        public static ulong Add(ulong hash, ulong bits)
+        {
+            for (var i = 0; i < 8; i++)
+            {
+                hash = (hash ^ (bits & 0xFF)) * Prime;
+                bits >>= 8;
+            }
+
+            return (hash ^ 0x1F) * Prime;
+        }
+
+        /// <summary>Primitives are hashed from their bits (no string formatting); everything else falls back to the invariant string form.</summary>
+        public static ulong AddValue(ulong hash, object value)
+            => value switch
+            {
+                int i => Add(hash ^ 0x01, (ulong)(uint)i),
+                long l => Add(hash ^ 0x02, (ulong)l),
+                bool b => Add(hash ^ 0x03, b ? 1UL : 0UL),
+                Guid g => AddGuid(hash ^ 0x04, g),
+                DateTime dt => Add(hash ^ 0x05, (ulong)dt.Ticks),
+                DateTimeOffset dto => Add(Add(hash ^ 0x06, (ulong)dto.UtcTicks), (ulong)dto.Offset.Ticks),
+                decimal d => AddDecimal(hash ^ 0x07, d),
+                double db => Add(hash ^ 0x08, (ulong)BitConverter.DoubleToInt64Bits(db)),
+                float f => Add(hash ^ 0x09, (ulong)BitConverter.SingleToInt32Bits(f)),
+                short sh => Add(hash ^ 0x0A, (ulong)(ushort)sh),
+                byte by => Add(hash ^ 0x0B, by),
+                string s => Add(hash, s),
+                _ => Add(hash, ValueToString(value)),
+            };
+
+        private static ulong AddGuid(ulong hash, Guid guid)
+        {
+            Span<byte> bytes = stackalloc byte[16];
+            guid.TryWriteBytes(bytes);
+            foreach (var b in bytes)
+            {
+                hash = (hash ^ b) * Prime;
+            }
+
+            return (hash ^ 0x1F) * Prime;
+        }
+
+        private static ulong AddDecimal(ulong hash, decimal value)
+        {
+            Span<int> bits = stackalloc int[4];
+            decimal.GetBits(value, bits);
+            foreach (var part in bits)
+            {
+                hash = Add(hash, (ulong)(uint)part);
+            }
+
+            return hash;
         }
     }
 

@@ -7,7 +7,22 @@ Re-run before every release:
 dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*' --join
 ```
 
-## 0.1.0-preview.1 (2026-09-08)
+## 0.1.0-preview.1 (2026-09-08), after the parameter-hash change
+
+Same machine and method as below. Hashing primitive parameters from their bits instead of formatting them, plus caching the provider name per context:
+
+| Scenario | Mean | vs EF Core | Allocated |
+|---|---:|---:|---:|
+| EF Core only | 26.43 µs | 1.00 | 17.6 KB |
+| QueryShape, no scope | 32.87 µs | 1.24 | 20.9 KB |
+| QueryShape, scope per request | 35.16 µs ± 3.4 | 1.33 | 21.7 KB |
+| QueryShape, scope + `Analyze()` | 38.44 µs ± 5.1 | 1.45 | 28.5 KB |
+| QueryShape, scope + call sites | 65.60 µs | 2.48 | 66.7 KB |
+
+Per query: **≈ 3.5 µs and ≈ 1.6 KB** (was ≈ 4 µs / 2.7 KB). The remaining cost is the `CapturedCommand` and parameter descriptors, the reader wrapper,
+the correlator lookups and the scope append; each is small and needed by at least one rule, so this is where the micro work stops for now.
+
+## 0.1.0-preview.1 (2026-09-08), first measurement
 
 ### Per-query overhead (micro): one customer lookup + its orders, 2 queries, `AsNoTracking`
 
@@ -54,6 +69,7 @@ because the queries themselves cost only a few microseconds. Treat 4 µs/query a
 
 ### Next optimizations, in order of expected payoff
 
-1. Hash primitive parameter values without formatting them to strings.
-2. Resolve provider name and context id lazily.
+1. ~~Hash primitive parameter values without formatting them to strings.~~ Done.
+2. ~~Resolve provider name lazily.~~ Done (cached per context).
 3. Skip the counting reader when no rule needs row counts (all built-in rules currently do).
+4. Pool `CapturedParameter[]` for commands with few parameters.
