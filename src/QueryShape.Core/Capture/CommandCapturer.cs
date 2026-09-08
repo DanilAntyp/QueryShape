@@ -26,6 +26,9 @@ internal sealed class CommandCapturer
     private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
     private readonly ConcurrentDictionary<Guid, CommandStart> _pendingStarts = new();
     private int _pendingStartCount;
+    private int _openReaderCount;
+    private int _sampleKeyCount;
+    private int _sampledSiteCount;
     private readonly ConcurrentDictionary<string, int> _sampleCounts = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, CallSite> _sampledCallSites = new(StringComparer.Ordinal);
     private int _unscopedSequence;
@@ -285,26 +288,17 @@ internal sealed class CommandCapturer
                     contextState.ActiveReader = captured;
                 }
 
-                if (_openReaders.Count > 10_000)
+                // ConcurrentDictionary.Count takes every internal lock; a counter keeps the bound off the hot path.
+                if (Interlocked.Increment(ref _openReaderCount) > 10_000)
                 {
                     _openReaders.Clear(); // readers that were never closed; keep memory bounded
+                    Interlocked.Exchange(ref _openReaderCount, 0);
                 }
 
                 _openReaders[commandId] = captured;
             }
 
-            foreach (var listener in ListenersFor(options, scope))
-            {
-                try
-                {
-                    listener.OnCommandCaptured(captured, scope);
-                }
-                catch (Exception ex)
-                {
-                    Log.Swallowed(options, "listener.OnCommandCaptured", ex);
-                }
-            }
-
+            // Attach first, notify second: listeners see the command with its Sequence set and already in the scope.
             if (scope is null)
             {
                 lock (_gate)
@@ -320,6 +314,18 @@ internal sealed class CommandCapturer
             else
             {
                 scope.Record(captured);
+            }
+
+            foreach (var listener in ListenersFor(options, scope))
+            {
+                try
+                {
+                    listener.OnCommandCaptured(captured, scope);
+                }
+                catch (Exception ex)
+                {
+                    Log.Swallowed(options, "listener.OnCommandCaptured", ex);
+                }
             }
 
             return captured;
@@ -361,6 +367,7 @@ internal sealed class CommandCapturer
                 return;
             }
 
+            Interlocked.Decrement(ref _openReaderCount);
             command.RowsReturned = readCount;
             command.DistinctRootsEstimate = distinctRoots;
             if (recordsAffected >= 0 && command.RowsAffected is null && command.ExecuteMethod != DbCommandMethod.ExecuteReader)
@@ -401,23 +408,31 @@ internal sealed class CommandCapturer
             return (null, CallSiteOrigin.None);
         }
 
-        if (_sampleCounts.Count >= NormalizationCacheLimit)
+        var count = _sampleCounts.AddOrUpdate(fingerprint, 0, static (_, c) => c + 1);
+        if (count == 0 && Interlocked.Increment(ref _sampleKeyCount) > NormalizationCacheLimit)
         {
-            _sampleCounts.Clear();
+            _sampleCounts.Clear(); // bounded: start over rather than count keys on every command
+            Interlocked.Exchange(ref _sampleKeyCount, 0);
         }
 
-        var count = _sampleCounts.AddOrUpdate(fingerprint, 0, static (_, c) => c + 1);
         if (count % interval == 0)
         {
             var sampled = CallSiteCapture.Capture();
             if (sampled is not null)
             {
-                if (_sampledCallSites.Count >= NormalizationCacheLimit)
+                if (_sampledCallSites.TryAdd(fingerprint, sampled))
                 {
-                    _sampledCallSites.Clear();
+                    if (Interlocked.Increment(ref _sampledSiteCount) > NormalizationCacheLimit)
+                    {
+                        _sampledCallSites.Clear();
+                        Interlocked.Exchange(ref _sampledSiteCount, 0);
+                    }
+                }
+                else
+                {
+                    _sampledCallSites[fingerprint] = sampled;
                 }
 
-                _sampledCallSites[fingerprint] = sampled;
                 return (sampled, CallSiteOrigin.Sampled);
             }
 
@@ -532,9 +547,21 @@ internal sealed class CommandCapturer
                 float f => Add(hash ^ 0x09, (ulong)BitConverter.SingleToInt32Bits(f)),
                 short sh => Add(hash ^ 0x0A, (ulong)(ushort)sh),
                 byte by => Add(hash ^ 0x0B, by),
+                byte[] bytes => AddBytes(hash ^ 0x0C, bytes),
                 string s => Add(hash, s),
                 _ => Add(hash, ValueToString(value)),
             };
+
+        /// <summary>Every byte counts: two blobs that differ only past a prefix are different arguments.</summary>
+        private static ulong AddBytes(ulong hash, byte[] bytes)
+        {
+            foreach (var b in bytes)
+            {
+                hash = (hash ^ b) * Prime;
+            }
+
+            return (hash ^ 0x1F) * Prime;
+        }
 
         private static ulong AddGuid(ulong hash, Guid guid)
         {

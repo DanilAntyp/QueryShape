@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using QueryShape.Capture;
@@ -403,7 +404,34 @@ public class CaptureTests : IDisposable
         }
 
         listener.Commands.Should().HaveCount(3);
+        listener.SequencesAtCallback.Should().Equal(new[] { 0, 1, 2 }, "a listener sees the command once it is attached to the scope");
+        listener.InScopeAtCallback.Should().OnlyContain(inScope => inScope);
         listener.Completed.Should().ContainSingle().Which.Should().Contain(d => d.RuleId == "QS001");
+    }
+
+    [Fact]
+    public async Task Binary_parameters_are_hashed_in_full()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var raw = new QueryShapeDbConnection(new SqliteConnection("DataSource=:memory:"), _shop.Options);
+        await raw.OpenAsync();
+
+        var first = new byte[100];
+        var second = new byte[100];
+        second[99] = 1; // identical for the first 64 bytes, different after
+        foreach (var blob in new[] { first, second })
+        {
+            await using var command = raw.CreateCommand();
+            command.CommandText = "SELECT length(@blob)";
+            var p = command.CreateParameter();
+            p.ParameterName = "@blob";
+            p.Value = blob;
+            command.Parameters.Add(p);
+            await command.ExecuteScalarAsync();
+        }
+
+        scope.Commands.Should().HaveCount(2);
+        scope.Commands[0].ParameterHash.Should().NotBe(scope.Commands[1].ParameterHash, "different arguments must never look like a duplicate query");
     }
 
     [Fact]
@@ -489,9 +517,16 @@ public class CaptureTests : IDisposable
     private sealed class RecordingListener : IQueryShapeListener
     {
         public List<CapturedCommand> Commands { get; } = [];
+        public List<int> SequencesAtCallback { get; } = [];
+        public List<bool> InScopeAtCallback { get; } = [];
         public List<IReadOnlyList<Diagnosis>> Completed { get; } = [];
 
-        public void OnCommandCaptured(CapturedCommand command, QueryShapeScope? scope) => Commands.Add(command);
+        public void OnCommandCaptured(CapturedCommand command, QueryShapeScope? scope)
+        {
+            Commands.Add(command);
+            SequencesAtCallback.Add(command.Sequence);
+            InScopeAtCallback.Add(scope is not null && scope.Commands.Contains(command));
+        }
 
         public void OnScopeCompleted(QueryShapeScope scope, IReadOnlyList<Diagnosis> diagnoses) => Completed.Add(diagnoses);
     }
