@@ -49,7 +49,7 @@ When someone introduces an N+1, the test fails like this:
 
 ```
 QueryShape snapshot mismatch: OrderServiceTests.GetOrders_query_shape
-  snapshot: tests/Shop.Tests/__querysnapshots__/OrderServiceTests.GetOrders_query_shape.json
+  snapshot: tests/Shop.Tests/__querysnapshots__/OrderServiceTests.GetOrders_query_shape.sqlite.json
 
 Queries: 2 in snapshot, 12 now (+10)
   + x10  a2d461845296  Linq  SELECT "t0"."Id", "t0"."OrderId", "t0"."ProductId", "t0"."Quantity" FROM "OrderLines" AS "t0" WHERE "t0"."ProductId" = @p0
@@ -136,6 +136,7 @@ Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is s
 | [QS010](docs/rules/QS010.md) | Raw SQL with string concatenation | Error | ✅ |
 | [QS011](docs/rules/QS011.md) | Row limiting without OrderBy (from EF Core's own warning) | Warning | ✅ |
 | [QSA001](docs/rules/QSA001.md) | Where/First/OrderBy/Take… right after `ToList()` on a query (compile-time, `QueryShape.Analyzers`) | Warning | ✅ |
+| [QS_OVERFLOW](docs/rules/QS_OVERFLOW.md) | A scope hit `MaxCommandsPerScope` and stopped recording | Warning | ✅ |
 
 Every rule doc explains what EF Core does and why, and shows the fix. Architecture decisions live in [docs/adr](docs/adr).
 
@@ -144,16 +145,18 @@ Every rule doc explains what EF Core does and why, and shows the fix. Architectu
 `tests/QueryShape.SampleApp` has one deliberately bad endpoint per rule (`/bad/n-plus-one`, `/bad/unbounded`, …) and a fixed twin under `/good/`. Run it and look at the `X-QueryShape` response header:
 
 ```
-dotnet run --project tests/QueryShape.SampleApp
+dotnet run --project tests/QueryShape.SampleApp -f net10.0 --urls http://localhost:5000
 curl -sD - -o /dev/null http://localhost:5000/bad/n-plus-one | grep X-QueryShape
-# X-QueryShape: 41 queries; QS001 Error, QS004 Warning
+# X-QueryShape: 41 queries; QS001 Error, QS004 Warning, QS005 Info, QS005 Info
 ```
+
+The sample app targets both .NET 8 and .NET 10, so `dotnet run` needs `-f`.
 
 ## Safety and performance
 
-QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then `QS_OVERFLOW`), never records parameter values unless `IncludeParameterValues` is switched on, masks literals in raw SQL shapes, never walks stack traces or reads source files unless `CaptureCallSites`/`ReadSourceFiles` are on (on by default only when a test framework is loaded in the process; production can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
+QueryShape runs inside your production app, so it never throws out of an interceptor, keeps only bounded state (10 000 commands per scope, then [`QS_OVERFLOW`](docs/rules/QS_OVERFLOW.md) with the number of commands it dropped), never records parameter values unless `IncludeParameterValues` is switched on, masks literals in raw SQL shapes, never walks stack traces or reads source files unless `CaptureCallSites`/`ReadSourceFiles` are on (on by default only when a test framework is loaded in the process; production can use EF Core's `TagWithCallSite()` instead, or `CallSiteSamplingInterval = 100` to locate each query shape on its first execution and then one in a hundred), and has a kill switch (`QueryShapeOptions.Enabled = false`).
 
-Capture costs about 4 µs and 3 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
+Capture costs about 3.5 µs and 1.6 KB per query with call-site capture off (BenchmarkDotNet, see [docs/performance.md](docs/performance.md)): under 3 % of a query against any networked database, but a visible fraction of an in-memory SQLite query.
 
 ## Building
 

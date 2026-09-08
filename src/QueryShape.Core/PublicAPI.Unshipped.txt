@@ -349,6 +349,7 @@ QueryShape.QueryShapeScope.Annotations.get -> System.Collections.Generic.IReadOn
 QueryShape.QueryShapeScope.CommandCount.get -> int
 QueryShape.QueryShapeScope.Commands.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>!
 QueryShape.QueryShapeScope.Dispose() -> void
+QueryShape.QueryShapeScope.DroppedCommands.get -> int
 QueryShape.QueryShapeScope.Elapsed.get -> System.TimeSpan
 QueryShape.QueryShapeScope.IsCompleted.get -> bool
 QueryShape.QueryShapeScope.Name.get -> string?

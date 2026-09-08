@@ -64,7 +64,7 @@ public sealed class QueryShapeOptions
     /// <summary>Let the OpenTelemetry package start its own activity when none is ambient. Default off: never create a competing trace.</summary>
     public bool CreateActivitiesWhenNoneExist { get; set; }
 
-    /// <summary>Base URL for rule documentation; the rule id plus <c>.md</c> is appended.</summary>
+    /// <summary>Base URL for rule documentation; the rule id plus <c>.md</c> is appended. Point it at your own copy of <c>docs/rules</c> (a wiki, an internal site) when the GitHub repository is not reachable from where diagnoses are read.</summary>
     public string DocsBaseUrl { get; set; } = "https://github.com/queryshape/QueryShape/blob/main/docs/rules/";
 
     /// <summary>Rules run by <see cref="QueryShapeScope.Analyze"/>. Starts with every built-in rule; remove or replace as needed.</summary>

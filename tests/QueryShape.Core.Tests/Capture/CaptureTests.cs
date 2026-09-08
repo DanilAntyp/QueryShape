@@ -353,7 +353,12 @@ public class CaptureTests : IDisposable
 
         scope.Commands.Should().HaveCount(3);
         scope.Overflowed.Should().BeTrue();
-        scope.Analyze().Should().Contain(d => d.RuleId == QueryShapeScope.OverflowRuleId);
+        scope.DroppedCommands.Should().Be(2, "commands after the limit are counted, not recorded");
+        var overflow = scope.Analyze().Should().ContainSingle(d => d.RuleId == QueryShapeScope.OverflowRuleId).Subject;
+        overflow.Title.Should().Be("Scope recorded 3 commands and stopped capturing; 2 more ran");
+        overflow.Evidence.Count.Should().Be(5);
+        overflow.Evidence.Details!["dropped"].Should().Be("2");
+        overflow.SuggestedFix!.DocsUrl.Should().EndWith("/QS_OVERFLOW.md");
     }
 
     [Fact]

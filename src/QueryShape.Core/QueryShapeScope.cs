@@ -64,6 +64,9 @@ public sealed class QueryShapeScope : IDisposable
     /// <summary><c>true</c> once more than <see cref="QueryShapeOptions.MaxCommandsPerScope"/> commands were seen; later commands were dropped.</summary>
     public bool Overflowed { get; private set; }
 
+    /// <summary>Commands seen after the scope was full and therefore not recorded (they still count).</summary>
+    public int DroppedCommands { get; private set; }
+
     /// <summary><c>true</c> after <see cref="Dispose"/>.</summary>
     public bool IsCompleted => _disposed;
 
@@ -144,15 +147,26 @@ public sealed class QueryShapeScope : IDisposable
 
         if (Overflowed)
         {
+            int dropped;
+            lock (_gate)
+            {
+                dropped = DroppedCommands;
+            }
+
             results.Add(new Diagnosis(
                 OverflowRuleId,
                 Severity.Warning,
-                $"Scope recorded more than {Options.MaxCommandsPerScope} commands and stopped capturing",
+                $"Scope recorded {Options.MaxCommandsPerScope} commands and stopped capturing; {dropped} more ran",
                 "QueryShape keeps a bounded list of commands per scope so it cannot grow memory without limit inside your app. " +
-                "This scope hit the limit; later commands were counted but not recorded, so rule results for it are incomplete.",
+                $"This scope hit the limit: {dropped} later command(s) were counted but not recorded, so rule results for it are incomplete " +
+                "(an N+1 that started after the limit is invisible here).",
                 null,
                 [],
-                new Evidence(Count: Options.MaxCommandsPerScope),
+                new Evidence(Count: Options.MaxCommandsPerScope + dropped, Details: new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["recorded"] = Options.MaxCommandsPerScope.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["dropped"] = dropped.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                }),
                 new Fix("Raise QueryShapeOptions.MaxCommandsPerScope or split the work into smaller scopes",
                     FixKind.ConfigChange, null, null, null,
                     "A scope with thousands of commands is usually itself the finding: look at the N+1 diagnoses first.",
@@ -259,6 +273,7 @@ public sealed class QueryShapeScope : IDisposable
             if (_commands.Count >= Options.MaxCommandsPerScope)
             {
                 Overflowed = true;
+                DroppedCommands++;
                 return false;
             }
 
