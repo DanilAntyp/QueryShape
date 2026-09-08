@@ -35,12 +35,18 @@ internal static partial class CallSiteCapture
         "SQLitePCLRaw",
     ];
 
-    /// <summary>Walks the stack. Expensive (needs file info); only call when call-site capture is enabled.</summary>
+    /// <summary>
+    /// Walks the stack. Expensive (needs file info); only call when call-site capture is enabled.
+    /// The first frame outside the skipped assemblies that has source information wins: a data-access library in between
+    /// (a repository base class, a specification evaluator) ships without symbols, while the user's code was compiled with them.
+    /// Without any source information anywhere, the first non-skipped frame is reported as is.
+    /// </summary>
     public static CallSite? Capture()
     {
         try
         {
             var trace = new StackTrace(fNeedFileInfo: true);
+            CallSite? withoutSource = null;
             for (var i = 0; i < trace.FrameCount; i++)
             {
                 var frame = trace.GetFrame(i);
@@ -56,8 +62,17 @@ internal static partial class CallSiteCapture
                     continue;
                 }
 
-                return new CallSite(frame.GetFileName(), frame.GetFileLineNumber(), DescribeMember(type, method));
+                var file = frame.GetFileName();
+                var site = new CallSite(file, frame.GetFileLineNumber(), DescribeMember(type, method));
+                if (file is not null)
+                {
+                    return site;
+                }
+
+                withoutSource ??= site;
             }
+
+            return withoutSource;
         }
         catch
         {

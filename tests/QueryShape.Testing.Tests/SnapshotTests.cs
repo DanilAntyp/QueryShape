@@ -45,6 +45,7 @@ public class SnapshotTests : IDisposable
         await RunQueriesAsync(scope);
 
         var result = await scope.MatchSnapshotFileAsync(path, "SnapshotTests.first", Local());
+        scope.Name.Should().Be("SnapshotTests.first", "an unnamed scope takes the test's name so reports do not say (unnamed)");
 
         result.Outcome.Should().Be(SnapshotOutcome.Created);
         result.Path.Should().Be(path);

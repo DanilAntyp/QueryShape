@@ -66,6 +66,7 @@ internal static class SnapshotEngine
             }
         }
 
+        scope.Name ??= testName; // an unnamed scope is this test's scope: reports and telemetry should say which one
         scope.Annotate("snapshot.test", testName);
         scope.Annotate("snapshot.path", snapshotPath);
 
