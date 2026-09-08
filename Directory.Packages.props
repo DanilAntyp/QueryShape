@@ -4,10 +4,12 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
-  <!-- EF Core 8 for net8.0 -->
+  <!-- EF Core 8 for net8.0. The packages the shipped libraries reference are pinned to the floor of the major (x.0.0): a consumer on any 8.x/10.x patch
+       can install QueryShape without a NuGet downgrade error (8.0.10 for EF Core 8: 8.0.0 pulls a Microsoft.Extensions.Caching.Memory with a known advisory).
+       Providers and hosting packages used only by tests and the sample app track the latest patch. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.30" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.30" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.30" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.30" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
@@ -20,13 +22,13 @@
   <!-- EF Core 10 for net10.0 (and anything else) -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net8.0'">
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
   </ItemGroup>
 
