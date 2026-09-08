@@ -118,6 +118,11 @@ internal static class SnapshotEngine
         await File.WriteAllTextAsync(path, SnapshotSerializer.Serialize(snapshot), new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false)).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// The "snapshot created/updated" line has to be visible: test runners do not show Trace output, so without <see cref="SnapshotOptions.Log"/>
+    /// it goes to the console (shown by dotnet test as the test's standard output), plus Trace and the QueryShape logger when configured.
+    /// This package runs only inside test processes, which is why it is allowed to write to the console (CLAUDE.md section 2 applies to the runtime packages).
+    /// </summary>
     private static void Emit(QueryShapeScope scope, SnapshotOptions options, string message)
     {
         try
@@ -128,6 +133,7 @@ internal static class SnapshotEngine
             }
             else
             {
+                Console.Out.WriteLine(message);
                 System.Diagnostics.Trace.WriteLine(message);
             }
 

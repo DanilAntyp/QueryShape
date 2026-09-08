@@ -34,7 +34,7 @@ public sealed class SnapshotOptions
     /// <summary>Environment lookup; replaceable for tests. Defaults to <see cref="Environment.GetEnvironmentVariable(string)"/>.</summary>
     public Func<string, string?> Environment { get; set; } = System.Environment.GetEnvironmentVariable;
 
-    /// <summary>Receives one line when a snapshot is created or updated. Defaults to <see cref="System.Diagnostics.Trace"/> plus the QueryShape logger when configured.</summary>
+    /// <summary>Receives one line when a snapshot is created or updated. Default: the console (visible in dotnet test output) and <see cref="System.Diagnostics.Trace"/>, plus the QueryShape logger when configured.</summary>
     public Action<string>? Log { get; set; }
 
     internal bool ShouldUpdate()
