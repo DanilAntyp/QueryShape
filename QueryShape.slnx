@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/QueryShape.Analyzers/QueryShape.Analyzers.csproj" />
     <Project Path="src/QueryShape.AspNetCore/QueryShape.AspNetCore.csproj" />
     <Project Path="src/QueryShape.Cli/QueryShape.Cli.csproj" />
     <Project Path="src/QueryShape.Core/QueryShape.Core.csproj" />
@@ -10,6 +11,7 @@
     <Project Path="src/QueryShape.Testing/QueryShape.Testing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/QueryShape.Analyzers.Tests/QueryShape.Analyzers.Tests.csproj" />
     <Project Path="tests/QueryShape.Benchmarks/QueryShape.Benchmarks.csproj" />
     <Project Path="tests/QueryShape.Cli.Tests/QueryShape.Cli.Tests.csproj" />
     <Project Path="tests/QueryShape.Core.Tests/QueryShape.Core.Tests.csproj" />

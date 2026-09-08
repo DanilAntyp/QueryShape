@@ -55,6 +55,7 @@ queryshape/
 │  ├─ QueryShape.AspNetCore/          ← app.UseQueryShape() middleware (ADR-0001)
 │  ├─ QueryShape.Testing.NUnit/       ← [QueryBudget] for NUnit (ITestAction)
 │  ├─ QueryShape.Testing.MSTest/      ← [QueryBudgetTestMethod] for MSTest
+│  ├─ QueryShape.Analyzers/           ← Roslyn analyzer QSA001 (compile-time half of QS003; netstandard2.0, own release cadence)
 │  ├─ QueryShape.OpenTelemetry/       ← Activity enrichment (feature #3)
 │  └─ QueryShape.Cli/                 ← `dotnet queryshape` tool: verify fixes, print reports, update snapshots (feature #2)
 ├─ tests/
@@ -64,6 +65,7 @@ queryshape/
 │  ├─ QueryShape.SampleApp/           ← small ASP.NET Core app with deliberately bad queries; used by tests AND as the README demo
 │  ├─ QueryShape.SampleApp.Tests/     ← one test per /bad endpoint (rule fires) and per /good twin (rule silent)
 │  ├─ QueryShape.Cli.Tests/           ← CLI unit tests + slow end-to-end `verify` against this repo (Category=Slow)
+│  ├─ QueryShape.Analyzers.Tests/     ← analyzer tests (Microsoft.CodeAnalysis.CSharp.Analyzer.Testing)
 │  └─ QueryShape.Benchmarks/          ← BenchmarkDotNet; numbers go to docs/performance.md
 ├─ scripts/update-public-api.py       ← syncs PublicAPI.Unshipped.txt from RS0016/RS0017 diagnostics
 ├─ docs/

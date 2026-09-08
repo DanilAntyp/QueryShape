@@ -24,3 +24,8 @@ is reported by QS004 (unbounded result set). This is documented in `docs/rules/Q
 ## Consequences
 - No false positives from EF-translatable functions; possible false negatives for user methods living in a `System.*` or `Microsoft.*` namespace.
 - A Roslyn analyzer would be the right tool for (b); it is out of scope for v0.1 and would need its own ADR.
+
+## Addendum 2026-09-08
+Signal (b) now has its compile-time check: `QueryShape.Analyzers` ships QSA001, which flags a reducing operator applied directly to
+`ToList()`/`ToArray()`/`ToListAsync()`/`ToArrayAsync()` on an `IQueryable`. Deliberately narrow: direct chains only, `AsEnumerable()` never flagged,
+`Select` not flagged. Separate package, separate release cadence.

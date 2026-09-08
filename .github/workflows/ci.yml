@@ -34,11 +34,27 @@ jobs:
       - name: Build
         run: dotnet build QueryShape.slnx --configuration Release --no-restore
 
+      # Multi-targeted test projects run once per target on the real runtime (both are installed, so nothing rolls forward).
       - name: Test (net8.0 on the .NET 8 runtime)
-        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net8.0 --filter "Category!=Slow" --logger "trx;LogFileName=net8.trx" --results-directory TestResults
+        shell: bash
+        run: |
+          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
+            dotnet test "$p" --configuration Release --no-build --framework net8.0 --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).net8.trx" --results-directory TestResults || exit 1
+          done
 
       - name: Test (net10.0 on the .NET 10 runtime)
-        run: dotnet test QueryShape.slnx --configuration Release --no-build --framework net10.0 --filter "Category!=Slow" --logger "trx;LogFileName=net10.trx" --results-directory TestResults
+        shell: bash
+        run: |
+          for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
+            dotnet test "$p" --configuration Release --no-build --framework net10.0 --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).net10.trx" --results-directory TestResults || exit 1
+          done
+
+      - name: Test (single-target projects: CLI unit tests, analyzer)
+        shell: bash
+        run: |
+          for p in tests/QueryShape.Cli.Tests tests/QueryShape.Analyzers.Tests; do
+            dotnet test "$p" --configuration Release --no-build --filter "Category!=Slow" --logger "trx;LogFileName=$(basename $p).trx" --results-directory TestResults || exit 1
+          done
 
       - name: End-to-end `queryshape verify` (builds a worktree; runs alone so nothing else holds the sample app's binaries)
         if: matrix.os == 'ubuntu-latest'

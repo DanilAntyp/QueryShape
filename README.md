@@ -114,6 +114,7 @@ Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is s
 | `QueryShape.AspNetCore` | `app.UseQueryShape()` request scopes |
 | `QueryShape.OpenTelemetry` | span enrichment and metrics |
 | `QueryShape.Cli` | `dotnet queryshape` tool |
+| `QueryShape.Analyzers` | Roslyn analyzer for the mistakes the runtime cannot see (QSA001) |
 
 ## Rules
 
@@ -130,6 +131,7 @@ Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is s
 | [QS009](docs/rules/QS009.md) | Query in loop over navigation | Warning | ✅ |
 | [QS010](docs/rules/QS010.md) | Raw SQL with string concatenation | Error | ✅ |
 | [QS011](docs/rules/QS011.md) | Row limiting without OrderBy (from EF Core's own warning) | Warning | ✅ |
+| [QSA001](docs/rules/QSA001.md) | Where/First/OrderBy/Take… right after `ToList()` on a query (compile-time, `QueryShape.Analyzers`) | Warning | ✅ |
 
 Every rule doc explains what EF Core does and why, and shows the fix. Architecture decisions live in [docs/adr](docs/adr).
 
