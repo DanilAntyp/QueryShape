@@ -64,6 +64,18 @@ public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
     }
 
     [RuntimeMatchedFact]
+    public async Task A_test_scope_around_an_in_process_request_sees_the_request_queries()
+    {
+        // The middleware opens a nested scope for the request; the test's own scope must still see everything.
+        using var scope = QueryShapeScope.Begin();
+        var response = await app.Client.GetAsync(new Uri("/bad/n-plus-one", UriKind.Relative));
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        scope.CommandCount.Should().Be(41);
+        scope.Analyze().Should().Contain(d => d.RuleId == "QS001");
+    }
+
+    [RuntimeMatchedFact]
     public async Task Excluded_and_root_paths_still_work()
     {
         var response = await app.Client.GetAsync(new Uri("/", UriKind.Relative));

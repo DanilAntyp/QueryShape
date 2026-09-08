@@ -317,6 +317,7 @@ QueryShape.QueryShapeScope.IsCompleted.get -> bool
 QueryShape.QueryShapeScope.Name.get -> string?
 QueryShape.QueryShapeScope.Options.get -> QueryShape.QueryShapeOptions!
 QueryShape.QueryShapeScope.Overflowed.get -> bool
+QueryShape.QueryShapeScope.Parent.get -> QueryShape.QueryShapeScope?
 QueryShape.QueryShapeScope.SaveChanges.get -> System.Collections.Generic.IReadOnlyList<QueryShape.SaveChangesRecord!>!
 QueryShape.QueryShapeScope.StartedAt.get -> System.DateTimeOffset
 QueryShape.QueryShapeScope.TotalCommandDuration.get -> System.TimeSpan

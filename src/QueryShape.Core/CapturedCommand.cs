@@ -14,7 +14,7 @@ public sealed record CapturedParameter(string Name, DbType DbType, ParameterDire
 /// <summary>One database command as executed by EF Core (or a wrapped raw connection).</summary>
 public sealed class CapturedCommand
 {
-    /// <summary>0-based position of the command within its scope (or within the unscoped buffer).</summary>
+    /// <summary>0-based capture order within the outermost enclosing scope (or within the unscoped buffer); orders commands consistently in every nested scope.</summary>
     public int Sequence { get; internal set; }
 
     /// <summary>The SQL exactly as sent, including tag comments. Never contains parameter values.</summary>

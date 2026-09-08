@@ -362,7 +362,27 @@ public class CaptureTests : IDisposable
 
         QueryShapeScope.Current.Should().BeSameAs(outer);
         await ctx.Orders.CountAsync();
-        outer.Commands.Should().HaveCount(2);
+        outer.Commands.Should().HaveCount(3, "an enclosing scope records what its nested scopes record");
+        outer.Commands.Select(c => c.Sequence).Should().Equal(new[] { 0, 1, 2 }, "the outermost scope numbers every command");
+        outer.Commands[1].Shape.Should().Contain("Customers");
+    }
+
+    [Fact]
+    public async Task Nested_scope_overflow_does_not_stop_the_enclosing_scope()
+    {
+        await using var ctx = _shop.CreateContext();
+        var tiny = new QueryShapeOptions { MaxCommandsPerScope = 1 };
+        using var outer = QueryShapeScope.Begin("outer", _shop.Options);
+        using (var inner = QueryShapeScope.Begin("inner", tiny))
+        {
+            await ctx.Products.CountAsync();
+            await ctx.Customers.CountAsync();
+            inner.Overflowed.Should().BeTrue();
+            inner.CommandCount.Should().Be(1);
+        }
+
+        outer.Overflowed.Should().BeFalse();
+        outer.CommandCount.Should().Be(2);
     }
 
     [Fact]

@@ -5,6 +5,8 @@ namespace QueryShape;
 /// <summary>
 /// The unit of analysis: one HTTP request, one test, or one explicit <c>using var scope = QueryShapeScope.Begin();</c>.
 /// Flows across <c>await</c> via <see cref="AsyncLocal{T}"/>. Every command captured while the scope is current is recorded here.
+/// Scopes nest: a command is recorded by the innermost scope and by every scope enclosing it, so a test scope around an in-process
+/// request sees the queries the request middleware's scope saw.
 /// </summary>
 public sealed class QueryShapeScope : IDisposable
 {
@@ -20,6 +22,7 @@ public sealed class QueryShapeScope : IDisposable
     private readonly QueryShapeScope? _parent;
     private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
     private IReadOnlyList<Diagnosis>? _cachedDiagnoses;
+    private int _nextSequence;
     private bool _disposed;
 
     private QueryShapeScope(string? name, QueryShapeOptions options, QueryShapeScope? parent)
@@ -48,6 +51,9 @@ public sealed class QueryShapeScope : IDisposable
 
     /// <summary>Options in effect for analysis.</summary>
     public QueryShapeOptions Options { get; }
+
+    /// <summary>The scope this one was begun inside, or <c>null</c> for an outermost scope.</summary>
+    public QueryShapeScope? Parent => _parent;
 
     /// <summary>When the scope was begun.</summary>
     public DateTimeOffset StartedAt { get; }
@@ -214,8 +220,34 @@ public sealed class QueryShapeScope : IDisposable
         }
     }
 
-    /// <summary>Records a command. Returns <c>false</c> when dropped because of overflow or because the scope is closed.</summary>
+    /// <summary>
+    /// Records a command in this scope and in every enclosing scope. Returns <c>false</c> when this scope dropped it because of overflow or because it is closed
+    /// (enclosing scopes decide for themselves).
+    /// </summary>
     internal bool Record(CapturedCommand command)
+    {
+        // The outermost scope numbers commands, so Sequence orders commands consistently in every scope of the chain.
+        var root = this;
+        while (root._parent is not null)
+        {
+            root = root._parent;
+        }
+
+        lock (root._gate)
+        {
+            command.Sequence = root._nextSequence++;
+        }
+
+        var recorded = RecordHere(command);
+        for (var ancestor = _parent; ancestor is not null; ancestor = ancestor._parent)
+        {
+            ancestor.RecordHere(command);
+        }
+
+        return recorded;
+    }
+
+    private bool RecordHere(CapturedCommand command)
     {
         lock (_gate)
         {
@@ -230,7 +262,6 @@ public sealed class QueryShapeScope : IDisposable
                 return false;
             }
 
-            command.Sequence = _commands.Count;
             _commands.Add(command);
             _cachedDiagnoses = null;
             return true;
@@ -239,12 +270,15 @@ public sealed class QueryShapeScope : IDisposable
 
     internal void Record(SaveChangesRecord saveChanges)
     {
-        lock (_gate)
+        for (var scope = this; scope is not null; scope = scope._parent)
         {
-            if (!_disposed)
+            lock (scope._gate)
             {
-                _saveChanges.Add(saveChanges);
-                _cachedDiagnoses = null;
+                if (!scope._disposed)
+                {
+                    scope._saveChanges.Add(saveChanges);
+                    scope._cachedDiagnoses = null;
+                }
             }
         }
     }

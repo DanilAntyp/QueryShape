@@ -30,6 +30,8 @@ public sealed class SampleAppFixture : IDisposable
                 });
             });
         });
+        // Let a test's own QueryShapeScope enclose the request scope the middleware opens (TestServer suppresses the ExecutionContext by default).
+        Factory.Server.PreserveExecutionContext = true;
         Client = Factory.CreateClient();
     }
 
