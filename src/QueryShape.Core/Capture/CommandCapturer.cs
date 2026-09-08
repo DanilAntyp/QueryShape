@@ -122,7 +122,7 @@ internal sealed class CommandCapturer
             var resolution = ExpressionCorrelator.Resolution.None;
             if (commandSource is CommandSource.LinqQuery or CommandSource.FromSqlQuery or CommandSource.ExecuteUpdate or CommandSource.ExecuteDelete)
             {
-                (query, resolution) = Correlator.Resolve(context, normalized.Fingerprint, normalized.Shape);
+                (query, resolution) = Correlator.Resolve(context, normalized.Fingerprint, normalized.Shape, command.Parameters);
             }
 
             var contextState = context is null ? null : StateFor(context);

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using QueryShape.Capture;
 using QueryShape.Core.Tests.TestModel;
 
 namespace QueryShape.Core.Tests.Capture;
@@ -410,6 +411,59 @@ public class CaptureTests : IDisposable
 
         scope.Commands.Single().Parameters.Single().Value.Should().Be("DE");
     }
+
+    [Fact]
+    public async Task A_compilation_that_never_executes_is_not_attached_to_the_next_query()
+    {
+        // Warm the compiled-query cache so the executed query below is a cache hit (no compilation event of its own).
+        await using (var warm = _shop.CreateContext())
+        {
+            var id = 1;
+            await warm.Orders.Where(o => o.CustomerId == id).ToListAsync();
+        }
+
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var min = 5m;
+        _ = ctx.Orders.Where(o => o.Total > min).ToQueryString();   // compiles, never executes
+
+        var id2 = 2;
+        await ctx.Orders.Where(o => o.CustomerId == id2).ToListAsync();
+
+        var cmd = scope.Commands.Should().ContainSingle().Subject;
+        cmd.Query.Should().NotBeNull();
+        cmd.Query!.Expression.Should().Contain("CustomerId").And.NotContain("Total", "the ToQueryString compilation must not be mistaken for this command's origin");
+        cmd.Query.KeyFilters.Should().ContainSingle();
+        cmd.Query.ParameterNames.Should().ContainSingle(n => n.Contains("id2", StringComparison.Ordinal));
+        ExpressionCorrelator.PlannedEventsObserved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task A_translation_that_throws_is_not_attached_to_the_next_query()
+    {
+        await using (var warm = _shop.CreateContext())
+        {
+            await warm.Orders.Where(o => o.Total > 5).OrderBy(o => o.Id).ToListAsync();
+        }
+
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var id = 1;
+        var act = () => ctx.Orders.Where(o => IsSpecial(o) && o.CustomerId == id).ToListAsync();
+        await act.Should().ThrowAsync<InvalidOperationException>("a user method in Where cannot be translated");
+
+        await ctx.Orders.Where(o => o.Total > 5).OrderBy(o => o.Id).ToListAsync();
+
+        var cmd = scope.Commands.Should().ContainSingle().Subject;
+        cmd.Query.Should().NotBeNull();
+        cmd.Query!.Expression.Should().NotContain("IsSpecial");
+        cmd.Query.ClientEvaluatedCalls.Should().BeEmpty();
+        cmd.Query.KeyFilters.Should().BeEmpty();
+    }
+
+    private static bool IsSpecial(Order o) => o.Total > 1;
 
     private sealed class RecordingListener : IQueryShapeListener
     {

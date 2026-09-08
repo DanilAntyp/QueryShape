@@ -98,6 +98,12 @@ public sealed class QueryInfo
     /// <summary><c>true</c> when the query filters with <c>Contains</c> over a parameterized collection.</summary>
     public bool HasParameterCollectionContains { get; init; }
 
+    /// <summary>Names of the query parameters EF Core extracted from the expression (<c>__id_0</c> in EF Core 8, <c>id</c> in EF Core 10). They reappear as the SQL parameter names.</summary>
+    public IReadOnlyList<string> ParameterNames { get; init; } = [];
+
+    /// <summary><c>true</c> once EF Core reported the compilation as planned (translated successfully). Set from EF Core's <c>QueryExecutionPlanned</c> event.</summary>
+    internal bool Planned { get; set; }
+
     private readonly List<string> _warnings = [];
 
     /// <summary>

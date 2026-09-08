@@ -36,6 +36,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     private readonly List<string> _operatorSequence = [];
     private readonly Stack<Expression> _lambdaBodies = new();
     private readonly HashSet<ParameterExpression> _entityLambdaParameters = [];
+    private readonly HashSet<string> _parameterNames = new(StringComparer.Ordinal);
 
     private IEntityType? _root;
     private bool _isFromSql;
@@ -126,6 +127,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             IsFromSql = _isFromSql,
             IsBulkOperation = _isBulk,
             HasParameterCollectionContains = _hasParameterCollectionContains,
+            ParameterNames = _parameterNames.OrderBy(n => n, StringComparer.Ordinal).ToArray(),
         };
     }
 
@@ -177,8 +179,25 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             return node;
         }
 
+        // EF Core 10 represents extracted parameters as QueryParameterExpression (name = the SQL parameter name without its prefix).
+        if (node.GetType().Name == "QueryParameterExpression" && node.GetType().GetProperty("Name")?.GetValue(node) is string name)
+        {
+            _parameterNames.Add(name);
+        }
+
         // EF-specific nodes (parameters etc.) have no children we care about.
         return node;
+    }
+
+    protected override Expression VisitParameter(ParameterExpression node)
+    {
+        // EF Core 8 represents extracted parameters as ParameterExpression named __x_0; lambda parameters have plain names.
+        if (node.Name is { } name && name.StartsWith("__", StringComparison.Ordinal))
+        {
+            _parameterNames.Add(name);
+        }
+
+        return base.VisitParameter(node);
     }
 
     protected override Expression VisitInvocation(InvocationExpression node)

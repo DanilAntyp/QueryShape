@@ -251,6 +251,8 @@ QueryShape.QueryInfo.KeyFilters.get -> System.Collections.Generic.IReadOnlyList<
 QueryShape.QueryInfo.KeyFilters.init -> void
 QueryShape.QueryInfo.Operators.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryInfo.Operators.init -> void
+QueryShape.QueryInfo.ParameterNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.ParameterNames.init -> void
 QueryShape.QueryInfo.QueryInfo() -> void
 QueryShape.QueryInfo.ResultType.get -> string?
 QueryShape.QueryInfo.ResultType.init -> void

@@ -51,11 +51,14 @@ internal sealed class EfCoreWarningObserver : IObserver<DiagnosticListener>, IOb
     /// <summary>Short names of the warnings observed (for tests and docs).</summary>
     public static IReadOnlyCollection<string> WatchedWarnings => s_watched.Values;
 
+    /// <summary>Fired when EF Core has translated and planned a query: the compilation that started with <c>QueryCompilationStarting</c> succeeded (ADR-0002).</summary>
+    private static readonly string s_planned = CoreEventId.QueryExecutionPlanned.Name!;
+
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener listener)
     {
         if (listener.Name == EfCoreListenerName)
         {
-            listener.Subscribe(this, static name => s_watched.ContainsKey(name));
+            listener.Subscribe(this, static name => s_watched.ContainsKey(name) || name == s_planned);
         }
     }
 
@@ -63,12 +66,18 @@ internal sealed class EfCoreWarningObserver : IObserver<DiagnosticListener>, IOb
     {
         try
         {
+            var context = (value.Value as DbContextEventData)?.Context;
+            if (value.Key == s_planned)
+            {
+                _correlator.OnPlanned(context);
+                return;
+            }
+
             if (!s_watched.TryGetValue(value.Key, out var shortName))
             {
                 return;
             }
 
-            var context = (value.Value as DbContextEventData)?.Context;
             _correlator.OnWarning(context, shortName);
         }
         catch (Exception ex)

@@ -36,3 +36,15 @@ The fingerprint cache cannot tell a tracked variant from an `AsNoTracking()` var
 
 QS005 fires only when `IsTracking == true`. The residual ambiguity, a cache-resolved query whose entities were all already tracked, stays silent:
 a false negative at Info level instead of a false positive. A per-query `AsNoTracking()` that overrides a tracking context is covered by the same rule.
+
+## Addendum 2026-09-08: a pending compilation must fit the command
+Step 1 used to accept any command whose SQL mentioned the root table. A compilation that never executes (`ToQueryString()`, a translation
+that threw and was caught, an enumeration that was never started) therefore attached itself to the next cache-hit command on the same table
+and poisoned the fingerprint cache with the wrong expression. Now:
+- QueryShape subscribes to EF Core's `QueryExecutionPlanned` event (fired once translation succeeded). Once that event has been seen in the
+  process, a compilation without it is one that failed and is never matched.
+- The pending compilation is consumed by the next command whether or not it matches: a mismatch proves the compilation never ran.
+- `Matches` checks necessary conditions instead of only the table name: a filter needs `WHERE`, a key filter needs a parameter, single-query
+  collection includes need `JOIN`, a limit/aggregate needs `TOP`/`LIMIT`/`EXISTS`/`COUNT(`... and, when the expression has query parameters and
+  the command has parameters, at least one parameter name must be shared (EF Core names SQL parameters after the expression's parameters).
+The remaining ambiguity is a never-executed compilation that has the same table, structure and parameter names as the next command, i.e. the same query.
