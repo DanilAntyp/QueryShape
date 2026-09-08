@@ -6,7 +6,56 @@ namespace QueryShape.Cli;
 /// <summary>The before/after table. This is the proof `verify` exists for.</summary>
 internal static class VerifyTable
 {
-    public sealed record Result(string Text, bool Improved, int NewErrors, bool BelowNoise);
+    public sealed record Result(string Text, bool Improved, int NewErrors, bool BelowNoise)
+    {
+        public IReadOnlyList<Row> Rows { get; init; } = [];
+
+        public string FixTitle { get; init; } = string.Empty;
+
+        public IReadOnlyList<string> Notes { get; init; } = [];
+
+        public int Runs { get; init; }
+
+        /// <summary>GitHub-flavoured Markdown for pull-request comments and step summaries.</summary>
+        public string ToMarkdown()
+        {
+            var sb = new StringBuilder();
+            sb.Append("### QueryShape verify: ").Append(Improved ? "improved ✅" : "not improved ❌").Append('\n').Append('\n');
+            sb.Append("**Fix:** ").Append(FixTitle).Append('\n').Append('\n');
+            sb.Append("| | before | after | Δ |\n|---|---:|---:|---:|\n");
+            foreach (var r in Rows)
+            {
+                sb.Append("| ").Append(r.Label).Append(" | ").Append(r.Before).Append(" | ").Append(r.After).Append(" | ").Append(r.Delta).Append(" |\n");
+            }
+
+            if (Runs > 1)
+            {
+                sb.Append('\n').Append("_after = median of ").Append(Runs.ToString(CultureInfo.InvariantCulture)).Append(" runs_\n");
+            }
+
+            foreach (var note in Notes)
+            {
+                sb.Append('\n').Append("> ").Append(note).Append('\n');
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>Machine-readable form for CI.</summary>
+        public string ToJson()
+            => System.Text.Json.JsonSerializer.Serialize(new
+            {
+                fix = FixTitle,
+                improved = Improved,
+                newErrors = NewErrors,
+                durationDeltaBelowNoise = BelowNoise,
+                runs = Runs,
+                rows = Rows.Select(r => new { r.Label, r.Before, r.After, r.Delta }),
+                notes = Notes,
+            }, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web) { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    }
+
+    public sealed record Row(string Label, string Before, string After, string Delta);
 
     public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns, IReadOnlyList<string>? notes = null)
     {
@@ -90,7 +139,21 @@ internal static class VerifyTable
         }
 
         sb.Append('\n').Append(improved ? "verdict: improved" : "verdict: not improved").Append('\n');
-        return new Result(sb.ToString(), improved, newErrors, belowNoise);
+
+        var allNotes = new List<string>();
+        if (belowNoise && durationDelta != 0)
+        {
+            allNotes.Add("the duration delta is within run-to-run noise; judge by queries and diagnostics");
+        }
+
+        allNotes.AddRange(notes ?? []);
+        return new Result(sb.ToString(), improved, newErrors, belowNoise)
+        {
+            Rows = rows.Select(r => new Row(r.Label, r.Before, r.After, r.Delta)).ToList(),
+            FixTitle = fixTitle,
+            Notes = allNotes,
+            Runs = afterRuns.Count,
+        };
     }
 
     /// <summary>Error-level (ruleId) occurrences in <paramref name="after"/> beyond those in <paramref name="before"/>.</summary>

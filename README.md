@@ -100,7 +100,7 @@ note: the duration delta is within run-to-run noise; judge by queries and diagno
 verdict: improved
 ```
 
-`--patch-from-diagnosis` uses the patch QueryShape itself proposed in the baseline run. Other commands: `queryshape report` (print every diagnosis of a test run), `queryshape snapshots update`, and `queryshape explain [--llm --show-prompt]`. The `--llm` path is off by default, needs `ANTHROPIC_API_KEY`, sends only the diagnosis JSON and the enclosing source method (printed verbatim with `--show-prompt`), and labels its output as generated; detection never depends on it.
+`--patch-from-diagnosis` uses the patch QueryShape itself proposed in the baseline run; when that patch is only part of the fix (for example the loop still has to read the navigation), verify says so and refuses to print a misleading table. `--format json|markdown` gives CI something to post; see [docs/ci.md](docs/ci.md) for the GitHub Action that comments the report or the verify table on every pull request. Other commands: `queryshape report` (print every diagnosis of a test run), `queryshape snapshots update`, and `queryshape explain [--llm --show-prompt]`. The `--llm` path is off by default, needs `ANTHROPIC_API_KEY`, sends only the diagnosis JSON and the enclosing source method (printed verbatim with `--show-prompt`), and labels its output as generated; detection never depends on it.
 
 Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is set, every completed scope writes a JSON summary (shapes, counts, timings, diagnoses; never parameter values).
 

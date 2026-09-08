@@ -76,3 +76,36 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:5077/ >/dev/null && break; sleep 1; done
           curl -s -D - -o /dev/null http://127.0.0.1:5077/bad/n-plus-one | grep -i "x-queryshape: 41 queries; QS001 Error"
           curl -s -D - -o /dev/null http://127.0.0.1:5077/good/n-plus-one | grep -i "x-queryshape: 1 quer"
+
+  pr-report:
+    name: QueryShape report on the sample app (PR comment)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Report (from source, this repository builds the CLI itself)
+        env:
+          CI: "true"
+        run: |
+          set +e
+          dotnet run --project src/QueryShape.Cli -f net10.0 -- report --project tests/QueryShape.SampleApp.Tests --markdown > queryshape.md 2> progress.log
+          echo "exit-code=$?" >> "$GITHUB_OUTPUT"
+          cat queryshape.md >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('queryshape.md', 'utf8') + '\n<!-- queryshape-action -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+            const mine = comments.data.find(c => c.body && c.body.includes('<!-- queryshape-action -->'));
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });

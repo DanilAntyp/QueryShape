@@ -66,9 +66,13 @@ internal static class SnapshotEngine
             }
         }
 
+        scope.Annotate("snapshot.test", testName);
+        scope.Annotate("snapshot.path", snapshotPath);
+
         if (options.ShouldUpdate())
         {
             await WriteAsync(snapshotPath, actual).ConfigureAwait(false);
+            scope.Annotate("snapshot.outcome", "updated");
             Emit(scope, options, $"QueryShape: snapshot updated for {testName} -> {snapshotPath}");
             return new SnapshotResult(SnapshotOutcome.Updated, snapshotPath, actual, diagnoses);
         }
@@ -77,21 +81,29 @@ internal static class SnapshotEngine
         {
             if (options.IsCi())
             {
+                scope.Annotate("snapshot.outcome", "missing");
                 throw new QuerySnapshotMissingException(SnapshotMessageBuilder.Missing(testName, snapshotPath), snapshotPath);
             }
 
             await WriteAsync(snapshotPath, actual).ConfigureAwait(false);
+            scope.Annotate("snapshot.outcome", "created");
             Emit(scope, options, $"QueryShape: snapshot created for {testName} ({actual.QueryCount} queries, {actual.Diagnostics.Count} diagnostics) -> {snapshotPath}");
             return new SnapshotResult(SnapshotOutcome.Created, snapshotPath, actual, diagnoses);
         }
 
         var expected = SnapshotSerializer.Deserialize(await File.ReadAllTextAsync(snapshotPath).ConfigureAwait(false));
         var comparison = SnapshotComparison.Compare(expected, actual, diagnoses, scope.Commands, options.FailOn);
+        scope.Annotate("snapshot.expectedQueries", expected.QueryCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        scope.Annotate("snapshot.added", comparison.Added.Sum(a => a.ActualCount - a.ExpectedCount).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        scope.Annotate("snapshot.removed", comparison.Removed.Sum(r => r.ExpectedCount - r.ActualCount).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        scope.Annotate("snapshot.newDiagnostics", string.Join(",", comparison.NewDiagnoses.Select(d => d.RuleId + " " + d.Severity)));
         if (!comparison.IsMatch)
         {
+            scope.Annotate("snapshot.outcome", "mismatch");
             throw new QuerySnapshotMismatchException(SnapshotMessageBuilder.Mismatch(testName, snapshotPath, comparison, options.FailOn), comparison, snapshotPath);
         }
 
+        scope.Annotate("snapshot.outcome", "matched");
         return new SnapshotResult(SnapshotOutcome.Matched, snapshotPath, actual, diagnoses);
     }
 

@@ -45,7 +45,8 @@ public sealed record ScopeReport(
     double CommandDurationMs,
     bool Overflowed,
     IReadOnlyList<ScopeReportQuery> Queries,
-    IReadOnlyList<ScopeReportDiagnosis> Diagnostics)
+    IReadOnlyList<ScopeReportDiagnosis> Diagnostics,
+    IReadOnlyDictionary<string, string>? Annotations = null)
 {
     /// <summary>Current format version.</summary>
     public const int CurrentVersion = 1;
@@ -102,7 +103,8 @@ public sealed record ScopeReport(
             Math.Round(scope.TotalCommandDuration.TotalMilliseconds, 3),
             scope.Overflowed,
             queries,
-            diags);
+            diags,
+            scope.Annotations.Count == 0 ? null : scope.Annotations);
     }
 
     /// <summary>Serializes to indented camelCase JSON.</summary>

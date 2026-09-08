@@ -15,9 +15,11 @@ var allowDirtyOption = new Option<bool>("--allow-dirty") { Description = "Procee
 var runsOption = new Option<int>("--runs") { Description = "How many times to run the patched tests; the median is reported.", DefaultValueFactory = _ => 3 };
 var keepOption = new Option<bool>("--keep-worktree") { Description = "Leave the temporary worktree in place for inspection." };
 var runPartialOption = new Option<bool>("--run-partial") { Description = "With --patch-from-diagnosis: measure even when the patch is only part of the fix." };
+var formatOption = new Option<string>("--format") { Description = "Output format: text (default), json, markdown. Progress goes to stderr for json/markdown.", DefaultValueFactory = _ => "text" };
+formatOption.AcceptOnlyFromAmong("text", "json", "markdown");
 var verify = new Command("verify", "Run tests before and after a patch and print a before/after table. Exit 0 when improved with no new Error diagnoses.")
 {
-    projectOption, testOption, patchOption, fromDiagnosisOption, ruleOption, allowDirtyOption, runsOption, keepOption, runPartialOption,
+    projectOption, testOption, patchOption, fromDiagnosisOption, ruleOption, allowDirtyOption, runsOption, keepOption, runPartialOption, formatOption,
 };
 verify.SetAction((parse, ct) => new VerifyCommand
 {
@@ -30,18 +32,21 @@ verify.SetAction((parse, ct) => new VerifyCommand
     Runs = parse.GetValue(runsOption),
     KeepWorktree = parse.GetValue(keepOption),
     RunPartial = parse.GetValue(runPartialOption),
+    Format = parse.GetValue(formatOption) ?? "text",
 }.ExecuteAsync(Console.Out, Console.Error, ct));
 root.Subcommands.Add(verify);
 
 // report
 var jsonOption = new Option<bool>("--json") { Description = "Print the raw scope reports as JSON." };
-var report = new Command("report", "Run tests with QueryShape reporting and print every diagnosis with its fix.") { projectOption, testOption, reportDirOption, jsonOption };
+var markdownOption = new Option<bool>("--markdown") { Description = "Print a Markdown summary (for $GITHUB_STEP_SUMMARY or a PR comment)." };
+var report = new Command("report", "Run tests with QueryShape reporting and print every diagnosis with its fix.") { projectOption, testOption, reportDirOption, jsonOption, markdownOption };
 report.SetAction((parse, ct) => new ReportCommand
 {
     Project = parse.GetValue(projectOption),
     TestFilter = ToFilter(parse.GetValue(testOption)),
     ReportDirectory = parse.GetValue(reportDirOption),
     Json = parse.GetValue(jsonOption),
+    Markdown = parse.GetValue(markdownOption),
 }.ExecuteAsync(Console.Out, Console.Error, ct));
 root.Subcommands.Add(report);
 

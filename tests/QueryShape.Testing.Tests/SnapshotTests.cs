@@ -256,6 +256,30 @@ public class SnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task Snapshot_outcome_is_annotated_on_the_scope_for_reports()
+    {
+        var path = PathFor("annotated");
+        using (var first = QueryShapeScope.Begin(options: _shop.Options))
+        {
+            await RunQueriesAsync(first);
+            await first.MatchSnapshotFileAsync(path, "SnapshotTests.annotated", Local());
+            first.Annotations["snapshot.outcome"].Should().Be("created");
+            first.Annotations["snapshot.test"].Should().Be("SnapshotTests.annotated");
+        }
+
+        using var second = QueryShapeScope.Begin(options: _shop.Options);
+        await RunQueriesAsync(second, extra: true);
+        var act = () => second.MatchSnapshotFileAsync(path, "SnapshotTests.annotated", Local());
+        await act.Should().ThrowAsync<QuerySnapshotMismatchException>();
+
+        second.Annotations["snapshot.outcome"].Should().Be("mismatch");
+        second.Annotations["snapshot.expectedQueries"].Should().Be("2");
+        second.Annotations["snapshot.added"].Should().Be("1");
+        second.Annotations["snapshot.removed"].Should().Be("0");
+        QueryShape.Reporting.ScopeReport.FromScope(second, second.Analyze()).Annotations!["snapshot.outcome"].Should().Be("mismatch");
+    }
+
+    [Fact]
     public void Serializer_round_trips_and_is_deterministic()
     {
         var snapshot = new QuerySnapshot

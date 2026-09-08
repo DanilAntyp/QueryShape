@@ -103,6 +103,34 @@ public class VerifyTableTests
     }
 
     [Fact]
+    public void Markdown_and_json_forms_carry_the_same_rows()
+    {
+        var before = Metrics(41, 1400, ("QS001", "Error"), ("QS004", "Warning"));
+        var after = Metrics(1, 900, ("QS004", "Warning"));
+        var result = VerifyTable.Render("Add .Include(c => c.Orders)", before, after, [after, after, after], ["dotnet test exited with code 1 after the patch"]);
+
+        var md = result.ToMarkdown();
+        md.Should().StartWith("### QueryShape verify: improved ✅\n\n**Fix:** Add .Include(c => c.Orders)\n\n| | before | after | Δ |\n|---|---:|---:|---:|\n| queries | 41 | 1 | -40 |\n");
+        md.Should().Contain("| QS001 N+1 query | 1 | 0 | ✓ |\n").And.Contain("| new diagnostics | - | 0 | ✓ |\n");
+        md.Should().Contain("_after = median of 3 runs_").And.Contain("> dotnet test exited with code 1 after the patch");
+
+        var json = result.ToJson();
+        json.Should().Contain("\"improved\": true").And.Contain("\"label\": \"queries\"").And.Contain("\"delta\": \"-40\"").And.Contain("\"runs\": 3");
+    }
+
+    [Fact]
+    public void Report_markdown_lists_scopes_and_diagnoses()
+    {
+        var report = new ScopeReport(1, "GET /bad/n-plus-one", DateTimeOffset.UtcNow, 3, 41, 1.4, false, [],
+            [new ScopeReportDiagnosis("QS001", "Error", "N+1 query: Order by CustomerId executed 40 times", "why", null, null, 0, [], null, null, "Add .Include(c => c.Orders)", null, null, null, "diff", null)],
+            new Dictionary<string, string> { ["snapshot.outcome"] = "mismatch" });
+        var md = ReportCommand.RenderMarkdown(RunMetrics.Aggregate([report]));
+        md.Should().StartWith("### QueryShape report: 41 queries, 1 error(s), 0 warning(s)\n");
+        md.Should().Contain("| GET /bad/n-plus-one | 41 | 1.4 | QS001 | mismatch |\n");
+        md.Should().Contain("- **QS001 Error** N+1 query: Order by CustomerId executed 40 times _(GET /bad/n-plus-one)_\n  - fix: Add .Include(c => c.Orders)\n");
+    }
+
+    [Fact]
     public void New_error_diagnosis_fails_the_verdict()
     {
         var before = Metrics(10, 100, ("QS001", "Error"));

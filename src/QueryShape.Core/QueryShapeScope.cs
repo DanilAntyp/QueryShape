@@ -16,6 +16,7 @@ public sealed class QueryShapeScope : IDisposable
     private readonly object _gate = new();
     private readonly List<CapturedCommand> _commands = [];
     private readonly List<SaveChangesRecord> _saveChanges = [];
+    private readonly SortedDictionary<string, string> _annotations = new(StringComparer.Ordinal);
     private readonly QueryShapeScope? _parent;
     private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
     private IReadOnlyList<Diagnosis>? _cachedDiagnoses;
@@ -70,6 +71,23 @@ public sealed class QueryShapeScope : IDisposable
     public IReadOnlyList<SaveChangesRecord> SaveChanges
     {
         get { lock (_gate) { return _saveChanges.ToArray(); } }
+    }
+
+    /// <summary>Free-form facts attached by tools (e.g. the snapshot outcome), included in scope reports. Sorted by key.</summary>
+    public IReadOnlyDictionary<string, string> Annotations
+    {
+        get { lock (_gate) { return new Dictionary<string, string>(_annotations, StringComparer.Ordinal); } }
+    }
+
+    /// <summary>Attaches or replaces an annotation.</summary>
+    public void Annotate(string key, string value)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(value);
+        lock (_gate)
+        {
+            _annotations[key] = value;
+        }
     }
 
     /// <summary>Number of commands recorded (excluding dropped overflow).</summary>

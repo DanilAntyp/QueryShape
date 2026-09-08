@@ -1,0 +1,93 @@
+name: QueryShape
+description: Run QueryShape on a .NET test project and post the report or a verify table on the pull request.
+branding:
+  icon: search
+  color: blue
+inputs:
+  command:
+    description: "`report` (diagnoses of the test run) or `verify` (before/after table for a patch)."
+    required: false
+    default: report
+  project:
+    description: Test project, solution or directory passed to `dotnet test`.
+    required: true
+  test:
+    description: Test filter (FullyQualifiedName~ substring). Required for `verify`.
+    required: false
+    default: ""
+  patch:
+    description: Unified diff for `verify`. Leave empty with `patch-from-diagnosis`.
+    required: false
+    default: ""
+  patch-from-diagnosis:
+    description: For `verify`: use the patch QueryShape proposed in the baseline run.
+    required: false
+    default: "false"
+  version:
+    description: QueryShape.Cli version to install (NuGet).
+    required: false
+    default: "*-*"
+  comment:
+    description: Post the result as a pull-request comment (needs `pull-requests: write`). Always written to the step summary.
+    required: false
+    default: "true"
+  github-token:
+    description: Token for the comment.
+    required: false
+    default: ${{ github.token }}
+outputs:
+  exit-code:
+    description: QueryShape exit code (0 improved / no errors, 1 not improved / errors, 2 usage or setup problem).
+    value: ${{ steps.run.outputs.exit-code }}
+runs:
+  using: composite
+  steps:
+    - name: Install QueryShape CLI
+      shell: bash
+      run: dotnet tool install --global QueryShape.Cli --version "${{ inputs.version }}" --prerelease || dotnet tool update --global QueryShape.Cli --version "${{ inputs.version }}" --prerelease
+    - name: Run QueryShape
+      id: run
+      shell: bash
+      env:
+        CI: "true"
+      run: |
+        set +e
+        if [ "${{ inputs.command }}" = "verify" ]; then
+          if [ "${{ inputs.patch-from-diagnosis }}" = "true" ]; then
+            dotnet queryshape verify --project "${{ inputs.project }}" --test "${{ inputs.test }}" --patch-from-diagnosis --format markdown > queryshape.md
+          else
+            dotnet queryshape verify --project "${{ inputs.project }}" --test "${{ inputs.test }}" --patch "${{ inputs.patch }}" --format markdown > queryshape.md
+          fi
+        else
+          if [ -n "${{ inputs.test }}" ]; then
+            dotnet queryshape report --project "${{ inputs.project }}" --test "${{ inputs.test }}" --markdown > queryshape.md
+          else
+            dotnet queryshape report --project "${{ inputs.project }}" --markdown > queryshape.md
+          fi
+        fi
+        code=$?
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        cat queryshape.md >> "$GITHUB_STEP_SUMMARY"
+        cat queryshape.md
+        exit 0
+    - name: Comment on the pull request
+      if: inputs.comment == 'true' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const body = fs.readFileSync('queryshape.md', 'utf8') + '\n<!-- queryshape-action -->';
+          const { owner, repo } = context.repo;
+          const issue_number = context.payload.pull_request.number;
+          const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+          const mine = comments.data.find(c => c.body && c.body.includes('<!-- queryshape-action -->'));
+          if (mine) {
+            await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+          } else {
+            await github.rest.issues.createComment({ owner, repo, issue_number, body });
+          }
+    - name: Fail the job when QueryShape reported errors or no improvement
+      if: steps.run.outputs.exit-code != '0'
+      shell: bash
+      run: exit ${{ steps.run.outputs.exit-code }}

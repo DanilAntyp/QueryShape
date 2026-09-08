@@ -287,6 +287,8 @@ QueryShape.QueryShapeOptions.UnscopedBufferSize.get -> int
 QueryShape.QueryShapeOptions.UnscopedBufferSize.set -> void
 QueryShape.QueryShapeScope
 QueryShape.QueryShapeScope.Analyze() -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.QueryShapeScope.Annotate(string! key, string! value) -> void
+QueryShape.QueryShapeScope.Annotations.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 QueryShape.QueryShapeScope.CommandCount.get -> int
 QueryShape.QueryShapeScope.Commands.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>!
 QueryShape.QueryShapeScope.Dispose() -> void
@@ -307,9 +309,11 @@ QueryShape.QuerySource.SaveChanges = 2 -> QueryShape.QuerySource
 QueryShape.Reporting.DiagnosisFormatter
 QueryShape.Reporting.ScopeReport
 QueryShape.Reporting.ScopeReport.<Clone>$() -> QueryShape.Reporting.ScopeReport!
+QueryShape.Reporting.ScopeReport.Annotations.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+QueryShape.Reporting.ScopeReport.Annotations.init -> void
 QueryShape.Reporting.ScopeReport.CommandDurationMs.get -> double
 QueryShape.Reporting.ScopeReport.CommandDurationMs.init -> void
-QueryShape.Reporting.ScopeReport.Deconstruct(out int Version, out string? Scope, out System.DateTimeOffset StartedAt, out double ElapsedMs, out int QueryCount, out double CommandDurationMs, out bool Overflowed, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics) -> void
+QueryShape.Reporting.ScopeReport.Deconstruct(out int Version, out string? Scope, out System.DateTimeOffset StartedAt, out double ElapsedMs, out int QueryCount, out double CommandDurationMs, out bool Overflowed, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics, out System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Annotations) -> void
 QueryShape.Reporting.ScopeReport.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>!
 QueryShape.Reporting.ScopeReport.Diagnostics.init -> void
 QueryShape.Reporting.ScopeReport.ElapsedMs.get -> double
@@ -323,7 +327,7 @@ QueryShape.Reporting.ScopeReport.QueryCount.get -> int
 QueryShape.Reporting.ScopeReport.QueryCount.init -> void
 QueryShape.Reporting.ScopeReport.Scope.get -> string?
 QueryShape.Reporting.ScopeReport.Scope.init -> void
-QueryShape.Reporting.ScopeReport.ScopeReport(int Version, string? Scope, System.DateTimeOffset StartedAt, double ElapsedMs, int QueryCount, double CommandDurationMs, bool Overflowed, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics) -> void
+QueryShape.Reporting.ScopeReport.ScopeReport(int Version, string? Scope, System.DateTimeOffset StartedAt, double ElapsedMs, int QueryCount, double CommandDurationMs, bool Overflowed, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Annotations = null) -> void
 QueryShape.Reporting.ScopeReport.StartedAt.get -> System.DateTimeOffset
 QueryShape.Reporting.ScopeReport.StartedAt.init -> void
 QueryShape.Reporting.ScopeReport.ToJson() -> string!

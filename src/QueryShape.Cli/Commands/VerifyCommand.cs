@@ -22,12 +22,21 @@ internal sealed class VerifyCommand
     /// <summary>Run the after leg even when the diagnosis patch is partial (default: refuse, since the table would be misleading).</summary>
     public bool RunPartial { get; init; }
 
+    /// <summary>text (default), json or markdown. Progress goes to stderr for json/markdown so stdout is the document.</summary>
+    public string Format { get; init; } = "text";
+
     public async Task<int> ExecuteAsync(TextWriter out_, TextWriter err, CancellationToken ct)
     {
         if (PatchPath is null && !PatchFromDiagnosis)
         {
             err.WriteLine("verify: pass --patch <file.diff> or --patch-from-diagnosis.");
             return 2;
+        }
+
+        var document = out_;
+        if (!string.Equals(Format, "text", StringComparison.OrdinalIgnoreCase))
+        {
+            out_ = err; // progress lines go to stderr; the document (json/markdown) is the only thing on stdout
         }
 
         var cwd = Directory.GetCurrentDirectory();
