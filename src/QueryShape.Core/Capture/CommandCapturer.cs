@@ -20,24 +20,31 @@ internal sealed class CommandCapturer
 
     private readonly object _gate = new();
     private readonly Queue<CapturedCommand> _unscoped = new();
-    private readonly ConditionalWeakTable<DbContext, QueryShapeOptions> _optionsByContext = new();
+    private readonly ConditionalWeakTable<DbContext, ContextState> _contexts = new();
     private readonly ConcurrentDictionary<string, NormalizedSql> _normalized = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
     private int _unscopedSequence;
 
     public ExpressionCorrelator Correlator { get; } = new();
 
-    /// <summary>Options for a context: from its <see cref="QueryShapeOptionsExtension"/>, else <see cref="QueryShapeOptions.Default"/>.</summary>
-    public QueryShapeOptions OptionsFor(DbContext? context)
+    /// <summary>Per-DbContext-instance state: options, provider name, and the reader currently being consumed (for tracking observation).</summary>
+    private sealed class ContextState
     {
-        if (context is null)
-        {
-            return QueryShapeOptions.Default;
-        }
+        public required QueryShapeOptions Options { get; init; }
 
-        if (_optionsByContext.TryGetValue(context, out var cached))
+        public string? ProviderName { get; set; }
+
+        public CapturedCommand? ActiveReader { get; set; }
+    }
+
+    /// <summary>Options for a context: from its <see cref="QueryShapeOptionsExtension"/>, else <see cref="QueryShapeOptions.Default"/>.</summary>
+    public QueryShapeOptions OptionsFor(DbContext? context) => context is null ? QueryShapeOptions.Default : StateFor(context).Options;
+
+    private ContextState StateFor(DbContext context)
+    {
+        if (_contexts.TryGetValue(context, out var existing))
         {
-            return cached;
+            return existing;
         }
 
         QueryShapeOptions resolved;
@@ -50,8 +57,32 @@ internal sealed class CommandCapturer
             resolved = QueryShapeOptions.Default;
         }
 
-        _optionsByContext.AddOrUpdate(context, resolved);
-        return resolved;
+        var state = new ContextState { Options = resolved };
+        if (!_contexts.TryAdd(context, state))
+        {
+            return _contexts.TryGetValue(context, out var raced) ? raced : state;
+        }
+
+        if (resolved.Enabled)
+        {
+            try
+            {
+                // Entities that start being tracked while a reader is open are this command's results: tracking observed, not inferred (ADR-0002).
+                context.ChangeTracker.Tracked += (_, e) =>
+                {
+                    if (e.FromQuery && state.ActiveReader is { } active)
+                    {
+                        active.TrackedEntities++;
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                Log.Swallowed(resolved, "tracked subscription", ex);
+            }
+        }
+
+        return state;
     }
 
     public IReadOnlyList<CapturedCommand> RecentUnscopedCommands
@@ -86,10 +117,13 @@ internal sealed class CommandCapturer
             var scope = QueryShapeScope.Current;
 
             QueryInfo? query = null;
+            var resolution = ExpressionCorrelator.Resolution.None;
             if (commandSource is CommandSource.LinqQuery or CommandSource.FromSqlQuery or CommandSource.ExecuteUpdate or CommandSource.ExecuteDelete)
             {
-                query = Correlator.Resolve(context, normalized.Fingerprint, normalized.Shape);
+                (query, resolution) = Correlator.Resolve(context, normalized.Fingerprint, normalized.Shape);
             }
+
+            var contextState = context is null ? null : StateFor(context);
 
             // Tags: the expression tree has them exactly; the SQL comment block is the fallback (EF Core joins tags into one block).
             var tags = query is { Tags.Count: > 0 } ? query.Tags : normalized.Tags;
@@ -114,7 +148,7 @@ internal sealed class CommandCapturer
                 ParameterHash = parameterHash,
                 MaxCollectionParameterCount = maxCollectionCount,
                 Duration = duration,
-                ProviderName = SafeProviderName(context),
+                ProviderName = contextState is null ? null : (contextState.ProviderName ??= SafeProviderName(context)),
                 Query = query,
                 CallSite = callSite,
                 CommandId = commandId,
@@ -131,8 +165,16 @@ internal sealed class CommandCapturer
                 captured.RowsAffected = affected;
             }
 
+            // Tracking: certain only from this context's own compilation; a cache hit may describe a differently-tracked variant with the same SQL.
+            captured.IsTracking = resolution == ExpressionCorrelator.Resolution.OwnCompilation ? query!.ReturnsEntities && query.IsTracking : null;
+
             if (executeMethod == DbCommandMethod.ExecuteReader && error is null)
             {
+                if (contextState is not null)
+                {
+                    contextState.ActiveReader = captured;
+                }
+
                 if (_openReaders.Count > 10_000)
                 {
                     _openReaders.Clear(); // readers that were never closed; keep memory bounded
@@ -196,6 +238,11 @@ internal sealed class CommandCapturer
             if (recordsAffected >= 0 && command.RowsAffected is null && command.ExecuteMethod != DbCommandMethod.ExecuteReader)
             {
                 command.RowsAffected = recordsAffected;
+            }
+
+            if (command.TrackedEntities > 0)
+            {
+                command.IsTracking = true; // observed, whatever the expression info said
             }
 
             QueryShapeScope.Current?.InvalidateAnalysis();

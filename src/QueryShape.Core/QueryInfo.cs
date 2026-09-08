@@ -84,6 +84,25 @@ public sealed class QueryInfo
     /// <summary><c>true</c> when the query filters with <c>Contains</c> over a parameterized collection.</summary>
     public bool HasParameterCollectionContains { get; init; }
 
+    private readonly List<string> _warnings = [];
+
+    /// <summary>
+    /// EF Core's own compile-time warnings for this query, by short name: <c>RowLimitingOperationWithoutOrderBy</c>, <c>FirstWithoutOrderByAndFilter</c>,
+    /// <c>MultipleCollectionInclude</c>, <c>DistinctAfterOrderByWithoutRowLimitingOperator</c>. Collected through EF Core's DiagnosticSource.
+    /// </summary>
+    public IReadOnlyList<string> Warnings => _warnings;
+
+    internal void AddWarning(string warning)
+    {
+        lock (_warnings)
+        {
+            if (!_warnings.Contains(warning, StringComparer.Ordinal))
+            {
+                _warnings.Add(warning);
+            }
+        }
+    }
+
     /// <summary>Renders the expression on one line, trimmed for messages.</summary>
     public override string ToString() => Expression;
 }

@@ -49,6 +49,12 @@ public static class GoodEndpoints
             return Results.Ok(new { count, again = count });
         });
 
+        app.MapGet("/good/take-without-order-by", async (ShopDbContext db, int page = 1, int size = 10) =>
+        {
+            var orders = await db.Orders.AsNoTracking().OrderBy(o => o.PlacedAt).ThenBy(o => o.Id).Skip(page * size).Take(size).ToListAsync();
+            return Results.Ok(orders.Select(o => new { o.Id, o.Total }));
+        });
+
         app.MapGet("/good/raw-sql-concat", async (ShopDbContext db) =>
         {
             var result = new List<object>();

@@ -31,7 +31,7 @@ GoodEndpoints.Map(app);
 
 app.MapGet("/", () => Results.Text(
     "QueryShape sample. Try: /bad/n-plus-one, /bad/cartesian-explosion, /bad/client-evaluation, /bad/unbounded, /bad/tracking-read-only, " +
-    "/bad/missing-split-query, /bad/contains-large-collection, /bad/duplicate-query, /bad/query-in-loop, /bad/raw-sql-concat, and the /good/* twins."));
+    "/bad/missing-split-query, /bad/contains-large-collection, /bad/duplicate-query, /bad/query-in-loop, /bad/raw-sql-concat, /bad/take-without-order-by, and the /good/* twins."));
 
 app.Run();
 

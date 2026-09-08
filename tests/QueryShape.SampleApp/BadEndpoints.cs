@@ -96,6 +96,13 @@ public static class BadEndpoints
             return Results.Ok(result);
         });
 
+        // QS011: paging without an order.
+        app.MapGet("/bad/take-without-order-by", async (ShopDbContext db, int page = 1, int size = 10) =>
+        {
+            var orders = await db.Orders.AsNoTracking().Skip(page * size).Take(size).ToListAsync();
+            return Results.Ok(orders.Select(o => new { o.Id, o.Total }));
+        });
+
         // QS010: SQL text built with string interpolation instead of parameters.
         app.MapGet("/bad/raw-sql-concat", async (ShopDbContext db) =>
         {

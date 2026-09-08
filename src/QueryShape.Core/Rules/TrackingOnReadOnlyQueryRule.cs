@@ -27,9 +27,9 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
         foreach (var c in RuleHelpers.ReadQueries(scope).Where(c => c.Source == QuerySource.Linq).OrderBy(c => c.Sequence))
         {
             var q = c.Query;
-            if (q is not { IsTracking: true, ReturnsEntities: true, RootEntityShortName: { } root })
+            if (c.IsTracking != true || q is not { ReturnsEntities: true, RootEntityShortName: { } root })
             {
-                continue;
+                continue; // unknown tracking (inferred from another context's compilation, nothing observed) stays silent: no false positives at any severity
             }
 
             if (q.RootEntityType is { } full && modified.Contains(full) || modifiedShort.Contains(root) || !reported.Add(q.ExpressionHash))
@@ -56,7 +56,9 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                     Rows: c.RowsReturned,
                     SampleSql: c.Shape,
                     SampleExpression: q.Expression,
-                    Details: RuleHelpers.Details(("saveChangesInScope", scope.SaveChanges.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
+                    Details: RuleHelpers.Details(
+                        ("saveChangesInScope", scope.SaveChanges.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                        ("trackedEntitiesObserved", c.TrackedEntities.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
                 new Fix(
                     $"Add .AsNoTracking() to the {root} query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
                     FixKind.CodeChange,

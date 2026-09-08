@@ -65,6 +65,16 @@ public sealed class CapturedCommand
     /// <summary>The largest number of elements passed in a collection parameter (JSON array, provider array) or an inline <c>IN (...)</c> list, when any.</summary>
     public int? MaxCollectionParameterCount { get; init; }
 
+    /// <summary>Entities that started being tracked by the change tracker as results of this command (observed through <c>ChangeTracker.Tracked</c>).</summary>
+    public int TrackedEntities { get; internal set; }
+
+    /// <summary>
+    /// Whether this command's results were tracked: <c>true</c> when tracking was observed or the query was compiled by this context with tracking on,
+    /// <c>false</c> when compiled by this context without tracking (or returning no entities), <c>null</c> when it cannot be known
+    /// (raw SQL, or expression info inferred from a query compiled elsewhere; see ADR-0002).
+    /// </summary>
+    public bool? IsTracking { get; internal set; }
+
     /// <summary>EF Core provider name, e.g. <c>Microsoft.EntityFrameworkCore.Sqlite</c>.</summary>
     public string? ProviderName { get; init; }
 

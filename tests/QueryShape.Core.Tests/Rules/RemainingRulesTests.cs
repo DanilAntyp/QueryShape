@@ -223,3 +223,81 @@ public class RawSqlConcatenationRuleTests
             .Should().Be("SELECT [t0].[Id] FROM [T1] AS [t0] WHERE [t0].[A] = ? AND [t0].[B] = ? AND [t0].[C] = @p0 AND [t0].[D2] = ?");
     }
 }
+
+public class RowLimitingWithoutOrderByRuleTests
+{
+    [Fact]
+    public void Fires_from_ef_core_warning_with_order_by_fix()
+    {
+        using var scope = Synthetic.Scope();
+        var q = Synthetic.Query("DbSet<Order>()\n    .Skip(@__p_0)\n    .Take(@__p_1)", "Order", hasLimit: true);
+        q.AddWarning("RowLimitingOperationWithoutOrderBy");
+        scope.Add("SELECT * FROM Orders LIMIT @p0 OFFSET @p1", query: q, rows: 5, callSite: new CallSite("/a/Orders.cs", 7, "Orders.Page"));
+
+        var d = new RowLimitingWithoutOrderByRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.RuleId.Should().Be("QS011");
+        d.Severity.Should().Be(Severity.Warning);
+        d.Title.Should().Be("Non-deterministic paging: Skip/Take without OrderBy on Order at Orders.cs:7 Orders.Page");
+        d.Explanation.Should().Contain("no inherent order").And.Contain("RowLimitingOperationWithoutOrderByWarning");
+        d.SuggestedFix!.Summary.Should().Be("Add .OrderBy(o => o.Id) (or an order that matches the UI) before the Skip/Take");
+        d.SuggestedFix.AfterSnippet.Should().Be("DbSet<Order>()\n    .OrderBy(o => o.Id)\n    .Skip(@__p_0)\n    .Take(@__p_1)");
+        d.Evidence.Details!["efCoreWarning"].Should().Be("RowLimitingOperationWithoutOrderBy");
+    }
+
+    [Fact]
+    public void First_without_order_or_filter_is_reported_and_ordered_queries_are_not()
+    {
+        using var scope = Synthetic.Scope();
+        var first = Synthetic.Query("DbSet<Order>()\n    .First()", "Order", hasLimit: true);
+        first.AddWarning("FirstWithoutOrderByAndFilter");
+        scope.Add("SELECT * FROM Orders LIMIT 1", query: first);
+        scope.Add("SELECT * FROM Orders ORDER BY Id LIMIT 1", query: Synthetic.Query("DbSet<Order>()\n    .OrderBy(o => o.Id)\n    .First()", "Order", hasLimit: true));
+
+        var d = new RowLimitingWithoutOrderByRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Title.Should().StartWith("Arbitrary row: First/Single on Order without OrderBy or filter");
+    }
+
+    [Fact]
+    public void Patch_inserts_order_by_before_the_row_limiting_operator()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"qs-{Guid.NewGuid():N}.cs");
+        File.WriteAllLines(file, ["var page = await db.Orders.Skip(page * size).Take(size).ToListAsync();"]);
+        try
+        {
+            using var scope = Synthetic.Scope();
+            var q = Synthetic.Query("DbSet<Order>()\n    .Skip(@__p_0)\n    .Take(@__p_1)", "Order", hasLimit: true);
+            q.AddWarning("RowLimitingOperationWithoutOrderBy");
+            scope.Add("SELECT * FROM Orders LIMIT @p0 OFFSET @p1", query: q, callSite: new CallSite(file, 1, "X.M"));
+
+            new RowLimitingWithoutOrderByRule().Analyze(scope).Single().SuggestedFix!.UnifiedDiff.Should()
+                .Contain("+var page = await db.Orders.OrderBy(o => o.Id).Skip(page * size).Take(size).ToListAsync();");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+}
+
+public class MissingSplitQueryWithEfWarningTests
+{
+    [Fact]
+    public void Ef_core_warning_makes_a_large_result_a_candidate_even_without_observed_multiplication()
+    {
+        using var scope = Synthetic.Scope(o => o.CartesianMinimumRows = 50);
+        var q = new QueryInfo
+        {
+            Expression = "DbSet<Customer>()\n    .Include(c => c.Orders)\n    .Include(c => c.Addresses)",
+            ExpressionHash = "inc-warned",
+            RootEntityShortName = "Customer",
+            ReturnsEntities = true,
+            CollectionIncludes = ["Orders", "Addresses"],
+        };
+        q.AddWarning("MultipleCollectionInclude");
+        scope.Add("SELECT ... LEFT JOIN ... LEFT JOIN ...", query: q, rows: 80);   // roots unknown: first column was not the key
+
+        var d = new MissingSplitQueryRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Evidence.Details!["efCoreWarning"].Should().Be("MultipleCollectionInclude");
+        d.Evidence.Details["distinctRoots"].Should().Be("unknown");
+    }
+}

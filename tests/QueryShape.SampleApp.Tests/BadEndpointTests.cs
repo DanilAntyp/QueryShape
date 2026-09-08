@@ -82,6 +82,7 @@ public class RemainingBadEndpointTests(SampleAppFixture app)
     [InlineData("/bad/contains-large-collection", "QS007", "Contains over 600 values on the OrderLine query (threshold 500)")]
     [InlineData("/bad/query-in-loop", "QS009", "Queries in a loop: Summaries.ForOrderAsync issued 16 queries of 2 shapes (Customer, OrderLine) in one scope")]
     [InlineData("/bad/raw-sql-concat", "QS010", "Raw SQL built from values: 3 text variants of \"SELECT * FROM Customers WHERE Name = ?\"")]
+    [InlineData("/bad/take-without-order-by", "QS011", "Non-deterministic paging: Skip/Take without OrderBy on Order")]
     public async Task Bad_endpoint_is_diagnosed(string path, string ruleId, string titleStart)
     {
         var (response, _, diagnoses) = await app.GetAsync(path);
@@ -96,6 +97,7 @@ public class RemainingBadEndpointTests(SampleAppFixture app)
     [InlineData("/good/cartesian-explosion", "QS006")]
     [InlineData("/good/tracking-read-only", "QS005")]
     [InlineData("/good/raw-sql-concat", "QS010")]
+    [InlineData("/good/take-without-order-by", "QS011")]
     public async Task Good_twins_are_clean(string path, string ruleId)
     {
         var (response, _, diagnoses) = await app.GetAsync(path);

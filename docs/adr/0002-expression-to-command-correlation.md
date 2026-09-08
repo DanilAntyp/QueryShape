@@ -25,7 +25,14 @@ For each `LinqQuery`/`FromSqlQuery`/`ExecuteUpdate`/`ExecuteDelete` command:
 
 ## Consequences
 - Same DbContext, same async flow: correct, including `Orders.ToList()` followed by `Orders.AsNoTracking().ToList()` (identical SQL, different tracking).
-- Known limitation: when context B executes a query whose SQL was first compiled with different non-SQL-affecting operators on context A
-  (tracking vs. no-tracking, different tags via `TagWith` are visible in SQL so they are fine), the cached info from A is used.
-  `IsTracking` may therefore be wrong for that command. Rules using `IsTracking` (QS005) treat it as a hint, not proof.
 - Commands whose compilation fired on one thread and execution on another share nothing except the fingerprint cache; step 2 usually covers them.
+
+## Addendum 2026-09-08: tracking is observed, not only inferred
+The fingerprint cache cannot tell a tracked variant from an `AsNoTracking()` variant with the same SQL when a third context executes one of them
+(EF Core's compiled-query cache means no compilation event fires). Two measures:
+- `CapturedCommand.IsTracking` is `true`/`false` only when this context compiled the query itself (`Resolution.OwnCompilation`); for a cache hit it is `null`.
+- QueryShape subscribes to `ChangeTracker.Tracked` once per context and counts entities that start being tracked *from a query* while a command's
+  reader is open (`CapturedCommand.TrackedEntities`). Any count above zero sets `IsTracking = true`, whatever the cache said.
+
+QS005 fires only when `IsTracking == true`. The residual ambiguity, a cache-resolved query whose entities were all already tracked, stays silent:
+a false negative at Info level instead of a false positive. A per-query `AsNoTracking()` that overrides a tracking context is covered by the same rule.

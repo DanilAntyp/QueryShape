@@ -129,6 +129,7 @@ Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is s
 | [QS008](docs/rules/QS008.md) | Duplicate identical query | Warning | ✅ |
 | [QS009](docs/rules/QS009.md) | Query in loop over navigation | Warning | ✅ |
 | [QS010](docs/rules/QS010.md) | Raw SQL with string concatenation | Error | ✅ |
+| [QS011](docs/rules/QS011.md) | Row limiting without OrderBy (from EF Core's own warning) | Warning | ✅ |
 
 Every rule doc explains what EF Core does and why, and shows the fix. Architecture decisions live in [docs/adr](docs/adr).
 

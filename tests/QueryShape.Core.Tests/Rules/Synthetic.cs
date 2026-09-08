@@ -42,6 +42,7 @@ internal static class Synthetic
             StartTime = DateTimeOffset.UtcNow,
         };
         cmd.RowsReturned = rows;
+        cmd.IsTracking = query is null ? null : query.ReturnsEntities && query.IsTracking;   // as if this context compiled the query
         scope.Record(cmd).Should().BeTrue();
         return cmd;
     }

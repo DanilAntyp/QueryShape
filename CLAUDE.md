@@ -154,6 +154,7 @@ Each rule is a class implementing `IRule` with `Analyze(Scope) -> IEnumerable<Di
 | QS008 | Duplicate identical query | Same shape **and** same parameters executed >1 time in a scope (should be cached/reused) | Warning |
 | QS009 | Query in loop over navigation | Heuristic on call site: same call site issuing queries repeatedly within one scope | Warning |
 | QS010 | Raw SQL with string concatenation | `FromSqlRaw`/raw command whose text varies across executions in a way that suggests interpolated values (not parameters) | Error (security) |
+| QS011 | Row limiting without OrderBy | EF Core's own `RowLimitingOperationWithoutOrderByWarning` / `FirstWithoutOrderByAndFilterWarning`, captured from its DiagnosticSource (added 2026-09-08, ADR-0008) | Warning |
 
 Start with QS001, QS003, QS004, QS008 (simplest, highest value). Add the rest once the pipeline is solid. Do not add rules beyond this table without an ADR.
 

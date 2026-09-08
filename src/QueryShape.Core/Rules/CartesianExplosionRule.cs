@@ -63,7 +63,8 @@ public sealed class CartesianExplosionRule : IRule
                     Details: RuleHelpers.Details(
                         ("distinctRoots", roots.ToString(CultureInfo.InvariantCulture)),
                         ("rowsPerRoot", ratio.ToString("0.#", CultureInfo.InvariantCulture)),
-                        ("collectionIncludes", includes))),
+                        ("collectionIncludes", includes),
+                        ("efCoreWarning", q.Warnings.Contains("MultipleCollectionInclude", StringComparer.Ordinal) ? "MultipleCollectionInclude" : "none"))),
                 new Fix(
                     $"Add .AsSplitQuery() to the {root} query so each collection loads with its own SELECT",
                     FixKind.CodeChange,

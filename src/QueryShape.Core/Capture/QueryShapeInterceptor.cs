@@ -17,6 +17,7 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
 
     private QueryShapeInterceptor()
     {
+        EfCoreWarningObserver.EnsureSubscribed(_capturer.Correlator);
     }
 
     /// <summary>The process-wide interceptor.</summary>

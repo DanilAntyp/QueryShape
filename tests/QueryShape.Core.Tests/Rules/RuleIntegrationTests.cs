@@ -244,6 +244,20 @@ public class RemainingRuleIntegrationTests : IDisposable
         d.CallSite!.Member.Should().Be("RemainingRuleIntegrationTests.Raw_sql_concatenation_is_detected");
     }
 
+    [Fact]
+    public async Task Paging_without_order_by_is_detected_from_ef_core_warning()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Orders.AsNoTracking().Skip(5).Take(5).ToListAsync();
+        await ctx.Orders.AsNoTracking().OrderBy(o => o.PlacedAt).ThenBy(o => o.Id).Skip(5).Take(5).ToListAsync();
+
+        var diagnoses = scope.Analyze();
+        diagnoses.Should().ContainSingle(d => d.RuleId == "QS011").Which.Title.Should().StartWith("Non-deterministic paging: Skip/Take without OrderBy on Order");
+        diagnoses.Should().NotContain(d => d.RuleId == "QS005");
+    }
+
     private static async Task<(string, int)> SummarizeAsync(ShopContext ctx, Order order)
     {
         var customer = await ctx.Customers.FirstAsync(c => c.Id == order.CustomerId);

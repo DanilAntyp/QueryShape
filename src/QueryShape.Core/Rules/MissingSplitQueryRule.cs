@@ -34,9 +34,12 @@ public sealed class MissingSplitQueryRule : IRule
 
             var roots = c.DistinctRootsEstimate;
             var explosive = roots is { } r && r > 0 && rows >= scope.Options.CartesianMinimumRows && rows >= r * factor;
-            if (explosive || rows <= (roots ?? 1) || !reported.Add(q.ExpressionHash))
+            var efWarned = q.Warnings.Contains("MultipleCollectionInclude", StringComparer.Ordinal);
+            var multiplied = rows > (roots ?? 1);
+            var structural = efWarned && rows >= scope.Options.CartesianMinimumRows; // EF Core flagged it and the result is not tiny, even if we could not see the multiplication
+            if (explosive || (!multiplied && !structural) || !reported.Add(q.ExpressionHash))
             {
-                continue; // QS002 owns the explosive case; no multiplication means nothing to split.
+                continue; // QS002 owns the explosive case; no multiplication (and no EF warning on a real result set) means nothing to split.
             }
 
             var root = q.RootEntityShortName ?? "root";
@@ -61,7 +64,8 @@ public sealed class MissingSplitQueryRule : IRule
                     SampleExpression: q.Expression,
                     Details: RuleHelpers.Details(
                         ("collectionIncludes", includes),
-                        ("distinctRoots", roots?.ToString(CultureInfo.InvariantCulture) ?? "unknown"))),
+                        ("distinctRoots", roots?.ToString(CultureInfo.InvariantCulture) ?? "unknown"),
+                        ("efCoreWarning", efWarned ? "MultipleCollectionInclude" : "none"))),
                 new Fix(
                     $"Add .AsSplitQuery() to the {root} query (or UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) for the whole context)",
                     FixKind.CodeChange,

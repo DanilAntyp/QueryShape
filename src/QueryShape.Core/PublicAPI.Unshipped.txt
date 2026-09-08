@@ -57,6 +57,7 @@ QueryShape.CapturedCommand.Fingerprint.get -> string!
 QueryShape.CapturedCommand.Fingerprint.init -> void
 QueryShape.CapturedCommand.IsAsync.get -> bool
 QueryShape.CapturedCommand.IsAsync.init -> void
+QueryShape.CapturedCommand.IsTracking.get -> bool?
 QueryShape.CapturedCommand.MaxCollectionParameterCount.get -> int?
 QueryShape.CapturedCommand.MaxCollectionParameterCount.init -> void
 QueryShape.CapturedCommand.Origin.get -> string!
@@ -79,6 +80,7 @@ QueryShape.CapturedCommand.StartTime.get -> System.DateTimeOffset
 QueryShape.CapturedCommand.StartTime.init -> void
 QueryShape.CapturedCommand.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.CapturedCommand.Tags.init -> void
+QueryShape.CapturedCommand.TrackedEntities.get -> int
 QueryShape.CapturedParameter
 QueryShape.CapturedParameter.<Clone>$() -> QueryShape.CapturedParameter!
 QueryShape.CapturedParameter.CapturedParameter(string! Name, System.Data.DbType DbType, System.Data.ParameterDirection Direction, object? Value, bool IsNull) -> void
@@ -250,6 +252,7 @@ QueryShape.QueryInfo.SplittingBehavior.get -> string!
 QueryShape.QueryInfo.SplittingBehavior.init -> void
 QueryShape.QueryInfo.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryInfo.Tags.init -> void
+QueryShape.QueryInfo.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryShapeDbContextOptionsBuilderExtensions
 QueryShape.QueryShapeOptions
 QueryShape.QueryShapeOptions.CaptureCallSites.get -> bool
@@ -432,6 +435,12 @@ QueryShape.Rules.RawSqlConcatenationRule.DefaultSeverity.get -> QueryShape.Sever
 QueryShape.Rules.RawSqlConcatenationRule.Id.get -> string!
 QueryShape.Rules.RawSqlConcatenationRule.Name.get -> string!
 QueryShape.Rules.RawSqlConcatenationRule.RawSqlConcatenationRule() -> void
+QueryShape.Rules.RowLimitingWithoutOrderByRule
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Id.get -> string!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Name.get -> string!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.RowLimitingWithoutOrderByRule() -> void
 QueryShape.Rules.TrackingOnReadOnlyQueryRule
 QueryShape.Rules.TrackingOnReadOnlyQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.TrackingOnReadOnlyQueryRule.DefaultSeverity.get -> QueryShape.Severity
@@ -471,6 +480,7 @@ const QueryShape.Rules.MissingSplitQueryRule.RuleId = "QS006" -> string!
 const QueryShape.Rules.NPlusOneRule.RuleId = "QS001" -> string!
 const QueryShape.Rules.QueryInLoopRule.RuleId = "QS009" -> string!
 const QueryShape.Rules.RawSqlConcatenationRule.RuleId = "QS010" -> string!
+const QueryShape.Rules.RowLimitingWithoutOrderByRule.RuleId = "QS011" -> string!
 const QueryShape.Rules.TrackingOnReadOnlyQueryRule.RuleId = "QS005" -> string!
 const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
 override QueryShape.CallSite.Equals(object? obj) -> bool

@@ -140,6 +140,83 @@ public class CaptureTests : IDisposable
     }
 
     [Fact]
+    public async Task Tracking_is_observed_through_the_change_tracker()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Products.Where(p => p.Sku != "observed-tracked").ToListAsync();
+        await ctx.Products.AsNoTracking().Where(p => p.Sku != "observed-untracked").ToListAsync();
+        await ctx.Products.Where(p => p.Sku != "observed-tracked").ToListAsync();   // same entities again: already tracked, nothing new starts tracking
+
+        scope.Commands.Should().HaveCount(3);
+        scope.Commands[0].TrackedEntities.Should().Be(5);
+        scope.Commands[0].IsTracking.Should().BeTrue();
+        scope.Commands[1].TrackedEntities.Should().Be(0);
+        scope.Commands[1].IsTracking.Should().BeFalse("this context compiled the AsNoTracking variant itself");
+        scope.Commands[2].TrackedEntities.Should().Be(0);
+        scope.Commands[2].IsTracking.Should().BeNull("a re-execution is a compiled-query cache hit and the entities were already tracked: nothing certain to observe");
+    }
+
+    [Fact]
+    public async Task Same_sql_compiled_with_and_without_tracking_elsewhere_is_never_reported_as_tracked_without_observation()
+    {
+        // Contexts A and B compile the two variants (same SQL, different tracking); C and D hit EF Core's compiled query cache
+        // and therefore never raise QueryCompilationStarting: their expression info comes from QueryShape's fingerprint cache.
+        // Identical lambdas everywhere: EF Core's compiled-query cache key includes the expression tree, parameter names included.
+        var options = _shop.Options;
+        await using (var ctxA = _shop.CreateContext())
+        {
+            await ctxA.Customers.AsNoTracking().Where(c => c.Name != "cross-ctx").ToListAsync();
+        }
+
+        await using (var ctxB = _shop.CreateContext())
+        {
+            await ctxB.Customers.Where(c => c.Name != "cross-ctx").ToListAsync();
+        }
+
+        using var scopeC = QueryShapeScope.Begin("C", options);
+        await using (var ctxC = _shop.CreateContext())
+        {
+            await ctxC.Customers.AsNoTracking().Where(c => c.Name != "cross-ctx").ToListAsync();
+        }
+
+        var cCommand = scopeC.Commands.Single();
+        cCommand.Query.Should().NotBeNull("the SQL is known from A/B");
+        cCommand.TrackedEntities.Should().Be(0);
+        cCommand.IsTracking.Should().BeNull("a cache hit cannot tell which variant ran, and nothing was observed");
+        scopeC.Analyze().Should().NotContain(d => d.RuleId == "QS005");
+
+        using var scopeD = QueryShapeScope.Begin("D", options);
+        await using (var ctxD = _shop.CreateContext())
+        {
+            await ctxD.Customers.Where(c => c.Name != "cross-ctx").ToListAsync();
+        }
+
+        var dCommand = scopeD.Commands.Single();
+        dCommand.TrackedEntities.Should().Be(10);
+        dCommand.IsTracking.Should().BeTrue("tracking was observed");
+        scopeD.Analyze().Should().Contain(d => d.RuleId == "QS005");
+    }
+
+    [Fact]
+    public async Task Ef_core_compile_warnings_are_attached_to_the_query()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Orders.Skip(2).Take(3).ToListAsync();
+        await ctx.Orders.OrderBy(o => o.Id).Skip(2).Take(3).ToListAsync();
+        await ctx.Orders.FirstAsync();
+        await ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines).Where(c => c.Name != "warned").ToListAsync();
+
+        scope.Commands[0].Query!.Warnings.Should().Equal("RowLimitingOperationWithoutOrderBy");
+        scope.Commands[1].Query!.Warnings.Should().BeEmpty();
+        scope.Commands[2].Query!.Warnings.Should().Contain("FirstWithoutOrderByAndFilter");
+        scope.Commands[3].Query!.Warnings.Should().Contain("MultipleCollectionInclude");
+    }
+
+    [Fact]
     public async Task Split_query_commands_share_expression_info()
     {
         using var scope = QueryShapeScope.Begin(options: _shop.Options);

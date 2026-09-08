@@ -47,6 +47,35 @@ internal static partial class SourcePatcher
         return null;
     }
 
+    /// <summary>Inserts <paramref name="insertion"/> before the first row-limiting operator (<c>Take</c>, <c>Skip</c>, <c>First...</c>, <c>Last...</c>) at or shortly after the call-site line.</summary>
+    public static string? TryInsertBeforeRowLimitingOperator(CallSite site, string insertion)
+    {
+        var lines = ReadLines(site);
+        if (lines is null)
+        {
+            return null;
+        }
+
+        for (var i = site.Line - 1; i < Math.Min(lines.Length, site.Line + 5); i++)
+        {
+            if (i < 0)
+            {
+                continue;
+            }
+
+            var m = RowLimiting().Match(lines[i]);
+            if (!m.Success || lines[i].Contains(".OrderBy", StringComparison.Ordinal) || lines[i].Contains(insertion, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var line = lines[i];
+            return BuildDiff([new LineEdit(site.FilePath!, i, line[..m.Index] + insertion + line[m.Index..])]);
+        }
+
+        return null;
+    }
+
     /// <summary>Convenience: the single-edit diff for <see cref="TryInsertBeforeTerminalOperatorEdit"/>.</summary>
     public static string? TryInsertBeforeTerminalOperator(CallSite site, string insertion)
     {
@@ -297,6 +326,9 @@ internal static partial class SourcePatcher
 
     [GeneratedRegex(@"\.(ToListAsync|ToList|ToArrayAsync|ToArray|ToDictionaryAsync|ToDictionary|FirstOrDefaultAsync|FirstOrDefault|FirstAsync|First|SingleOrDefaultAsync|SingleOrDefault|SingleAsync|Single|AsAsyncEnumerable|AsEnumerable|ToHashSetAsync|ToHashSet|CountAsync|Count|AnyAsync|Any)\s*\(")]
     private static partial Regex Terminal();
+
+    [GeneratedRegex(@"\.(Take|Skip|TakeLast|SkipLast|FirstOrDefaultAsync|FirstOrDefault|FirstAsync|First|LastOrDefaultAsync|LastOrDefault|LastAsync|Last|ElementAtAsync|ElementAt|ElementAtOrDefaultAsync|ElementAtOrDefault)\s*\(")]
+    private static partial Regex RowLimiting();
 
     // "    var orders = await db.Orders.Where(...).ToListAsync();"  /  "    customer.Orders = await ...;"
     [GeneratedRegex(@"^(?<indent>\s*)(?<lhs>(?:var\s+)?[\w.]+)\s*=\s*(?<await>await\s+)?(?<expr>[^;]+?)\s*;\s*$")]
