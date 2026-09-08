@@ -182,7 +182,7 @@ public async Task GetOrders_stays_within_budget() { ... }
 
 ### 6.2 Snapshot file format
 
-`__querysnapshots__/{TestClass}.{TestName}.json`, next to the test source file (resolve via `[CallerFilePath]`). Contents:
+`__querysnapshots__/{TestClass}.{TestName}.{provider}.json` (provider suffix such as `sqlite`, `sqlserver`, `postgresql`; on by default via `SnapshotOptions.ProviderInFileName`, decided 2026-09-08 so SQLite-locally/SQL-Server-in-CI suites do not fail on dialect differences), next to the test source file (resolve via `[CallerFilePath]`). Contents:
 
 ```json
 {

@@ -23,7 +23,7 @@ public class DeveloperExperienceTests : IDisposable
         var result = await scope.MatchSnapshotAsync(options: new SnapshotOptions { CiMode = false, UpdateSnapshots = false });
 
         result.Outcome.Should().Be(SnapshotOutcome.Matched, "the snapshot file is committed next to this test");
-        result.Path.Should().EndWith(Path.Combine("__querysnapshots__", "DeveloperExperienceTests.Products_query_shape.json"));
+        result.Path.Should().EndWith(Path.Combine("__querysnapshots__", "DeveloperExperienceTests.Products_query_shape.sqlite.json"), "the provider is part of the file name");
         result.Snapshot.QueryCount.Should().Be(2);
         result.Snapshot.Diagnostics.Select(d => d.RuleId).Should().Equal("QS004", "QS005");
     }

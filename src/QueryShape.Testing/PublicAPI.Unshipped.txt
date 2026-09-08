@@ -94,6 +94,8 @@ QueryShape.Testing.SnapshotOptions.FailOn.get -> QueryShape.Severity
 QueryShape.Testing.SnapshotOptions.FailOn.set -> void
 QueryShape.Testing.SnapshotOptions.Log.get -> System.Action<string!>?
 QueryShape.Testing.SnapshotOptions.Log.set -> void
+QueryShape.Testing.SnapshotOptions.ProviderInFileName.get -> bool
+QueryShape.Testing.SnapshotOptions.ProviderInFileName.set -> void
 QueryShape.Testing.SnapshotOptions.SnapshotOptions() -> void
 QueryShape.Testing.SnapshotOptions.UpdateSnapshots.get -> bool?
 QueryShape.Testing.SnapshotOptions.UpdateSnapshots.set -> void
@@ -101,6 +103,7 @@ QueryShape.Testing.SnapshotOutcome
 QueryShape.Testing.SnapshotOutcome.Created = 1 -> QueryShape.Testing.SnapshotOutcome
 QueryShape.Testing.SnapshotOutcome.Matched = 0 -> QueryShape.Testing.SnapshotOutcome
 QueryShape.Testing.SnapshotOutcome.Updated = 2 -> QueryShape.Testing.SnapshotOutcome
+QueryShape.Testing.SnapshotProvider
 QueryShape.Testing.SnapshotQuery
 QueryShape.Testing.SnapshotQuery.<Clone>$() -> QueryShape.Testing.SnapshotQuery!
 QueryShape.Testing.SnapshotQuery.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out System.Collections.Generic.IReadOnlyList<string!>! Tags) -> void
@@ -161,6 +164,9 @@ static QueryShape.Testing.SnapshotComparison.Compare(QueryShape.Testing.QuerySna
 static QueryShape.Testing.SnapshotDiagnostic.operator !=(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool
 static QueryShape.Testing.SnapshotDiagnostic.operator ==(QueryShape.Testing.SnapshotDiagnostic? left, QueryShape.Testing.SnapshotDiagnostic? right) -> bool
 static QueryShape.Testing.SnapshotOptions.Default.get -> QueryShape.Testing.SnapshotOptions!
+static QueryShape.Testing.SnapshotProvider.ShortName(string! providerName) -> string!
+static QueryShape.Testing.SnapshotProvider.SuffixFor(QueryShape.QueryShapeScope! scope) -> string?
+static QueryShape.Testing.SnapshotProvider.WithSuffix(string! path, string! suffix) -> string!
 static QueryShape.Testing.SnapshotQuery.operator !=(QueryShape.Testing.SnapshotQuery? left, QueryShape.Testing.SnapshotQuery? right) -> bool
 static QueryShape.Testing.SnapshotQuery.operator ==(QueryShape.Testing.SnapshotQuery? left, QueryShape.Testing.SnapshotQuery? right) -> bool
 static QueryShape.Testing.SnapshotResult.operator !=(QueryShape.Testing.SnapshotResult? left, QueryShape.Testing.SnapshotResult? right) -> bool

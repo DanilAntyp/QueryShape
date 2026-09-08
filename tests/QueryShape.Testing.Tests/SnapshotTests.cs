@@ -278,6 +278,65 @@ public class SnapshotTests : IDisposable
         back.Queries[1].Shape.Should().Be("SELECT \"x\" FROM \"T\"");
     }
 
+    [Theory]
+    [InlineData("Microsoft.EntityFrameworkCore.Sqlite", "sqlite")]
+    [InlineData("Microsoft.EntityFrameworkCore.SqlServer", "sqlserver")]
+    [InlineData("Npgsql.EntityFrameworkCore.PostgreSQL", "postgresql")]
+    [InlineData("Pomelo.EntityFrameworkCore.MySql", "mysql")]
+    [InlineData("Oracle.EntityFrameworkCore", "oracle")]
+    [InlineData("Some.Vendor.Provider", "provider")]
+    public void Provider_short_names(string provider, string expected)
+        => SnapshotProvider.ShortName(provider).Should().Be(expected);
+
+    [Fact]
+    public async Task Caller_resolved_snapshots_get_the_provider_suffix_and_explicit_paths_do_not()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await RunQueriesAsync(scope);
+
+        SnapshotProvider.SuffixFor(scope).Should().Be("sqlite");
+        SnapshotProvider.WithSuffix("/x/__querysnapshots__/T.Test.json", "sqlite").Should().Be("/x/__querysnapshots__/T.Test.sqlite.json");
+
+        var explicitPath = PathFor("explicit");
+        (await scope.MatchSnapshotFileAsync(explicitPath, "t", Local())).Path.Should().Be(explicitPath, "explicit paths are used verbatim");
+
+        var options = Local();
+        options.DirectoryName = Path.Combine(_dir, "__querysnapshots__");
+        var result = await scope.MatchSnapshotAsync(name: "suffixed", options: options);
+        result.Path.Should().EndWith(Path.Combine("__querysnapshots__", "SnapshotTests.suffixed.sqlite.json"));
+        result.Outcome.Should().Be(SnapshotOutcome.Created);
+    }
+
+    [Fact]
+    public async Task A_snapshot_without_provider_suffix_is_still_honoured()
+    {
+        var options = Local();
+        options.DirectoryName = Path.Combine(_dir, "__querysnapshots__");
+        var logged = new List<string>();
+        options.Log = logged.Add;
+
+        using (var first = QueryShapeScope.Begin(options: _shop.Options))
+        {
+            await RunQueriesAsync(first);
+            var created = await first.MatchSnapshotAsync(name: "legacy", options: options);
+            // Simulate a snapshot from before provider suffixes.
+            var legacy = created.Path.Replace(".sqlite.json", ".json", StringComparison.Ordinal);
+            File.Move(created.Path, legacy);
+        }
+
+        using var second = QueryShapeScope.Begin(options: _shop.Options);
+        await RunQueriesAsync(second);
+        var result = await second.MatchSnapshotAsync(name: "legacy", options: options);
+
+        result.Outcome.Should().Be(SnapshotOutcome.Matched);
+        result.Path.Should().EndWith("SnapshotTests.legacy.json");
+        logged.Should().ContainSingle(l => l.Contains("rename it to SnapshotTests.legacy.sqlite.json"));
+
+        // Opting out of the suffix keeps the old naming.
+        options.ProviderInFileName = false;
+        (await second.MatchSnapshotAsync(name: "legacy", options: options)).Path.Should().EndWith("SnapshotTests.legacy.json");
+    }
+
     [Fact]
     public void Resolve_path_puts_snapshots_next_to_the_test_file()
     {

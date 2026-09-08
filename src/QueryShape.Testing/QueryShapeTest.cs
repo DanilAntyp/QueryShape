@@ -47,7 +47,7 @@ public sealed class QueryShapeTestScope : IDisposable
     /// <summary><c>TestClass.TestName</c>.</summary>
     public string TestName { get; }
 
-    /// <summary>Where the snapshot file lives, or <c>null</c> when no caller file path was available.</summary>
+    /// <summary>Where the snapshot file lives before the provider suffix is added, or <c>null</c> when no caller file path was available.</summary>
     public string? SnapshotPath { get; }
 
     /// <summary>Snapshot options in effect.</summary>
@@ -55,7 +55,7 @@ public sealed class QueryShapeTestScope : IDisposable
 
     /// <summary>Compares the scope against the test's snapshot (see <see cref="QueryShapeScopeSnapshotExtensions.MatchSnapshotAsync"/>).</summary>
     public Task<SnapshotResult> MatchSnapshotAsync()
-        => Scope.MatchSnapshotFileAsync(SnapshotPath ?? throw new InvalidOperationException("No snapshot path: begin the scope from a test method so [CallerFilePath] is available."), TestName, SnapshotOptions);
+        => SnapshotEngine.MatchAsync(Scope, SnapshotPath ?? throw new InvalidOperationException("No snapshot path: begin the scope from a test method so [CallerFilePath] is available."), TestName, SnapshotOptions, applyProviderSuffix: true);
 
     /// <summary>Throws when the scope exceeds <paramref name="budget"/>.</summary>
     public void AssertBudget(QueryBudget budget) => Scope.AssertBudget(budget, TestName);

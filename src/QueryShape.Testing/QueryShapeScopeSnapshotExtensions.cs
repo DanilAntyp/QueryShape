@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace QueryShape.Testing;
 
-/// <summary><c>await scope.MatchSnapshotAsync();</c> — compare the queries this scope captured against <c>__querysnapshots__/{TestClass}.{TestName}.json</c>.</summary>
+/// <summary><c>await scope.MatchSnapshotAsync();</c> — compare the queries this scope captured against <c>__querysnapshots__/{TestClass}.{TestName}.{provider}.json</c>.</summary>
 public static class QueryShapeScopeSnapshotExtensions
 {
     /// <summary>
     /// Compares the scope against its snapshot. Missing snapshot: written and the test passes (fails in CI mode). Mismatch: throws
     /// <see cref="QuerySnapshotMismatchException"/> with a readable diff. Test class is the caller's file name, test name the caller's member name;
-    /// pass <paramref name="name"/> to override the test name.
+    /// pass <paramref name="name"/> to override the test name. The provider goes into the file name (see <see cref="SnapshotOptions.ProviderInFileName"/>).
     /// </summary>
     public static Task<SnapshotResult> MatchSnapshotAsync(
         this QueryShapeScope scope,
@@ -17,7 +17,7 @@ public static class QueryShapeScopeSnapshotExtensions
         SnapshotOptions? options = null,
         [CallerFilePath] string callerFilePath = "",
         [CallerMemberName] string callerMemberName = "")
-        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default);
+        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default, applyProviderSuffix: true);
 
     /// <summary>Synchronous variant of <see cref="MatchSnapshotAsync"/>.</summary>
     public static SnapshotResult MatchSnapshot(
@@ -26,12 +26,12 @@ public static class QueryShapeScopeSnapshotExtensions
         SnapshotOptions? options = null,
         [CallerFilePath] string callerFilePath = "",
         [CallerMemberName] string callerMemberName = "")
-        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default)
+        => SnapshotEngine.MatchAsync(scope, ResolvePath(callerFilePath, name ?? callerMemberName, options), $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{name ?? callerMemberName}", options ?? SnapshotOptions.Default, applyProviderSuffix: true)
             .GetAwaiter().GetResult();
 
-    /// <summary>Compares against an explicit snapshot file path (for adapters and tools).</summary>
+    /// <summary>Compares against an explicit snapshot file path, used verbatim (for adapters and tools).</summary>
     public static Task<SnapshotResult> MatchSnapshotFileAsync(this QueryShapeScope scope, string snapshotPath, string testName, SnapshotOptions? options = null)
-        => SnapshotEngine.MatchAsync(scope, snapshotPath, testName, options ?? SnapshotOptions.Default);
+        => SnapshotEngine.MatchAsync(scope, snapshotPath, testName, options ?? SnapshotOptions.Default, applyProviderSuffix: false);
 
     /// <summary>The snapshot path for a test source file and test name.</summary>
     public static string ResolvePath(string callerFilePath, string testName, SnapshotOptions? options = null)
@@ -47,12 +47,24 @@ public static class QueryShapeScopeSnapshotExtensions
 
 internal static class SnapshotEngine
 {
-    public static async Task<SnapshotResult> MatchAsync(QueryShapeScope scope, string snapshotPath, string testName, SnapshotOptions options)
+    public static async Task<SnapshotResult> MatchAsync(QueryShapeScope scope, string basePath, string testName, SnapshotOptions options, bool applyProviderSuffix)
     {
         ArgumentNullException.ThrowIfNull(scope);
 
         var diagnoses = scope.Analyze();
         var actual = QuerySnapshot.FromScope(scope, diagnoses);
+
+        var snapshotPath = basePath;
+        if (applyProviderSuffix && options.ProviderInFileName && SnapshotProvider.SuffixFor(scope) is { } suffix)
+        {
+            snapshotPath = SnapshotProvider.WithSuffix(basePath, suffix);
+            if (!File.Exists(snapshotPath) && File.Exists(basePath) && !options.ShouldUpdate())
+            {
+                // A snapshot from before provider suffixes: keep honouring it, say so once.
+                Emit(scope, options, $"QueryShape: {testName} uses the provider-less snapshot {basePath}; rename it to {Path.GetFileName(snapshotPath)} (or run with {SnapshotOptions.UpdateEnvironmentVariable}=1) to switch to per-provider snapshots");
+                snapshotPath = basePath;
+            }
+        }
 
         if (options.ShouldUpdate())
         {

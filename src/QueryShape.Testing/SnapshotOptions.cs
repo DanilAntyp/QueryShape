@@ -18,6 +18,13 @@ public sealed class SnapshotOptions
     /// <summary>Directory (relative to the test source file) that holds snapshot files. Default <c>__querysnapshots__</c>.</summary>
     public string DirectoryName { get; set; } = "__querysnapshots__";
 
+    /// <summary>
+    /// Put the database provider in the file name (<c>OrderServiceTests.GetOrders.sqlite.json</c>), so a suite that runs on SQLite locally
+    /// and SQL Server in CI keeps one snapshot per provider instead of failing on provider SQL differences. Default on.
+    /// An existing snapshot without the suffix is still read (and reported) until it is updated.
+    /// </summary>
+    public bool ProviderInFileName { get; set; } = true;
+
     /// <summary>Force update (<c>true</c>) or forbid it (<c>false</c>). <c>null</c> reads <c>QUERYSHAPE_UPDATE_SNAPSHOTS</c>.</summary>
     public bool? UpdateSnapshots { get; set; }
 

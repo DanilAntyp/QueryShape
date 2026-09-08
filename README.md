@@ -34,14 +34,14 @@ public async Task GetOrders_query_shape()
 {
     using var scope = QueryShapeScope.Begin();
     await _sut.GetOrdersAsync(customerId: 42);
-    await scope.MatchSnapshotAsync();     // __querysnapshots__/OrderServiceTests.GetOrders_query_shape.json
+    await scope.MatchSnapshotAsync();     // __querysnapshots__/OrderServiceTests.GetOrders_query_shape.sqlite.json
 }
 
 [Fact, QueryBudget(MaxQueries = 2, MaxDurationMs = 200, FailOn = Severity.Error)]   // QueryShape.Testing.Xunit
 public async Task GetOrders_stays_within_budget() { ... }
 ```
 
-First run writes the snapshot and passes (in CI, `CI=true`, a missing snapshot fails). Later runs compare the **multiset of query fingerprints**, never timings or parameter values. Update with `QUERYSHAPE_UPDATE_SNAPSHOTS=1`.
+First run writes the snapshot and passes (in CI, `CI=true`, a missing snapshot fails). Later runs compare the **multiset of query fingerprints**, never timings or parameter values. Update with `QUERYSHAPE_UPDATE_SNAPSHOTS=1`. The provider is part of the file name, so a suite that runs on SQLite locally and SQL Server in CI keeps one snapshot per provider instead of failing on SQL dialect differences.
 
 When someone introduces an N+1, the test fails like this:
 
