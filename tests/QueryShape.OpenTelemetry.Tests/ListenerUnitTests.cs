@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -42,6 +44,108 @@ public sealed class ListenerUnitTests : IDisposable
             dbSpan.GetTagItem("queryshape.shape").Should().Be("SELECT COUNT(*) FROM \"Products\" AS \"t0\"");
             dbSpan.GetTagItem("queryshape.tags").Should().Be("lookup");
             dbSpan.Events.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
+    public async Task Provider_span_stopped_before_the_executed_interceptor_still_gets_the_tags_and_no_duplicate_event()
+    {
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = s => s.Name == "test-ef",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+        using var source = new ActivitySource("test-ef");
+
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        using var request = source.StartActivity("request", ActivityKind.Server);
+        await using var ctx = _shop.CreateContext();
+        using var instrumentation = new EfCoreInstrumentationSimulator(source, ctx);
+
+        await ctx.Products.TagWith("lookup").CountAsync();
+
+        var dbSpan = instrumentation.Spans.Should().ContainSingle().Subject;
+        dbSpan.IsStopped.Should().BeTrue("the instrumentation stops its span on EF Core's CommandExecuted event, before QueryShape's Executed interceptor runs");
+        dbSpan.GetTagItem("queryshape.fingerprint").Should().Be(scope.Commands.Single().Fingerprint);
+        dbSpan.GetTagItem("queryshape.source").Should().Be("Linq");
+        dbSpan.GetTagItem("queryshape.shape").Should().Be("SELECT COUNT(*) FROM \"Products\" AS \"t0\"");
+        dbSpan.GetTagItem("queryshape.tags").Should().Be("lookup");
+        ((string)dbSpan.GetTagItem("queryshape.callsite")!).Should().Contain("ListenerUnitTests.cs:");
+        request!.Events.Should().BeEmpty("the command is on its own span; it must not be duplicated as a queryshape.query event on the request span");
+        scope.Commands.Single().CallSiteOrigin.Should().Be(CallSiteOrigin.StackWalk, "the call site resolved at Executing is reused, not walked twice");
+    }
+
+    /// <summary>
+    /// Does what OpenTelemetry.Instrumentation.EntityFrameworkCore does: one Client span per command, started on EF Core's CommandExecuting
+    /// diagnostic event and stopped on CommandExecuted, which EF Core raises before it calls the Executed interceptor.
+    /// </summary>
+    private sealed class EfCoreInstrumentationSimulator : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object?>>, IDisposable
+    {
+        private readonly ActivitySource _source;
+        private readonly DbContext _only;
+        private readonly List<IDisposable> _subscriptions = [];
+        private readonly ConcurrentDictionary<Guid, Activity> _open = new();
+
+        public EfCoreInstrumentationSimulator(ActivitySource source, DbContext only)
+        {
+            _source = source;
+            _only = only;
+            _subscriptions.Add(DiagnosticListener.AllListeners.Subscribe(this));
+        }
+
+        public List<Activity> Spans { get; } = [];
+
+        void IObserver<DiagnosticListener>.OnNext(DiagnosticListener value)
+        {
+            if (value.Name == "Microsoft.EntityFrameworkCore")
+            {
+                _subscriptions.Add(value.Subscribe(this));
+            }
+        }
+
+        void IObserver<KeyValuePair<string, object?>>.OnNext(KeyValuePair<string, object?> value)
+        {
+            if (value.Key == RelationalEventId.CommandExecuting.Name && value.Value is CommandEventData starting && ReferenceEquals(starting.Context, _only))
+            {
+                var span = _source.StartActivity("db.command", ActivityKind.Client);
+                if (span is null)
+                {
+                    return;
+                }
+
+                span.SetTag("db.system", "sqlite");
+                _open[starting.CommandId] = span;
+                Spans.Add(span);
+            }
+            else if (value.Key == RelationalEventId.CommandExecuted.Name && value.Value is CommandExecutedEventData executed && _open.TryRemove(executed.CommandId, out var span))
+            {
+                span.Stop();
+            }
+        }
+
+        void IObserver<DiagnosticListener>.OnCompleted()
+        {
+        }
+
+        void IObserver<DiagnosticListener>.OnError(Exception error)
+        {
+        }
+
+        void IObserver<KeyValuePair<string, object?>>.OnCompleted()
+        {
+        }
+
+        void IObserver<KeyValuePair<string, object?>>.OnError(Exception error)
+        {
+        }
+
+        public void Dispose()
+        {
+            foreach (var s in _subscriptions)
+            {
+                s.Dispose();
+            }
         }
     }
 

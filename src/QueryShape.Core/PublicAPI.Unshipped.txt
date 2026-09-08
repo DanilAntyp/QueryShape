@@ -26,10 +26,14 @@ QueryShape.Capture.QueryShapeInterceptor.CommandFailed(System.Data.Common.DbComm
 QueryShape.Capture.QueryShapeInterceptor.CommandFailedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandErrorEventData! eventData, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 QueryShape.Capture.QueryShapeInterceptor.NonQueryExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, int result) -> int
 QueryShape.Capture.QueryShapeInterceptor.NonQueryExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, int result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>>
 QueryShape.Capture.QueryShapeInterceptor.OptionsFor(Microsoft.EntityFrameworkCore.DbContext! context) -> QueryShape.QueryShapeOptions!
 QueryShape.Capture.QueryShapeInterceptor.QueryCompilationStarting(System.Linq.Expressions.Expression! queryExpression, Microsoft.EntityFrameworkCore.Diagnostics.QueryExpressionEventData! eventData) -> System.Linq.Expressions.Expression!
 QueryShape.Capture.QueryShapeInterceptor.ReaderExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result) -> System.Data.Common.DbDataReader!
 QueryShape.Capture.QueryShapeInterceptor.ReaderExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader!>
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!>
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!>>
 QueryShape.Capture.QueryShapeInterceptor.RecentUnscopedCommands.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>!
 QueryShape.Capture.QueryShapeInterceptor.SaveChangesFailed(Microsoft.EntityFrameworkCore.Diagnostics.DbContextErrorEventData! eventData) -> void
 QueryShape.Capture.QueryShapeInterceptor.SaveChangesFailedAsync(Microsoft.EntityFrameworkCore.Diagnostics.DbContextErrorEventData! eventData, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
@@ -37,6 +41,8 @@ QueryShape.Capture.QueryShapeInterceptor.SavedChanges(Microsoft.EntityFrameworkC
 QueryShape.Capture.QueryShapeInterceptor.SavedChangesAsync(Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesCompletedEventData! eventData, int result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
 QueryShape.Capture.QueryShapeInterceptor.ScalarExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, object? result) -> object?
 QueryShape.Capture.QueryShapeInterceptor.ScalarExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, object? result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>>
 QueryShape.CapturedCommand
 QueryShape.CapturedCommand.CallSite.get -> QueryShape.CallSite?
 QueryShape.CapturedCommand.CallSite.init -> void
@@ -118,6 +124,27 @@ QueryShape.ClientEvaluatedCall.Method.get -> string!
 QueryShape.ClientEvaluatedCall.Method.init -> void
 QueryShape.ClientEvaluatedCall.Operator.get -> string!
 QueryShape.ClientEvaluatedCall.Operator.init -> void
+QueryShape.CommandStart
+QueryShape.CommandStart.<Clone>$() -> QueryShape.CommandStart!
+QueryShape.CommandStart.CallSite.get -> QueryShape.CallSite?
+QueryShape.CommandStart.CallSite.init -> void
+QueryShape.CommandStart.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
+QueryShape.CommandStart.CallSiteOrigin.init -> void
+QueryShape.CommandStart.CommandId.get -> System.Guid
+QueryShape.CommandStart.CommandId.init -> void
+QueryShape.CommandStart.CommandStart(System.Guid CommandId, string! Fingerprint, string! Shape, QueryShape.QuerySource Source, System.Collections.Generic.IReadOnlyList<string!>! Tags, QueryShape.CallSite? CallSite, QueryShape.CallSiteOrigin CallSiteOrigin, System.DateTimeOffset StartTime) -> void
+QueryShape.CommandStart.Deconstruct(out System.Guid CommandId, out string! Fingerprint, out string! Shape, out QueryShape.QuerySource Source, out System.Collections.Generic.IReadOnlyList<string!>! Tags, out QueryShape.CallSite? CallSite, out QueryShape.CallSiteOrigin CallSiteOrigin, out System.DateTimeOffset StartTime) -> void
+QueryShape.CommandStart.Equals(QueryShape.CommandStart? other) -> bool
+QueryShape.CommandStart.Fingerprint.get -> string!
+QueryShape.CommandStart.Fingerprint.init -> void
+QueryShape.CommandStart.Shape.get -> string!
+QueryShape.CommandStart.Shape.init -> void
+QueryShape.CommandStart.Source.get -> QueryShape.QuerySource
+QueryShape.CommandStart.Source.init -> void
+QueryShape.CommandStart.StartTime.get -> System.DateTimeOffset
+QueryShape.CommandStart.StartTime.init -> void
+QueryShape.CommandStart.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.CommandStart.Tags.init -> void
 QueryShape.Diagnosis
 QueryShape.Diagnosis.<Clone>$() -> QueryShape.Diagnosis!
 QueryShape.Diagnosis.CallSite.get -> QueryShape.CallSite?
@@ -186,6 +213,7 @@ QueryShape.FixKind.Manual = 3 -> QueryShape.FixKind
 QueryShape.FixKind.SchemaChange = 2 -> QueryShape.FixKind
 QueryShape.IQueryShapeListener
 QueryShape.IQueryShapeListener.OnCommandCaptured(QueryShape.CapturedCommand! command, QueryShape.QueryShapeScope? scope) -> void
+QueryShape.IQueryShapeListener.OnCommandExecuting(QueryShape.CommandStart! start, QueryShape.QueryShapeScope? scope) -> void
 QueryShape.IQueryShapeListener.OnScopeCompleted(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses) -> void
 QueryShape.IRule
 QueryShape.IRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
@@ -544,6 +572,9 @@ override QueryShape.CapturedParameter.ToString() -> string!
 override QueryShape.ClientEvaluatedCall.Equals(object? obj) -> bool
 override QueryShape.ClientEvaluatedCall.GetHashCode() -> int
 override QueryShape.ClientEvaluatedCall.ToString() -> string!
+override QueryShape.CommandStart.Equals(object? obj) -> bool
+override QueryShape.CommandStart.GetHashCode() -> int
+override QueryShape.CommandStart.ToString() -> string!
 override QueryShape.Diagnosis.Equals(object? obj) -> bool
 override QueryShape.Diagnosis.GetHashCode() -> int
 override QueryShape.Diagnosis.ToString() -> string!
@@ -579,6 +610,8 @@ static QueryShape.CapturedParameter.operator !=(QueryShape.CapturedParameter? le
 static QueryShape.CapturedParameter.operator ==(QueryShape.CapturedParameter? left, QueryShape.CapturedParameter? right) -> bool
 static QueryShape.ClientEvaluatedCall.operator !=(QueryShape.ClientEvaluatedCall? left, QueryShape.ClientEvaluatedCall? right) -> bool
 static QueryShape.ClientEvaluatedCall.operator ==(QueryShape.ClientEvaluatedCall? left, QueryShape.ClientEvaluatedCall? right) -> bool
+static QueryShape.CommandStart.operator !=(QueryShape.CommandStart? left, QueryShape.CommandStart? right) -> bool
+static QueryShape.CommandStart.operator ==(QueryShape.CommandStart? left, QueryShape.CommandStart? right) -> bool
 static QueryShape.Diagnosis.operator !=(QueryShape.Diagnosis? left, QueryShape.Diagnosis? right) -> bool
 static QueryShape.Diagnosis.operator ==(QueryShape.Diagnosis? left, QueryShape.Diagnosis? right) -> bool
 static QueryShape.Evidence.operator !=(QueryShape.Evidence? left, QueryShape.Evidence? right) -> bool

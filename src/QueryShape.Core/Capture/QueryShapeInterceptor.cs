@@ -57,6 +57,56 @@ public sealed class QueryShapeInterceptor : IQueryExpressionInterceptor, IDbComm
     // ---- IDbCommandInterceptor ----
 
     /// <inheritdoc />
+    public InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+    {
+        Starting(command, eventData);
+        return result;
+    }
+
+    /// <inheritdoc />
+    public InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
+    {
+        Starting(command, eventData);
+        return result;
+    }
+
+    /// <inheritdoc />
+    public InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
+    {
+        Starting(command, eventData);
+        return result;
+    }
+
+    /// <inheritdoc />
+    public ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+    {
+        Starting(command, eventData);
+        return new ValueTask<InterceptionResult<DbDataReader>>(result);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<InterceptionResult<object>> ScalarExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<object> result, CancellationToken cancellationToken = default)
+    {
+        Starting(command, eventData);
+        return new ValueTask<InterceptionResult<object>>(result);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    {
+        Starting(command, eventData);
+        return new ValueTask<InterceptionResult<int>>(result);
+    }
+
+    private void Starting(DbCommand command, CommandEventData eventData)
+        => _capturer.Starting(
+            _capturer.OptionsFor(eventData.Context),
+            command,
+            CommandCapturer.MapSource(eventData.CommandSource),
+            eventData.CommandId,
+            eventData.StartTime);
+
+    /// <inheritdoc />
     public DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
     {
         var captured = Capture(command, eventData, null, null);

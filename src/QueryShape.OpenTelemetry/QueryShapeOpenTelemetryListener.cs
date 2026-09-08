@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
@@ -72,6 +73,8 @@ public sealed class QueryShapeOpenTelemetryListener : IQueryShapeListener
     private static readonly Histogram<double> s_duration = s_meter.CreateHistogram<double>("queryshape.query.duration", unit: "ms", description: "Command duration as reported by EF Core.");
 
     private readonly QueryShapeOpenTelemetryOptions _options;
+    private readonly ConcurrentDictionary<Guid, byte> _taggedAtStart = new();
+    private int _taggedAtStartCount;
 
     /// <summary>Creates the listener.</summary>
     public QueryShapeOpenTelemetryListener(QueryShapeOpenTelemetryOptions? options = null)
@@ -84,6 +87,45 @@ public sealed class QueryShapeOpenTelemetryListener : IQueryShapeListener
 
     /// <summary>The meter. Add it to your meter provider: <c>.AddMeter("QueryShape")</c>.</summary>
     public static Meter Meter => s_meter;
+
+    /// <summary>
+    /// Marks the database provider's span while it is still current. EF Core stops instrumentation spans (its <c>CommandExecuted</c> event) before
+    /// the <c>Executed</c> interceptor runs, so this is the only reliable moment to tag them; see ADR-0007.
+    /// </summary>
+    public void OnCommandExecuting(CommandStart start, QueryShapeScope? scope)
+    {
+        ArgumentNullException.ThrowIfNull(start);
+
+        var activity = Activity.Current;
+        if (activity is null || !IsDatabaseSpan(activity))
+        {
+            return; // a request/parent span gets one queryshape.query event per command once the command has finished
+        }
+
+        activity.SetTag(Attributes.Fingerprint, start.Fingerprint);
+        activity.SetTag(Attributes.Source, start.Source.ToString());
+        if (activity.IsAllDataRequested)
+        {
+            activity.SetTag(Attributes.Shape, Truncate(start.Shape));
+            if (start.CallSite is not null && start.CallSiteOrigin != CallSiteOrigin.Cached)
+            {
+                activity.SetTag(Attributes.CallSite, start.CallSite.ToString());
+            }
+
+            if (start.Tags.Count > 0)
+            {
+                activity.SetTag(Attributes.Tags, string.Join(",", start.Tags));
+            }
+        }
+
+        if (Interlocked.Increment(ref _taggedAtStartCount) > 10_000)
+        {
+            _taggedAtStart.Clear();
+            Interlocked.Exchange(ref _taggedAtStartCount, 0);
+        }
+
+        _taggedAtStart[start.CommandId] = 0;
+    }
 
     /// <inheritdoc />
     public void OnCommandCaptured(CapturedCommand command, QueryShapeScope? scope)
@@ -103,6 +145,12 @@ public sealed class QueryShapeOpenTelemetryListener : IQueryShapeListener
             }
 
             s_duration.Record(command.Duration.TotalMilliseconds, sourceTag);
+        }
+
+        if (_taggedAtStart.TryRemove(command.CommandId, out _))
+        {
+            Interlocked.Decrement(ref _taggedAtStartCount);
+            return; // the provider's span carries the tags already (set while it was current); no duplicate event on whatever span is current now
         }
 
         var activity = Activity.Current;

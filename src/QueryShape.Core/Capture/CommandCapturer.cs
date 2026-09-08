@@ -24,6 +24,8 @@ internal sealed class CommandCapturer
     private readonly ConcurrentDictionary<string, NormalizedSql> _normalized = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, NormalizedSql> _normalizedRaw = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Guid, CapturedCommand> _openReaders = new();
+    private readonly ConcurrentDictionary<Guid, CommandStart> _pendingStarts = new();
+    private int _pendingStartCount;
     private readonly ConcurrentDictionary<string, int> _sampleCounts = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, CallSite> _sampledCallSites = new(StringComparer.Ordinal);
     private int _unscopedSequence;
@@ -131,6 +133,60 @@ internal sealed class CommandCapturer
         get { lock (_gate) { return _unscoped.ToArray(); } }
     }
 
+    /// <summary>
+    /// Right before a command executes: when listeners are registered, resolve what is already known (shape, tags, call site) and tell them,
+    /// so they can mark the provider's span while it is current. The work is reused by <see cref="Capture"/>; nothing runs without listeners.
+    /// </summary>
+    public void Starting(QueryShapeOptions options, DbCommand command, QuerySource source, Guid commandId, DateTimeOffset startTime)
+    {
+        if (!options.Enabled)
+        {
+            return;
+        }
+
+        try
+        {
+            var scope = QueryShapeScope.Current;
+            if (options.Listeners.Count == 0 && (scope?.Options.Listeners.Count ?? 0) == 0)
+            {
+                return;
+            }
+
+            var normalized = Normalize(command.CommandText ?? string.Empty, maskLiterals: source == QuerySource.Raw);
+            var (callSite, origin) = ResolveCallSite(options, scope, normalized.Tags, normalized.Fingerprint);
+            var start = new CommandStart(commandId, normalized.Fingerprint, normalized.Shape, source, normalized.Tags, callSite, origin, startTime);
+
+            if (Interlocked.Increment(ref _pendingStartCount) > 10_000)
+            {
+                _pendingStarts.Clear(); // commands that never reported back; keep memory bounded
+                Interlocked.Exchange(ref _pendingStartCount, 0);
+            }
+
+            _pendingStarts[commandId] = start;
+
+            foreach (var listener in ListenersFor(options, scope))
+            {
+                try
+                {
+                    listener.OnCommandExecuting(start, scope);
+                }
+                catch (Exception ex)
+                {
+                    Log.Swallowed(options, "listener.OnCommandExecuting", ex);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Swallowed(options, "command starting", ex);
+        }
+    }
+
+    private static IEnumerable<IQueryShapeListener> ListenersFor(QueryShapeOptions options, QueryShapeScope? scope)
+        => scope?.Options.Listeners.Count > 0 && !ReferenceEquals(scope.Options, options)
+            ? options.Listeners.Concat(scope.Options.Listeners).Distinct()
+            : options.Listeners;
+
     /// <summary>Captures one command. Returns the captured command, or <c>null</c> when capture failed internally.</summary>
     public CapturedCommand? Capture(
         QueryShapeOptions options,
@@ -171,7 +227,18 @@ internal sealed class CommandCapturer
             // Tags: the expression tree has them exactly; the SQL comment block is the fallback (EF Core joins tags into one block).
             var tags = query is { Tags.Count: > 0 } ? query.Tags : normalized.Tags;
 
-            var (callSite, callSiteOrigin) = ResolveCallSite(options, scope, tags, normalized.Fingerprint);
+            // The Executing side may have resolved the call site already (and consumed the sampling slot): reuse it rather than walking twice.
+            CallSite? callSite;
+            CallSiteOrigin callSiteOrigin;
+            if (_pendingStarts.TryRemove(commandId, out var start))
+            {
+                Interlocked.Decrement(ref _pendingStartCount);
+                (callSite, callSiteOrigin) = (start.CallSite, start.CallSiteOrigin);
+            }
+            else
+            {
+                (callSite, callSiteOrigin) = ResolveCallSite(options, scope, tags, normalized.Fingerprint);
+            }
 
             var parameters = CaptureParameters(command, options.IncludeParameterValues, raw ? command.CommandText : null, out var parameterHash, out var maxCollectionCount);
             maxCollectionCount ??= InlineListCount(normalized.Shape);
@@ -226,10 +293,7 @@ internal sealed class CommandCapturer
                 _openReaders[commandId] = captured;
             }
 
-            var listeners = scope?.Options.Listeners.Count > 0 && !ReferenceEquals(scope.Options, options)
-                ? options.Listeners.Concat(scope.Options.Listeners).Distinct()
-                : options.Listeners;
-            foreach (var listener in listeners)
+            foreach (var listener in ListenersFor(options, scope))
             {
                 try
                 {
