@@ -18,6 +18,9 @@ public sealed class QueryShapeOptions
     /// <summary>A query returning more rows than this is unbounded (QS004). Default 1000.</summary>
     public int UnboundedRowThreshold { get; set; } = 1000;
 
+    /// <summary>QS004 reports a query with no filter and no limit at Info instead of Warning when it returned fewer rows than this: small lookup tables are loaded whole on purpose. Default 20.</summary>
+    public int UnboundedMinimumRows { get; set; } = 20;
+
     /// <summary><c>Contains</c> over a collection with more elements than this is flagged (QS007). Default 500.</summary>
     public int ContainsCollectionThreshold { get; set; } = 500;
 

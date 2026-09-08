@@ -165,8 +165,9 @@ public class CaptureTests : IDisposable
         using var scope = QueryShapeScope.Begin(options: _shop.Options);
         await using var ctx = _shop.CreateContext();
 
-        await ctx.Products.ToListAsync();
-        await ctx.Products.AsNoTracking().ToListAsync();
+        // A filter private to this test keeps the compiled-query cache cold: both variants compile here, in this order.
+        await ctx.Products.Where(p => p.Sku != "variants").ToListAsync();
+        await ctx.Products.Where(p => p.Sku != "variants").AsNoTracking().ToListAsync();
 
         scope.Commands.Should().HaveCount(2);
         scope.Commands[0].Fingerprint.Should().Be(scope.Commands[1].Fingerprint, "AsNoTracking does not change SQL");

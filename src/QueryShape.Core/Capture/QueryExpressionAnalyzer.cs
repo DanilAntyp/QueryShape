@@ -37,6 +37,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
     private readonly Stack<Expression> _lambdaBodies = new();
     private readonly HashSet<ParameterExpression> _entityLambdaParameters = [];
     private readonly HashSet<string> _parameterNames = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _includedTypes = new(StringComparer.Ordinal);
 
     private IEntityType? _root;
     private bool _isFromSql;
@@ -91,7 +92,8 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
         var returnsEntities = resultEntity is not null;
 
         var defaultTracking = context?.ChangeTracker.QueryTrackingBehavior ?? QueryTrackingBehavior.TrackAll;
-        var isTracking = returnsEntities && (_trackingOverride ?? defaultTracking == QueryTrackingBehavior.TrackAll);
+        var hasKey = resultEntity?.FindPrimaryKey() is not null; // keyless entity types (views, HasNoKey) are never tracked
+        var isTracking = returnsEntities && hasKey && (_trackingOverride ?? defaultTracking == QueryTrackingBehavior.TrackAll);
 
         var splitting = _splittingOverride ?? GetDefaultSplitting(context);
 
@@ -121,6 +123,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             Operators = _operatorSequence.ToArray(),
             SplittingBehavior = splitting,
             CollectionIncludes = collectionIncludes,
+            IncludedEntityTypes = _includedTypes.OrderBy(t => t, StringComparer.Ordinal).ToArray(),
             Tags = _tags.ToArray(),
             KeyFilters = keyFilters,
             ClientEvaluatedCalls = _clientCalls.ToArray(),
@@ -394,6 +397,15 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
                 _includePaths.Add(fullPath);
             }
 
+            if (lambda.Parameters.Count > 0 && _model?.FindEntityType(lambda.Parameters[0].Type) is { } owner)
+            {
+                var target = owner.FindNavigation(memberName)?.TargetEntityType ?? owner.FindSkipNavigation(memberName)?.TargetEntityType;
+                if (target is not null)
+                {
+                    _includedTypes.Add(target.ClrType.FullName ?? target.Name);
+                }
+            }
+
             _includePathByNode[node] = fullPath;
         }
     }
@@ -429,6 +441,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
                 }
 
                 current = nav.TargetEntityType;
+                _includedTypes.Add(current.ClrType.FullName ?? current.Name);
                 continue;
             }
 
@@ -437,6 +450,7 @@ internal sealed class QueryExpressionAnalyzer : ExpressionVisitor
             {
                 _includePaths.Add(string.Join('.', soFar));
                 current = skip.TargetEntityType;
+                _includedTypes.Add(current.ClrType.FullName ?? current.Name);
                 continue;
             }
 

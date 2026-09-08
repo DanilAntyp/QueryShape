@@ -59,7 +59,8 @@ internal static class Synthetic
         bool hasOrdering = false,
         bool hasProjection = false,
         bool hasGrouping = false,
-        IReadOnlyList<string>? operators = null)
+        IReadOnlyList<string>? operators = null,
+        IReadOnlyList<string>? includedTypes = null)
         => new()
         {
             Expression = expression,
@@ -80,5 +81,6 @@ internal static class Synthetic
             KeyFilters = keyFilters ?? [],
             ClientEvaluatedCalls = clientCalls ?? [],
             CollectionIncludes = collectionIncludes ?? [],
+            IncludedEntityTypes = includedTypes ?? [],
         };
 }

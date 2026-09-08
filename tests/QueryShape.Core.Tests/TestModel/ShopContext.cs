@@ -38,6 +38,13 @@ public sealed class Product
     public decimal Price { get; set; }
 }
 
+/// <summary>A keyless view over customers: EF Core never tracks keyless entity types.</summary>
+public sealed class CustomerSummary
+{
+    public string Name { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+}
+
 public sealed class ShopContext(DbContextOptions<ShopContext> options) : DbContext(options)
 {
     public DbSet<Customer> Customers => Set<Customer>();
@@ -50,6 +57,7 @@ public sealed class ShopContext(DbContextOptions<ShopContext> options) : DbConte
         modelBuilder.Entity<Customer>().HasMany(c => c.Orders).WithOne(o => o.Customer).HasForeignKey(o => o.CustomerId);
         modelBuilder.Entity<Order>().HasMany(o => o.Lines).WithOne(l => l.Order).HasForeignKey(l => l.OrderId);
         modelBuilder.Entity<OrderLine>().HasOne(l => l.Product).WithMany().HasForeignKey(l => l.ProductId);
+        modelBuilder.Entity<CustomerSummary>().HasNoKey().ToSqlQuery("SELECT \"Name\", \"Country\" FROM \"Customers\"");
     }
 }
 

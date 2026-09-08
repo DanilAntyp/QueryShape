@@ -22,17 +22,23 @@ public sealed class UnboundedResultSetRule : IRule
     {
         ArgumentNullException.ThrowIfNull(scope);
         var threshold = scope.Options.UnboundedRowThreshold;
+        var minimumRows = scope.Options.UnboundedMinimumRows;
         var reported = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var c in RuleHelpers.ReadQueries(scope).OrderBy(c => c.Sequence))
         {
             var q = c.Query;
-            var unfiltered = q is not null && !q.IsFromSql && !q.HasFilter && !q.HasLimit;
+            // No filter and no limit loads the whole table; a GroupBy returns groups, not table rows.
+            var unfiltered = q is not null && !q.IsFromSql && !q.HasFilter && !q.HasLimit && !q.HasGrouping;
             var tooManyRows = c.RowsReturned is { } rows && rows > threshold;
             if (!unfiltered && !tooManyRows)
             {
                 continue;
             }
+
+            // A tiny unfiltered result is a lookup table loaded on purpose until the data says otherwise: the finding stays, at Info, so it does not fail a gate.
+            var small = unfiltered && !tooManyRows && c.RowsReturned is { } known && known < minimumRows;
+            var severity = small ? Severity.Info : DefaultSeverity;
 
             var key = q?.ExpressionHash ?? c.Fingerprint;
             if (!reported.Add(key))
@@ -54,7 +60,8 @@ public sealed class UnboundedResultSetRule : IRule
                     $"EF Core then materializes each row into a {root}{(q!.IsTracking ? " and registers it in the change tracker, which keeps a snapshot of every property for change detection" : string.Empty)}. " +
                     $"That work is linear in the table size, so a query that is fine with today's {rowsText} becomes the slowest thing in the request as data accumulates, " +
                     "and a large table can exhaust memory outright." +
-                    (q.CollectionIncludes.Count > 0 ? $" The Include of {string.Join(", ", q.CollectionIncludes)} multiplies the rows transferred." : string.Empty);
+                    (q.CollectionIncludes.Count > 0 ? $" The Include of {string.Join(", ", q.CollectionIncludes)} multiplies the rows transferred." : string.Empty) +
+                    (small ? $" Today's result is below {RuleHelpers.N(minimumRows)} rows (UnboundedMinimumRows), the size of a lookup table, so this is reported at Info level; it is still unbounded and grows with the table." : string.Empty);
             }
             else
             {
@@ -85,7 +92,7 @@ public sealed class UnboundedResultSetRule : IRule
 
             yield return new Diagnosis(
                 RuleId,
-                DefaultSeverity,
+                severity,
                 title,
                 explanation,
                 c.CallSite,
@@ -99,6 +106,7 @@ public sealed class UnboundedResultSetRule : IRule
                     Details: RuleHelpers.Details(
                         ("hasFilter", (q?.HasFilter ?? false).ToString()),
                         ("hasLimit", (q?.HasLimit ?? false).ToString()),
+                        ("minimumRows", minimumRows.ToString(CultureInfo.InvariantCulture)),
                         ("threshold", threshold.ToString(CultureInfo.InvariantCulture)))),
                 fix);
         }

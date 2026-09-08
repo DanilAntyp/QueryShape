@@ -149,9 +149,9 @@ Each rule is a class implementing `IRule` with `Analyze(Scope) -> IEnumerable<Di
 | QS001 | N+1 query | Same shape executed ≥ `NPlusOneThreshold` (default 5) times in one scope with varying parameters | Error |
 | QS002 | Cartesian explosion | Single query with ≥2 collection `Include`s (or JOINs producing row multiplication) and rows returned ≫ distinct root entities | Error |
 | QS003 | Client-side evaluation | Expression tree contains nodes EF Core could not translate (detect via `QueryCompilationStarting` + provider warnings), or `AsEnumerable()`/`ToList()` before `Where`/`Select`/`OrderBy` | Error |
-| QS004 | Unbounded result set | Query with no `Take`/`First`/`Single`/`Any`/`Count` and no `Where`, or returned rows > `UnboundedRowThreshold` (default 1000) | Warning |
+| QS004 | Unbounded result set | Query with no `Take`/`First`/`Single`/`Any`/`Count`, no `Where` and no `GroupBy` (Info while it returns < `UnboundedMinimumRows`, default 20, ADR-0009), or returned rows > `UnboundedRowThreshold` (default 1000) | Warning |
 | QS005 | Tracking on read-only query | Tracked query whose results are never modified in the scope (no `SaveChanges` touching those entity types) | Info |
-| QS006 | Missing split query candidate | Multiple collection `Include`s without `AsSplitQuery()` and row count suggests explosion | Warning |
+| QS006 | Missing split query candidate | Multiple collection `Include`s without `AsSplitQuery()`, rows ≥ `CartesianMinimumRows` and ≥ 2× the root entities (ADR-0009) | Warning |
 | QS007 | `Contains` on large collection | `Where(x => list.Contains(x.Id))` with `list.Count` > 500 → giant `IN (...)` or parameter limit risk | Warning |
 | QS008 | Duplicate identical query | Same shape **and** same parameters executed >1 time in a scope (should be cached/reused) | Warning |
 | QS009 | Query in loop over navigation | Heuristic on call site: same call site issuing queries repeatedly within one scope | Warning |

@@ -33,8 +33,8 @@ public class RuleIntegrationTests : IDisposable
         n1.SuggestedFix.UnifiedDiff.Should().Contain("+        var customers = await ctx.Customers.Include(c => c.Orders).ToListAsync();");
         n1.Evidence.Rows.Should().Be(30);
 
-        // The unfiltered customers query is also unbounded (known, expected).
-        diagnoses.Should().Contain(d => d.RuleId == "QS004" && d.Title.StartsWith("Unbounded query: loads every Customer row (10 rows)"));
+        // The unfiltered customers query returned 10 rows: lookup-table-sized (below UnboundedMinimumRows), so QS004 is an Info, not a Warning.
+        diagnoses.Should().Contain(d => d.RuleId == "QS004" && d.Severity == Severity.Info && d.Title.StartsWith("Unbounded query: loads every Customer row (10 rows)"));
         diagnoses.Should().NotContain(d => d.RuleId == "QS008");
     }
 
@@ -81,6 +81,25 @@ public class RuleIntegrationTests : IDisposable
         d.Title.Should().StartWith("Unbounded query: loads every Order row (60 rows)");
         d.Explanation.Should().Contain("The Include of Lines multiplies the rows transferred.");
         d.SuggestedFix!.Summary.Should().Be("Filter the Order query (.Where) or page it (.OrderBy(o => o.Id).Take(n))");
+    }
+
+    [Fact]
+    public async Task Unfiltered_lookup_table_is_info_and_group_by_aggregate_is_not_unbounded()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Products.AsNoTracking().ToListAsync();                                                       // 5 rows: a lookup table
+        await ctx.Orders.GroupBy(o => o.CustomerId).Select(g => new { g.Key, Count = g.Count() }).ToListAsync(); // groups, not rows
+
+        scope.Commands[1].Query!.HasGrouping.Should().BeTrue();
+        var d = scope.Analyze().Should().ContainSingle(x => x.RuleId == "QS004").Subject;
+        d.Severity.Should().Be(Severity.Info, "5 rows is a lookup table until the data says otherwise");
+        d.Title.Should().StartWith("Unbounded query: loads every Product row (5 rows)");
+
+        using var strict = QueryShapeScope.Begin(options: new QueryShapeOptions { UnboundedMinimumRows = 5 });
+        await ctx.Products.AsNoTracking().ToListAsync();
+        strict.Analyze().Should().ContainSingle(x => x.RuleId == "QS004").Which.Severity.Should().Be(Severity.Warning);
     }
 
     [Fact]
@@ -148,7 +167,7 @@ public class RuleIntegrationTests : IDisposable
         text.Should().Contain("\n  data 10 queries, ");
         text.Should().Contain("\n  sql  SELECT \"t0\".\"Id\", \"t0\".\"CustomerId\"").And.Contain("WHERE \"t0\".\"CustomerId\" = @p0\n");
         text.Should().Contain("\n  docs https://");
-        text.Should().Contain("QS004 WARNING  Unbounded query: loads every Customer row (10 rows)");
+        text.Should().Contain("QS004 INFO  Unbounded query: loads every Customer row (10 rows)");
     }
 
     private static string FormatTotal(decimal total) => total.ToString("C");
@@ -194,6 +213,36 @@ public class RemainingRuleIntegrationTests : IDisposable
         products[0].Price += 1;
         await ctx.SaveChangesAsync();
         scope.Analyze().Should().NotContain(d => d.RuleId == "QS005");
+    }
+
+    [Fact]
+    public async Task Keyless_entity_query_is_never_reported_as_tracked()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Set<CustomerSummary>().ToListAsync();
+
+        var cmd = scope.Commands.Single();
+        cmd.Query!.ReturnsEntities.Should().BeTrue();
+        cmd.Query.IsTracking.Should().BeFalse("keyless entity types are never tracked by EF Core");
+        cmd.IsTracking.Should().BeFalse();
+        scope.Analyze().Should().NotContain(d => d.RuleId == "QS005");
+    }
+
+    [Fact]
+    public async Task Modifying_an_included_entity_counts_as_using_the_root_query_tracking()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var customers = await ctx.Customers.Include(c => c.Orders).ToListAsync();
+        scope.Commands.Single().Query!.IncludedEntityTypes.Should().Equal(typeof(Order).FullName!);
+
+        customers[0].Orders[0].Total += 1;
+        await ctx.SaveChangesAsync();
+
+        scope.Analyze().Should().NotContain(d => d.RuleId == "QS005", "the Orders loaded through the Include were modified and saved");
     }
 
     [Fact]

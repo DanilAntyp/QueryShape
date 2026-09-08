@@ -90,7 +90,7 @@ public class RemainingBadEndpointTests(SampleAppFixture app)
     [RuntimeMatchedTheory]
     [InlineData("/bad/cartesian-explosion", "QS002", "Cartesian explosion: 1,200 rows for 40 Customer entities (Orders, Orders.Lines, Addresses)")]
     [InlineData("/bad/tracking-read-only", "QS005", "Tracked read-only query: 10 Product entities loaded with change tracking but never modified")]
-    [InlineData("/bad/missing-split-query", "QS006", "Split query candidate: 2 collection includes (Orders, Addresses) in one query, 40 rows for 10 Customer entities")]
+    [InlineData("/bad/missing-split-query", "QS006", "Split query candidate: 2 collection includes (Orders, Addresses) in one query, 60 rows for 15 Customer entities")]
     [InlineData("/bad/contains-large-collection", "QS007", "Contains over 600 values on the OrderLine query (threshold 500)")]
     [InlineData("/bad/query-in-loop", "QS009", "Queries in a loop: Summaries.ForOrderAsync issued 16 queries of 2 shapes (Customer, OrderLine) in one scope")]
     [InlineData("/bad/raw-sql-concat", "QS010", "Raw SQL built from values: 3 text variants of \"SELECT * FROM Customers WHERE Name = ?\"")]

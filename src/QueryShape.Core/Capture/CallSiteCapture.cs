@@ -61,7 +61,7 @@ internal static partial class CallSiteCapture
             if (m.Success && int.TryParse(m.Groups["line"].Value, out var line))
             {
                 var path = m.Groups["path"].Value;
-                return new CallSite(path, line, Path.GetFileNameWithoutExtension(path));
+                return new CallSite(path, line, string.Empty); // the tag carries file and line only; the member stays unknown
             }
         }
 

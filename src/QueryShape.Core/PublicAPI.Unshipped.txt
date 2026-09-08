@@ -7,6 +7,7 @@ QueryShape.CallSite.Equals(QueryShape.CallSite? other) -> bool
 QueryShape.CallSite.FileName.get -> string?
 QueryShape.CallSite.FilePath.get -> string?
 QueryShape.CallSite.FilePath.init -> void
+QueryShape.CallSite.Label.get -> string!
 QueryShape.CallSite.Line.get -> int
 QueryShape.CallSite.Line.init -> void
 QueryShape.CallSite.Member.get -> string!
@@ -243,6 +244,8 @@ QueryShape.QueryInfo.HasParameterCollectionContains.get -> bool
 QueryShape.QueryInfo.HasParameterCollectionContains.init -> void
 QueryShape.QueryInfo.HasProjection.get -> bool
 QueryShape.QueryInfo.HasProjection.init -> void
+QueryShape.QueryInfo.IncludedEntityTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.IncludedEntityTypes.init -> void
 QueryShape.QueryInfo.IsBulkOperation.get -> bool
 QueryShape.QueryInfo.IsBulkOperation.init -> void
 QueryShape.QueryInfo.IsFromSql.get -> bool
@@ -305,6 +308,8 @@ QueryShape.QueryShapeOptions.QueryShapeOptions() -> void
 QueryShape.QueryShapeOptions.ReadSourceFiles.get -> bool?
 QueryShape.QueryShapeOptions.ReadSourceFiles.set -> void
 QueryShape.QueryShapeOptions.Rules.get -> System.Collections.Generic.IList<QueryShape.IRule!>!
+QueryShape.QueryShapeOptions.UnboundedMinimumRows.get -> int
+QueryShape.QueryShapeOptions.UnboundedMinimumRows.set -> void
 QueryShape.QueryShapeOptions.UnboundedRowThreshold.get -> int
 QueryShape.QueryShapeOptions.UnboundedRowThreshold.set -> void
 QueryShape.QueryShapeOptions.UnscopedBufferSize.get -> int

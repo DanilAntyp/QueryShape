@@ -6,7 +6,7 @@ namespace QueryShape.Testing.Tests;
 
 public class SnapshotTests : IDisposable
 {
-    private readonly SqliteShop _shop = new();
+    private readonly SqliteShop _shop = new(configure: o => o.UnboundedMinimumRows = 1);   // the five-product lookup table must stay a Warning here
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "queryshape-tests", Guid.NewGuid().ToString("N"));
 
     public void Dispose()
@@ -131,7 +131,7 @@ public class SnapshotTests : IDisposable
     public async Task New_diagnosis_at_or_above_fail_on_fails_and_known_diagnostics_do_not()
     {
         var path = PathFor("diag");
-        var options = new QueryShapeOptions { CaptureCallSites = true, NPlusOneThreshold = 3 };
+        var options = new QueryShapeOptions { CaptureCallSites = true, NPlusOneThreshold = 3, UnboundedMinimumRows = 1 };   // the five-product table must stay a Warning here
 
         // Snapshot taken with an unbounded query: QS004 Warning is recorded as known debt.
         using (var first = QueryShapeScope.Begin(options: options))

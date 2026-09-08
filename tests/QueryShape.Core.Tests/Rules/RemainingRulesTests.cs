@@ -101,6 +101,34 @@ public class TrackingOnReadOnlyQueryRuleTests
     }
 }
 
+public class UnboundedResultSetThresholdTests
+{
+    [Fact]
+    public void Unfiltered_query_is_info_below_the_minimum_rows_and_warning_otherwise()
+    {
+        using var scope = Synthetic.Scope(o => o.UnboundedMinimumRows = 20);
+        scope.Add("SELECT * FROM Products", query: Synthetic.Query("DbSet<Product>()", "Product"), rows: 5);      // lookup table: Info
+        scope.Add("SELECT * FROM Orders", query: Synthetic.Query("DbSet<Order>()", "Order"), rows: 20);          // at the minimum: Warning
+        scope.Add("SELECT * FROM Lines", query: Synthetic.Query("DbSet<OrderLine>()", "OrderLine"));             // rows unknown: Warning
+
+        var diagnoses = new UnboundedResultSetRule().Analyze(scope).ToList();
+        diagnoses.Should().HaveCount(3);
+        var small = diagnoses.Single(d => d.Title.StartsWith("Unbounded query: loads every Product row (5 rows)"));
+        small.Severity.Should().Be(Severity.Info);
+        small.Explanation.Should().Contain("reported at Info level");
+        diagnoses.Single(d => d.Title.StartsWith("Unbounded query: loads every Order row (20 rows)")).Severity.Should().Be(Severity.Warning);
+        diagnoses.Single(d => d.Title.StartsWith("Unbounded query: loads every OrderLine row (an unknown number of rows)")).Severity.Should().Be(Severity.Warning);
+    }
+
+    [Fact]
+    public void Group_by_is_not_unbounded_below_the_row_threshold()
+    {
+        using var scope = Synthetic.Scope(o => o.UnboundedRowThreshold = 1000);
+        scope.Add("SELECT CustomerId, COUNT(*) FROM Orders GROUP BY CustomerId", query: Synthetic.Query("DbSet<Order>()\n    .GroupBy(o => o.CustomerId)", "Order", hasGrouping: true, operators: ["GroupBy", "Select"]), rows: 500);
+        new UnboundedResultSetRule().Analyze(scope).Should().BeEmpty();
+    }
+}
+
 public class ContainsLargeCollectionRuleTests
 {
     [Fact]
@@ -163,6 +191,39 @@ public class QueryInLoopRuleTests
         d.Explanation.Should().Contain("(lines 12, 13)").And.Contain("repeated at least 3 times");
         d.Fingerprints.Should().HaveCount(2);
         d.SuggestedFix!.Summary.Should().StartWith("Load the data Summaries.ForOrderAsync needs for all items before the loop");
+    }
+
+    [Fact]
+    public void Tag_call_sites_without_a_member_group_by_line_not_by_file()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+        var lookup = new CallSite("/a/Repo.cs", 10, string.Empty);   // from TagWithCallSite: file and line only
+        var count = new CallSite("/a/Repo.cs", 40, string.Empty);
+        for (var i = 0; i < 3; i++)
+        {
+            scope.Add("SELECT * FROM A WHERE Id = @p", parameterHash: "a" + i, callSite: lookup);
+            scope.Add("SELECT COUNT(*) FROM B WHERE X = @p", parameterHash: "b" + i, callSite: count);
+        }
+
+        new QueryInLoopRule().Analyze(scope).Should().BeEmpty("two unrelated tagged queries in one file are not one loop body");
+        lookup.ToString().Should().Be("Repo.cs:10");
+        lookup.Label.Should().Be("Repo.cs:10");
+    }
+
+    [Fact]
+    public void Shapes_that_are_n_plus_ones_themselves_are_named_in_the_explanation()
+    {
+        using var scope = Synthetic.Scope(o => o.NPlusOneThreshold = 2);
+        var site = new CallSite("/a/Summaries.cs", 12, "Summaries.ForOrderAsync");
+        for (var i = 0; i < 3; i++)
+        {
+            scope.Add("SELECT * FROM Customers WHERE Id = @p", parameterHash: "c" + i, query: Synthetic.Query("cust", "Customer", hasFilter: true, hasLimit: true), callSite: site);
+            scope.Add("SELECT COUNT(*) FROM OrderLines WHERE OrderId = @p", parameterHash: "o" + i, query: Synthetic.Query("lines", "OrderLine", hasFilter: true, hasLimit: true), callSite: site);
+        }
+
+        var d = new QueryInLoopRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Explanation.Should().Contain("The Customer and OrderLine shapes are also reported as QS001");
+        new NPlusOneRule().Analyze(scope).Should().HaveCount(2);
     }
 
     [Fact]

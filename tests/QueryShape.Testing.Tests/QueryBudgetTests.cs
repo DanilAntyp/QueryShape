@@ -8,7 +8,7 @@ namespace QueryShape.Testing.Tests;
 
 public class QueryBudgetTests : IDisposable
 {
-    private readonly SqliteShop _shop = new();
+    private readonly SqliteShop _shop = new(configure: o => o.UnboundedMinimumRows = 1);   // the five-product lookup table must stay a Warning here
 
     public void Dispose() => _shop.Dispose();
 

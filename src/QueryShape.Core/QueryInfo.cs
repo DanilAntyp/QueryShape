@@ -80,6 +80,9 @@ public sealed class QueryInfo
     /// <summary>Distinct collection navigations loaded via <c>Include</c>/<c>ThenInclude</c>.</summary>
     public IReadOnlyList<string> CollectionIncludes { get; init; } = [];
 
+    /// <summary>CLR names of every entity type loaded through <c>Include</c>/<c>ThenInclude</c> (reference and collection navigations), sorted.</summary>
+    public IReadOnlyList<string> IncludedEntityTypes { get; init; } = [];
+
     /// <summary>Tags added with <c>TagWith</c>.</summary>
     public IReadOnlyList<string> Tags { get; init; } = [];
 

@@ -33,13 +33,15 @@ public sealed class MissingSplitQueryRule : IRule
             }
 
             var roots = c.DistinctRootsEstimate;
-            var explosive = roots is { } r && r > 0 && rows >= scope.Options.CartesianMinimumRows && rows >= r * factor;
+            var minRows = scope.Options.CartesianMinimumRows;
+            var explosive = roots is { } r && r > 0 && rows >= minRows && rows >= r * factor;
             var efWarned = q.Warnings.Contains("MultipleCollectionInclude", StringComparer.Ordinal);
-            var multiplied = rows > (roots ?? 1);
-            var structural = efWarned && rows >= scope.Options.CartesianMinimumRows; // EF Core flagged it and the result is not tiny, even if we could not see the multiplication
+            // Real multiplication: a result that is not tiny and at least doubles the root count. Every root with two children multiplies a little; that alone is not a finding.
+            var multiplied = roots is { } n && n > 0 && rows >= minRows && rows >= 2 * n;
+            var structural = roots is null && efWarned && rows >= minRows; // roots unknown: EF Core flagged the pattern and the result is not tiny
             if (explosive || (!multiplied && !structural) || !reported.Add(q.ExpressionHash))
             {
-                continue; // QS002 owns the explosive case; no multiplication (and no EF warning on a real result set) means nothing to split.
+                continue; // QS002 owns the explosive case; no visible multiplication means nothing to split yet.
             }
 
             var root = q.RootEntityShortName ?? "root";
