@@ -102,6 +102,8 @@ verdict: improved
 
 `--patch-from-diagnosis` uses the patch QueryShape itself proposed in the baseline run; when that patch is only part of the fix (for example the loop still has to read the navigation), verify says so and refuses to print a misleading table. `--format json|markdown` gives CI something to post; see [docs/ci.md](docs/ci.md) for the GitHub Action that comments the report or the verify table on every pull request. Other commands: `queryshape report` (print every diagnosis of a test run), `queryshape snapshots update`, and `queryshape explain [--llm --show-prompt]`. The `--llm` path is off by default, needs `ANTHROPIC_API_KEY`, sends only the diagnosis JSON and the enclosing source method (printed verbatim with `--show-prompt`), and labels its output as generated; detection never depends on it.
 
+`dotnet queryshape fix --llm --test <name>` closes the loop: the model gets the diagnosis and the enclosing method, answers with a unified diff (or `CANNOT`), and that diff goes through the same worktree-and-measure flow as `verify`. The model is never trusted: a patch that does not apply, touches files outside the repository, or fails to improve the numbers is rejected, and the output is labeled as model-generated with the table as the proof.
+
 Tests report to the CLI through `QUERYSHAPE_REPORT_DIR`: when that variable is set, every completed scope writes a JSON summary (shapes, counts, timings, diagnoses; never parameter values).
 
 ## Packages

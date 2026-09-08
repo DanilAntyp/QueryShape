@@ -81,6 +81,27 @@ explain.SetAction((parse, ct) => new ExplainCommand
 }.ExecuteAsync(Console.Out, Console.Error, ct));
 root.Subcommands.Add(explain);
 
+// fix --llm
+var outPatchOption = new Option<string?>("--out") { Description = "Write the model's patch here (default: the temporary work directory)." };
+var fix = new Command("fix", "Ask a language model for a patch for the worst diagnosis of a test, then prove or reject it with verify. Requires --llm and ANTHROPIC_API_KEY.")
+{
+    projectOption, testOption, ruleOption, llmOption, modelOption, showPromptOption, outPatchOption, runsOption, allowDirtyOption, formatOption,
+};
+fix.SetAction((parse, ct) => new FixCommand
+{
+    Project = parse.GetValue(projectOption),
+    TestFilter = ToFilter(parse.GetValue(testOption)) ?? string.Empty,
+    RuleFilter = parse.GetValue(ruleOption),
+    UseLlm = parse.GetValue(llmOption),
+    Model = parse.GetValue(modelOption),
+    ShowPrompt = parse.GetValue(showPromptOption),
+    OutputPatch = parse.GetValue(outPatchOption),
+    Runs = parse.GetValue(runsOption),
+    AllowDirty = parse.GetValue(allowDirtyOption),
+    Format = parse.GetValue(formatOption) ?? "text",
+}.ExecuteAsync(Console.Out, Console.Error, ct));
+root.Subcommands.Add(fix);
+
 return await root.Parse(args).InvokeAsync();
 
 static string? ToFilter(string? test)

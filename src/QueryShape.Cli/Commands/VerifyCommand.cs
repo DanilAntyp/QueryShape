@@ -25,9 +25,15 @@ internal sealed class VerifyCommand
     /// <summary>text (default), json or markdown. Progress goes to stderr for json/markdown so stdout is the document.</summary>
     public string Format { get; init; } = "text";
 
+    /// <summary>
+    /// Alternative patch source used after the baseline run (the `fix` command's model call). Receives the baseline metrics, the working directory and
+    /// the repository root; returns the fix title and a patch path, or <c>null</c> when there is nothing to measure.
+    /// </summary>
+    public Func<RunMetrics, string, string, Task<(string FixTitle, string PatchPath)?>>? PatchProvider { get; init; }
+
     public async Task<int> ExecuteAsync(TextWriter out_, TextWriter err, CancellationToken ct)
     {
-        if (PatchPath is null && !PatchFromDiagnosis)
+        if (PatchPath is null && !PatchFromDiagnosis && PatchProvider is null)
         {
             err.WriteLine("verify: pass --patch <file.diff> or --patch-from-diagnosis.");
             return 2;
@@ -83,7 +89,17 @@ internal sealed class VerifyCommand
 
         string patchFile;
         string fixTitle;
-        if (PatchFromDiagnosis)
+        if (PatchProvider is not null)
+        {
+            var provided = await PatchProvider(before, work, repoRoot);
+            if (provided is null)
+            {
+                return 2;
+            }
+
+            (fixTitle, patchFile) = provided.Value;
+        }
+        else if (PatchFromDiagnosis)
         {
             var diffs = before.Diagnostics
                 .Where(d => d.UnifiedDiff is not null && (RuleFilter is null || string.Equals(d.RuleId, RuleFilter, StringComparison.OrdinalIgnoreCase)))
@@ -149,7 +165,8 @@ internal sealed class VerifyCommand
                 }
             }
 
-            var apply = await ProcessRunner.RunAsync("git", ["apply", "--whitespace=nowarn", patchFile], worktree);
+            // --recount: hunk line counts are recomputed from the patch body, so a hand- or model-written hunk header does not have to be exact.
+            var apply = await ProcessRunner.RunAsync("git", ["apply", "--recount", "--whitespace=nowarn", patchFile], worktree);
             if (!apply.Success)
             {
                 err.WriteLine("verify: the patch does not apply to a clean checkout of HEAD:");

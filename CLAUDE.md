@@ -231,6 +231,7 @@ When we can locate the exact source line (call site known + file readable), prod
 - Print exactly what is being sent (`--show-prompt`) so users can audit it.
 - LLM output is always labeled as such and never trusted for the *detection* — only for explanation/fix drafting.
 - Model/provider behind an interface; first implementation targets the Anthropic Messages API. Keep this thin.
+- `dotnet queryshape fix --llm` (added 2026-09-08, owner-approved item 7): the model proposes a unified diff for the worst diagnosis, `verify` proves or rejects it. The diff is validated (repo-relative existing files only), applied with `git apply --recount` in a worktree, never to the working copy.
 
 ### 7.3 Verification harness (`dotnet queryshape verify`)
 
