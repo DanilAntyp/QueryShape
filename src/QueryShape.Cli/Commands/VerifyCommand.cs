@@ -57,10 +57,11 @@ internal sealed class VerifyCommand
             return 2;
         }
 
-        var dirty = await ProcessRunner.GitAsync(repoRoot, "status", "--porcelain", "--untracked-files=no");
+        // Untracked (non-ignored) files count: a patch that needs one would build here and fail in the worktree.
+        var dirty = await ProcessRunner.GitAsync(repoRoot, "status", "--porcelain", "--untracked-files=all");
         if (dirty.Length > 0 && !AllowDirty)
         {
-            err.WriteLine("verify: the repository has uncommitted changes. Commit or stash them, or pass --allow-dirty to carry them into the worktree:");
+            err.WriteLine("verify: the repository has uncommitted changes or untracked files. Commit or stash them, or pass --allow-dirty to carry them into the worktree:");
             err.WriteLine(dirty);
             return 2;
         }
@@ -161,8 +162,10 @@ internal sealed class VerifyCommand
                 if (diff.StdOut.Length > 0)
                 {
                     await ProcessRunner.GitAsync(worktree, "apply", "--whitespace=nowarn", local);
-                    out_.WriteLine("  carried uncommitted changes into the worktree (--allow-dirty); untracked files are not included");
                 }
+
+                var untracked = await CopyUntrackedAsync(repoRoot, worktree);
+                out_.WriteLine($"  carried uncommitted changes into the worktree (--allow-dirty): {(diff.StdOut.Length > 0 ? "modified tracked files" : "no tracked changes")}, {untracked} untracked file(s)");
             }
 
             // --recount: hunk line counts are recomputed from the patch body, so a hand- or model-written hunk header does not have to be exact.
@@ -228,6 +231,28 @@ internal sealed class VerifyCommand
                 out_.WriteLine($"worktree kept at {worktree}");
             }
         }
+    }
+
+    /// <summary>Copies untracked, non-ignored files (git ls-files --others --exclude-standard) into the worktree so a patch that needs them builds there too.</summary>
+    private static async Task<int> CopyUntrackedAsync(string repoRoot, string worktree)
+    {
+        var listed = await ProcessRunner.GitAsync(repoRoot, "ls-files", "--others", "--exclude-standard", "-z");
+        var count = 0;
+        foreach (var relative in listed.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var source = Path.Combine(repoRoot, relative);
+            if (!File.Exists(source))
+            {
+                continue;
+            }
+
+            var target = Path.Combine(worktree, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(source, target, overwrite: true);
+            count++;
+        }
+
+        return count;
     }
 
     private static string Tail(string text, int lines)

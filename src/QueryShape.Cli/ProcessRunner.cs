@@ -64,8 +64,36 @@ internal static class ProcessRunner
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        await process.WaitForExitAsync(ct);
+
+        // Cancellation (Ctrl+C) must not leave a dotnet test / build tree running behind the CLI.
+        using var killOnCancel = ct.Register(static state => KillTree((Process)state!), process);
+        try
+        {
+            await process.WaitForExitAsync(ct);
+        }
+        catch (OperationCanceledException)
+        {
+            KillTree(process);
+            throw;
+        }
+
         return new ProcessResult(process.ExitCode, stdout.ToString(), stderr.ToString());
+    }
+
+    private static void KillTree(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(5000);
+            }
+        }
+        catch
+        {
+            // Already gone, or not ours to kill: nothing left to do.
+        }
     }
 
     public static async Task<string> GitAsync(string workingDirectory, params string[] args)

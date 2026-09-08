@@ -201,6 +201,24 @@ public class ExplainPromptTests
     }
 
     [Fact]
+    public async Task Cancelling_a_running_process_kills_its_tree()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return; // sleep(1) is the long-running child here; the kill path is the same on every OS
+        }
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+        var started = DateTime.UtcNow;
+        var act = () => ProcessRunner.RunAsync("sleep", ["31337"], Path.GetTempPath(), ct: cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        (DateTime.UtcNow - started).Should().BeLessThan(TimeSpan.FromSeconds(15), "the child is killed, not waited for");
+
+        var survivors = await ProcessRunner.RunAsync("pgrep", ["-f", "sleep 31337"], Path.GetTempPath());
+        survivors.StdOut.Trim().Should().BeEmpty("Ctrl+C must not leave the child running");
+    }
+
+    [Fact]
     public async Task Llm_is_disabled_without_the_api_key()
     {
         var dir = Path.Combine(Path.GetTempPath(), "qs-explain-" + Guid.NewGuid().ToString("N"));
