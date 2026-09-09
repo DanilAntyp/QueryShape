@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        application: [eShopOnWeb, CleanArchitecture]
+        application: [eShopOnWeb, CleanArchitecture, Jellyfin]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -32,6 +32,7 @@ jobs:
           case "$APPLICATION" in
             eShopOnWeb) upstream=https://github.com/dotnet-architecture/eShopOnWeb.git; revision=4da8212117e87d808d4bbc7da6286fd2147ce606 ;;
             CleanArchitecture) upstream=https://github.com/ardalis/CleanArchitecture.git; revision=fbdc0951879f5e8dca1bebc273d4b28cb2934469 ;;
+            Jellyfin) upstream=https://github.com/jellyfin/jellyfin.git; revision=cf09de60e4e5844ad181d7ef9019151c54969d44 ;;
           esac
           git init "$RUNNER_TEMP/$APPLICATION"
           git -C "$RUNNER_TEMP/$APPLICATION" remote add origin "$upstream"
@@ -42,8 +43,15 @@ jobs:
           APPLICATION: ${{ matrix.application }}
           EShopRoot: ${{ runner.temp }}/eShopOnWeb
           CleanArchitectureRoot: ${{ runner.temp }}/CleanArchitecture
+          JellyfinRoot: ${{ runner.temp }}/Jellyfin
           QUERYSHAPE_REPORT_DIR: ${{ github.workspace }}/artifacts/reports
-        run: dotnet test "scripts/real-world/$APPLICATION/$APPLICATION.Tests.csproj" --logger trx --results-directory artifacts/test-results
+        # Jellyfin must build in Release: its own analyzer project is referenced only in Debug and targets a
+        # newer Roslyn than the pinned SDK ships.
+        run: |
+          configuration=Debug
+          [ "$APPLICATION" = "Jellyfin" ] && configuration=Release
+          dotnet test "scripts/real-world/$APPLICATION/$APPLICATION.Tests.csproj" --configuration "$configuration" \
+            --logger trx --results-directory artifacts/test-results
       - name: Upload reports and test results
         if: always()
         uses: actions/upload-artifact@v4

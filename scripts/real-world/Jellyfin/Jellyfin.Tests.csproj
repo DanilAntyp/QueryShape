@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS8618;CA1707</NoWarn>
+    <JellyfinRoot Condition="'$(JellyfinRoot)' == ''">/private/tmp/queryshape-jellyfin-validation</JellyfinRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
+    <ProjectReference Include="$(JellyfinRoot)/Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
+    <ProjectReference Include="$(JellyfinRoot)/Emby.Server.Implementations/Emby.Server.Implementations.csproj" />
+    <ProjectReference Include="$(JellyfinRoot)/src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

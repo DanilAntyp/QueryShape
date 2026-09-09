@@ -111,7 +111,23 @@ A deliberately incorrect candidate dropped contributors without phone numbers. Q
 
 [Read the case study and machine-readable evidence →](docs/validation/cleanarchitecture.md) · [Reproduce the run →](scripts/real-world/CleanArchitecture/README.md)
 
-Both application trials used SQLite in memory. They establish results for those fixtures, not production speed or a repository-wide clean bill of health. [Full validation record and remaining gaps](docs/validation/README.md).
+### Jellyfin
+
+**7 harness tests passed** against the real `BaseItemRepository`, run locally on 2026-09-09; the hosted run for this application is still pending. Jellyfin is SQLite-native, so its mappings needed no adaptation.
+
+| Actual operation | What QueryShape recorded | Why it matters |
+|---|---|---|
+| `GetItems` with all fields, the poster-grid request | **QS006:** 5 collection includes, **180 rows for 20 items** | `PrepareItemQuery` pins item queries to `AsSingleQuery()`, so rows multiply per item. |
+| The same query at one image per type and four provider ids | **QS002:** **800 rows for the same 20 items**, 40 per item | The fan-out, not the page size, is what grows. |
+| `GetLatestItemList(movies)` | **QS006** at `LoadLatestByIds`: 108 rows for 12 items | The same include set is reached by a second path. |
+| Upstream's own random-sort `AsSplitQuery` branch, same fan-out | **360 rows across 7 commands**, no finding | Bounds the row cost of the alternative, using upstream code. |
+| `GetItemIdsList`, `GetGenres` | silent; **QS003 did not fire** on the `AsEnumerable()` deserialization boundaries | Deliberate client-side work was not reported as client-side evaluation. |
+
+This pattern is deliberate upstream: Jellyfin globally ignores EF Core's own `MultipleCollectionIncludeWarning`. What QueryShape adds is the measured multiplier and the call site per request, not a bug report — splitting these queries trades rows for round trips, which is an upstream judgement call.
+
+[Read the case study and scope reports →](docs/validation/jellyfin.md) · [Reproduce the run →](scripts/real-world/Jellyfin/README.md)
+
+All three application trials used SQLite in memory. They establish results for those fixtures, not production speed or a repository-wide clean bill of health. [Full validation record and remaining gaps](docs/validation/README.md).
 
 ## Use it in your tests
 
