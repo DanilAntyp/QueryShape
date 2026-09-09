@@ -5,7 +5,7 @@ Ran the original `BaseItemRepository`, `JellyfinDbContext` and entity mappings f
 Commit: `cf09de60e4e5844ad181d7ef9019151c54969d44`, EF Core 10.0.11, in-memory SQLite, .NET 10. The checkout
 remained unchanged.
 
-**All seven scenarios passed**, each run twice. Capture was complete in all 14 scopes.
+**All seven scenarios passed**, each run twice. Capture was complete in all 14 scopes. The same harness passed on the hosted Linux runner with the real .NET 10 runtime ([run 34411411094](https://github.com/DanilAntyp/QueryShape/actions/runs/34411411094)).
 
 | Scope | Upstream call | Commands | Rows | Finding |
 |---|---|---:|---:|---|

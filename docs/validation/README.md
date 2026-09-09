@@ -4,7 +4,7 @@ The current corpus covers three external application repositories, plus delibera
 
 To rerun both pinned external applications on Linux with native .NET 8 and .NET 10 runtimes, use the repository's **Real application validation** workflow (`workflow_dispatch`). Each application uploads scope reports and TRX results. The harness READMEs also provide local commands.
 
-[Hosted application run on 2026-09-08](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529): all 15 eShopOnWeb tests passed on native .NET 8 and both CleanArchitecture tests passed on .NET 10, against QueryShape commit `d32934e`. Both jobs uploaded their scope reports and TRX results.
+[Hosted application run on 2026-09-09](https://github.com/DanilAntyp/QueryShape/actions/runs/34411411094): all 15 eShopOnWeb tests passed on native .NET 8, and both CleanArchitecture tests and all 7 Jellyfin tests passed on .NET 10, against QueryShape commit `2804a86`. All three jobs uploaded their scope reports and TRX results. ([Earlier run without Jellyfin, 2026-09-08](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529).)
 
 | Corpus | What is exercised | Boundaries |
 |---|---|---|

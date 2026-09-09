@@ -39,5 +39,7 @@ Scenarios, each run twice so the second run sees EF's compiled-query cache warm:
 | `latest-movies` | `GetLatestItemList(CollectionType.movies)` | QS006 |
 | `genres` | `GetGenres` (by-name items plus counts) | silent |
 
+CI runs this harness through the **Real application validation** workflow (`workflow_dispatch`), which pins the revision above and uploads scope reports and TRX results.
+
 These tests cover repository queries against SQLite with synthetic data. They do not measure HTTP
 endpoints, real library sizes or distributions, provider execution plans, or latency.
