@@ -34,6 +34,9 @@ public class ScopeReportTests : IDisposable
         back.QueryCount.Should().Be(6);
         back.Queries.Should().HaveCount(2);
         back.Queries[0].Count.Should().Be(5);
+        // Rows and call site survive per shape, so a comparison can say which query moved, not just the totals.
+        back.Queries[0].RowsReturned.Should().Be(report.Queries[0].RowsReturned).And.NotBeNull();
+        back.Queries.Should().AllSatisfy(q => q.CallSite.Should().NotBeNullOrEmpty());
         back.Diagnostics.Should().Contain(d => d.RuleId == "QS001" && d.UnifiedDiff != null && d.FixSummary!.StartsWith("Add .Include(c => c.Orders)"));
 
         var dir = Path.Combine(Path.GetTempPath(), "qs-report-" + Guid.NewGuid().ToString("N"));
@@ -43,7 +46,9 @@ public class ScopeReportTests : IDisposable
             var metrics = RunMetrics.Load(dir);
             metrics.Scopes.Should().Be(1);
             metrics.Queries.Should().Be(6);
-            metrics.Fingerprints.Should().HaveCount(2);
+            metrics.Shapes.Should().HaveCount(2);
+            metrics.Shapes[back.Queries[0].Fingerprint].Count.Should().Be(5);
+            metrics.Shapes[back.Queries[0].Fingerprint].Rows.Should().Be(back.Queries[0].RowsReturned);
             metrics.RuleCounts["QS001"].Should().Be(1);
             File.Exists(path).Should().BeTrue();
         }
@@ -100,6 +105,52 @@ public class VerifyTableTests
         compact.Should().Contain("\nnew diagnostics - 0 ✓\n");
         result.Text.Should().Contain("after = median of 3 runs");
         result.Text.Should().EndWith("verdict: improved\n");
+    }
+
+    private static RunMetrics WithShapes(params (string Fingerprint, int Count, long Rows, string? CallSite)[] shapes)
+        => RunMetrics.Aggregate([new ScopeReport(1, "t", DateTimeOffset.UtcNow, 10, shapes.Sum(s => s.Count), 10, false,
+            shapes.Select(s => new ScopeReportQuery(s.Fingerprint, "SELECT ...", "Linq", s.Count, 1) { RowsReturned = s.Rows, CallSite = s.CallSite }).ToList(),
+            [])
+        { RowsReturned = shapes.Sum(s => s.Rows) }]);
+
+    [Fact]
+    public void Per_shape_rows_name_the_query_that_moved()
+    {
+        var before = WithShapes(("aaaaaaaaaaaa", 1, 800, "BaseItemRepository.cs:62 Repository.GetItems"), ("bbbbbbbbbbbb", 1, 40, null));
+        var after = WithShapes(("aaaaaaaaaaaa", 1, 360, "BaseItemRepository.cs:62 Repository.GetItems"), ("bbbbbbbbbbbb", 1, 300, null));
+
+        var result = VerifyTable.Render("Add .AsSplitQuery()", before, after, [after]);
+
+        result.Rows.Should().Contain(r => r.Label == "returned rows" && r.Before == "840" && r.After == "660");
+        // Both shapes changed; the one that moved most rows is reported first, with the call site the aggregate cannot show.
+        result.Shapes.Select(s => s.Fingerprint).Should().Equal("aaaaaaaaaaaa", "bbbbbbbbbbbb");
+        result.Shapes[0].Before.Should().Be("1x, 800 rows");
+        result.Shapes[0].After.Should().Be("1x, 360 rows");
+        result.Shapes[0].CallSite.Should().Be("BaseItemRepository.cs:62 Repository.GetItems");
+        result.Text.Should().Contain("by query shape").And.Contain("aaaaaaaaaaaa  1x, 800 rows → 1x, 360 rows  BaseItemRepository.cs:62 Repository.GetItems");
+        result.ToMarkdown().Should().Contain("| query shape | before | after | call site |").And.Contain("| `bbbbbbbbbbbb` | 1x, 40 rows | 1x, 300 rows |  |");
+        result.ToJson().Should().Contain("\"fingerprint\": \"aaaaaaaaaaaa\"").And.Contain("\"beforeRows\": 800");
+    }
+
+    [Fact]
+    public void A_shape_that_disappears_or_appears_is_listed_as_absent()
+    {
+        var before = WithShapes(("aaaaaaaaaaaa", 40, 40, null));
+        var after = WithShapes(("cccccccccccc", 1, 40, null));
+
+        var result = VerifyTable.Render("Add .Include(c => c.Orders)", before, after, [after]);
+
+        result.Shapes.Should().HaveCount(2);
+        result.Shapes.Should().ContainSingle(s => s.Fingerprint == "aaaaaaaaaaaa" && s.After == "absent" && s.Before == "40x, 40 rows");
+        result.Shapes.Should().ContainSingle(s => s.Fingerprint == "cccccccccccc" && s.Before == "absent");
+    }
+
+    [Fact]
+    public void Unchanged_shapes_are_not_listed()
+    {
+        var metrics = WithShapes(("aaaaaaaaaaaa", 2, 80, null));
+
+        VerifyTable.Render("no-op", metrics, metrics, [metrics]).Shapes.Should().BeEmpty();
     }
 
     [Fact]

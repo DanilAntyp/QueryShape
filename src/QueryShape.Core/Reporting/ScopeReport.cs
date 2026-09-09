@@ -9,7 +9,17 @@ namespace QueryShape.Reporting;
 /// <param name="Source">Query source.</param>
 /// <param name="Count">Executions in the scope.</param>
 /// <param name="DurationMs">Summed duration of those executions.</param>
-public sealed record ScopeReportQuery(string Fingerprint, string Shape, string Source, int Count, double DurationMs);
+public sealed record ScopeReportQuery(string Fingerprint, string Shape, string Source, int Count, double DurationMs)
+{
+    /// <summary>
+    /// Rows read through this shape's readers, summed over its executions in the scope. <c>null</c> when any execution did not report a row count
+    /// (a non-reader command, or an older capture), so that a partial sum is never compared as if it were complete.
+    /// </summary>
+    public long? RowsReturned { get; init; }
+
+    /// <summary>The call site of the first execution, rendered as <c>File.cs:42 Type.Member</c>; <c>null</c> when call-site capture was off or found nothing.</summary>
+    public string? CallSite { get; init; }
+}
 
 /// <summary>One diagnosis in a <see cref="ScopeReport"/>: everything a tool needs, no parameter values.</summary>
 public sealed record ScopeReportDiagnosis(
@@ -83,7 +93,11 @@ public sealed record ScopeReport(
         var commands = scope.Commands;
         var queries = commands
             .GroupBy(c => c.Fingerprint, StringComparer.Ordinal)
-            .Select(g => new ScopeReportQuery(g.Key, g.First().Shape, g.First().Source.ToString(), g.Count(), Math.Round(g.Sum(c => c.Duration.TotalMilliseconds), 3)))
+            .Select(g => new ScopeReportQuery(g.Key, g.First().Shape, g.First().Source.ToString(), g.Count(), Math.Round(g.Sum(c => c.Duration.TotalMilliseconds), 3))
+            {
+                RowsReturned = g.All(c => c.RowsReturned.HasValue) ? g.Sum(c => (long)c.RowsReturned!.Value) : null,
+                CallSite = g.Select(c => c.CallSite).FirstOrDefault(s => s is not null)?.ToString(),
+            })
             .OrderByDescending(q => q.Count)
             .ThenBy(q => q.Fingerprint, StringComparer.Ordinal)
             .ToArray();

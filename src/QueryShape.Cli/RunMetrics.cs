@@ -2,6 +2,12 @@ using QueryShape.Reporting;
 
 namespace QueryShape.Cli;
 
+/// <summary>What one query shape cost across a run: how often it ran, how many rows it read, and where it was issued from.</summary>
+/// <param name="Count">Executions across the run's scopes.</param>
+/// <param name="Rows">Rows read, summed; <c>null</c> when any occurrence did not report a count, so partial sums are never compared.</param>
+/// <param name="CallSite">First known call site of the shape.</param>
+internal sealed record ShapeMetrics(int Count, long? Rows, string? CallSite);
+
 /// <summary>Aggregated metrics of one test run, read from the scope reports it produced.</summary>
 internal sealed class RunMetrics
 {
@@ -12,7 +18,8 @@ internal sealed class RunMetrics
     public double DurationMs { get; init; }
     public long? RowsReturned { get; init; }
 
-    public IReadOnlyDictionary<string, int> Fingerprints { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
+    /// <summary>Per-shape counts, rows and call sites, keyed by fingerprint.</summary>
+    public IReadOnlyDictionary<string, ShapeMetrics> Shapes { get; init; } = new Dictionary<string, ShapeMetrics>(StringComparer.Ordinal);
 
     public IReadOnlyList<ScopeReportDiagnosis> Diagnostics { get; init; } = [];
 
@@ -40,10 +47,15 @@ internal sealed class RunMetrics
 
     public static RunMetrics Aggregate(IReadOnlyList<ScopeReport> reports)
     {
-        var fingerprints = new Dictionary<string, int>(StringComparer.Ordinal);
+        var shapes = new Dictionary<string, ShapeMetrics>(StringComparer.Ordinal);
         foreach (var q in reports.SelectMany(r => r.Queries))
         {
-            fingerprints[q.Fingerprint] = fingerprints.GetValueOrDefault(q.Fingerprint) + q.Count;
+            var seen = shapes.GetValueOrDefault(q.Fingerprint);
+            shapes[q.Fingerprint] = new ShapeMetrics(
+                (seen?.Count ?? 0) + q.Count,
+                // One unmeasured occurrence makes the whole sum unusable as a comparison.
+                seen is null ? q.RowsReturned : seen.Rows is { } known && q.RowsReturned is { } more ? known + more : null,
+                seen?.CallSite ?? q.CallSite);
         }
 
         return new RunMetrics
@@ -52,7 +64,7 @@ internal sealed class RunMetrics
             Queries = reports.Sum(r => r.QueryCount),
             DurationMs = reports.Sum(r => r.CommandDurationMs),
             RowsReturned = reports.All(r => r.RowsReturned.HasValue) ? reports.Sum(r => r.RowsReturned!.Value) : null,
-            Fingerprints = fingerprints,
+            Shapes = shapes,
             Diagnostics = reports.SelectMany(r => r.Diagnostics).Where(d => d.Disposition != "accepted").ToList(),
             Reports = reports,
         };
@@ -73,7 +85,7 @@ internal sealed class RunMetrics
                 Queries = mid.Queries,
                 DurationMs = (lower.DurationMs + mid.DurationMs) / 2,
                 RowsReturned = mid.RowsReturned,
-                Fingerprints = mid.Fingerprints,
+                Shapes = mid.Shapes,
                 Diagnostics = mid.Diagnostics,
                 Reports = mid.Reports,
             };

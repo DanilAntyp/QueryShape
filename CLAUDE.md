@@ -243,7 +243,7 @@ The outcome is bounded evidence for explicit contracts, not proof of application
 dotnet queryshape verify --test "OrderServiceTests.GetOrders_query_shape" --patch fix.diff
 ```
 
-1. Run the named test(s) with QueryShape capture → baseline metrics (query count, total duration, per-fingerprint counts, diagnostics).
+1. Run the named test(s) with QueryShape capture → baseline metrics (query count, total duration, per-fingerprint counts and returned rows, diagnostics).
 2. Apply the patch to a **clean git worktree** (never the user's working copy; refuse if the repo is dirty unless `--allow-dirty`).
 3. Rebuild and rerun the same tests → after metrics.
 4. Require passing tests and matching executed-test/scope coverage; compare explicit behavior observations on every patched run (ADR-0011). Print a before/after table and exit code: `0` if improved and these checks pass, `1` for a rejected change, `2` for an invalid/failed test run. `--performance-only` explicitly permits absent observations but never failing tests or changed observations.

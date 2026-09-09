@@ -456,6 +456,8 @@ QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.init -> void
 QueryShape.Reporting.ScopeReportQuery
 QueryShape.Reporting.ScopeReportQuery.<Clone>$() -> QueryShape.Reporting.ScopeReportQuery!
+QueryShape.Reporting.ScopeReportQuery.CallSite.get -> string?
+QueryShape.Reporting.ScopeReportQuery.CallSite.init -> void
 QueryShape.Reporting.ScopeReportQuery.Count.get -> int
 QueryShape.Reporting.ScopeReportQuery.Count.init -> void
 QueryShape.Reporting.ScopeReportQuery.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out int Count, out double DurationMs) -> void
@@ -464,6 +466,8 @@ QueryShape.Reporting.ScopeReportQuery.DurationMs.init -> void
 QueryShape.Reporting.ScopeReportQuery.Equals(QueryShape.Reporting.ScopeReportQuery? other) -> bool
 QueryShape.Reporting.ScopeReportQuery.Fingerprint.get -> string!
 QueryShape.Reporting.ScopeReportQuery.Fingerprint.init -> void
+QueryShape.Reporting.ScopeReportQuery.RowsReturned.get -> long?
+QueryShape.Reporting.ScopeReportQuery.RowsReturned.init -> void
 QueryShape.Reporting.ScopeReportQuery.ScopeReportQuery(string! Fingerprint, string! Shape, string! Source, int Count, double DurationMs) -> void
 QueryShape.Reporting.ScopeReportQuery.Shape.get -> string!
 QueryShape.Reporting.ScopeReportQuery.Shape.init -> void

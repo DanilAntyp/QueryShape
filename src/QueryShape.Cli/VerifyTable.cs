@@ -10,6 +10,9 @@ internal static class VerifyTable
     {
         public IReadOnlyList<Row> Rows { get; init; } = [];
 
+        /// <summary>Shapes whose execution count or row count moved. Empty when the same shapes ran the same number of times for the same rows.</summary>
+        public IReadOnlyList<ShapeRow> Shapes { get; init; } = [];
+
         public string FixTitle { get; init; } = string.Empty;
 
         public IReadOnlyList<string> Notes { get; init; } = [];
@@ -27,6 +30,16 @@ internal static class VerifyTable
             foreach (var r in Rows)
             {
                 sb.Append("| ").Append(r.Label).Append(" | ").Append(r.Before).Append(" | ").Append(r.After).Append(" | ").Append(r.Delta).Append(" |\n");
+            }
+
+            if (Shapes.Count > 0)
+            {
+                sb.Append('\n').Append("| query shape | before | after | call site |\n|---|---:|---:|---|\n");
+                foreach (var shape in Shapes)
+                {
+                    sb.Append("| `").Append(shape.Fingerprint).Append("` | ").Append(shape.Before).Append(" | ").Append(shape.After)
+                        .Append(" | ").Append(shape.CallSite ?? string.Empty).Append(" |\n");
+                }
             }
 
             if (Runs > 1)
@@ -52,12 +65,28 @@ internal static class VerifyTable
                 durationDeltaBelowNoise = BelowNoise,
                 runs = Runs,
                 rows = Rows.Select(r => new { r.Label, r.Before, r.After, r.Delta }),
+                shapes = Shapes.Select(s => new { s.Fingerprint, s.BeforeCount, s.AfterCount, s.BeforeRows, s.AfterRows, s.CallSite }),
                 notes = Notes,
                 outcomes = Outcomes,
             }, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web) { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
     }
 
     public sealed record Row(string Label, string Before, string After, string Delta);
+
+    /// <summary>One query shape whose executions or rows changed between the two runs.</summary>
+    public sealed record ShapeRow(string Fingerprint, int BeforeCount, int AfterCount, long? BeforeRows, long? AfterRows, string? CallSite)
+    {
+        /// <summary>Executions and rows before, e.g. <c>1x, 800 rows</c>; <c>absent</c> when the shape did not run.</summary>
+        public string Before => Describe(BeforeCount, BeforeRows);
+
+        /// <summary>Executions and rows after.</summary>
+        public string After => Describe(AfterCount, AfterRows);
+
+        private static string Describe(int count, long? rows)
+            => count == 0 ? "absent"
+                : rows is { } r ? string.Create(CultureInfo.InvariantCulture, $"{count}x, {r:N0} rows")
+                : string.Create(CultureInfo.InvariantCulture, $"{count}x, rows not measured");
+    }
 
     public static Result Render(string fixTitle, RunMetrics before, RunMetrics after, IReadOnlyList<RunMetrics> afterRuns, IReadOnlyList<string>? notes = null, VerificationPolicy? policy = null, double baselineSpread = 0)
     {
@@ -129,6 +158,24 @@ internal static class VerifyTable
             sb.Append(label.PadRight(labelWidth)).Append("  ").Append(b.PadLeft(6)).Append("  ").Append(a.PadLeft(8)).Append("  ").Append(d.PadLeft(8)).Append('\n');
         }
 
+        // Which shape moved: the aggregate rows above can net out a query that got cheaper against one that got dearer.
+        var shapeRows = ChangedShapes(before, after);
+        if (shapeRows.Count > 0)
+        {
+            sb.Append('\n').Append("by query shape").Append('\n');
+            var width = shapeRows.Max(r => r.Before.Length);
+            foreach (var shape in shapeRows)
+            {
+                sb.Append("  ").Append(shape.Fingerprint).Append("  ").Append(shape.Before.PadLeft(width)).Append(" → ").Append(shape.After);
+                if (shape.CallSite is { Length: > 0 } site)
+                {
+                    sb.Append("  ").Append(site);
+                }
+
+                sb.Append('\n');
+            }
+        }
+
         if (afterRuns.Count > 1)
         {
             sb.Append('\n').Append(CultureInfo.InvariantCulture, $"after = median of {afterRuns.Count} runs (spread {Ms(spread)} ms)");
@@ -157,6 +204,7 @@ internal static class VerifyTable
         return new Result(sb.ToString(), improved, newErrors, belowNoise)
         {
             Rows = rows.Select(r => new Row(r.Label, r.Before, r.After, r.Delta)).ToList(),
+            Shapes = shapeRows,
             FixTitle = fixTitle,
             Notes = allNotes,
             Runs = afterRuns.Count,
@@ -169,6 +217,28 @@ internal static class VerifyTable
                 ["budgets"] = policyBlockers.Count == 0 ? "satisfied" : "violated",
             },
         };
+    }
+
+    /// <summary>Shapes whose execution count or measured rows differ between the runs, worst row change first.</summary>
+    internal static IReadOnlyList<ShapeRow> ChangedShapes(RunMetrics before, RunMetrics after)
+    {
+        var rows = new List<ShapeRow>();
+        foreach (var fingerprint in before.Shapes.Keys.Union(after.Shapes.Keys, StringComparer.Ordinal))
+        {
+            var b = before.Shapes.GetValueOrDefault(fingerprint);
+            var a = after.Shapes.GetValueOrDefault(fingerprint);
+            if ((b?.Count ?? 0) == (a?.Count ?? 0) && b?.Rows == a?.Rows)
+            {
+                continue;
+            }
+
+            rows.Add(new ShapeRow(fingerprint, b?.Count ?? 0, a?.Count ?? 0, b?.Rows, a?.Rows, a?.CallSite ?? b?.CallSite));
+        }
+
+        return rows
+            .OrderByDescending(r => Math.Abs((r.BeforeRows ?? 0) - (r.AfterRows ?? 0)))
+            .ThenBy(r => r.Fingerprint, StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <summary>Error-level (ruleId) occurrences in <paramref name="after"/> beyond those in <paramref name="before"/>.</summary>

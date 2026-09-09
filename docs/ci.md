@@ -63,6 +63,8 @@ Use a reviewed action commit SHA and an exact published `version` input matching
 
 The action supports `command: scale`, `reduce`, and `doctor` as well as `report` and `verify`. Set `test` and `sizes` for scaling; set `out` and `max-attempts` for reduction. Upload generated reproducers with your normal artifact step after reviewing their data sensitivity. JSON summaries remain available when an application assertion fails; exit 2 still fails the gate. Contract assertions yield exit 1 rather than hiding the measurements as setup failures.
 
+Below the before/after table, `verify` lists every query shape whose execution count or returned rows changed, with the call site of the shape — the aggregate row can net a query that got cheaper against one that got dearer, and the per-shape list names which moved. Shapes that ran the same number of times for the same rows are not listed. The same list appears in the Markdown summary and under `shapes` in the JSON form; a shape whose rows were not measured in some execution reports `rows not measured` rather than a partial sum.
+
 Verification accepts `max-commands`, `max-rows`, and `max-duration-ms` inputs. The `allow-new-warning` action input or CLI `--allow-new-warning <rule>` acknowledges changed warning identities when reviewing a query rewrite. New Error findings cannot be waived this way. Default budgets also apply per named scope for commands and returned rows, preventing total-count cancellation between operations.
 
 ## Expiring finding acceptances

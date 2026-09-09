@@ -2,10 +2,10 @@
   {
     "version": 1,
     "scope": "genres/run-1",
-    "startedAt": "2026-09-09T22:02:29.0858+00:00",
-    "elapsedMs": 328.106,
+    "startedAt": "2026-09-09T22:41:04.470561+00:00",
+    "elapsedMs": 313.863,
     "queryCount": 4,
-    "commandDurationMs": 0.699,
+    "commandDurationMs": 0.634,
     "overflowed": false,
     "queries": [
       {
@@ -13,28 +13,36 @@
         "shape": "SELECT \"t1\".\"CleanValue\" AS \"CleanName\", \"t3\".\"Id\" AS \"SeriesId\" FROM \"ItemValuesMap\" AS \"t0\" INNER JOIN \"ItemValues\" AS \"t1\" ON \"t0\".\"ItemValueId\" = \"t1\".\"ItemValueId\" INNER JOIN ( SELECT \"t2\".\"Id\" FROM \"BaseItems\" AS \"t2\" WHERE \"t2\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t2\".\"PrimaryVersionId\" IS NULL AND (\"t2\".\"OwnerId\" IS NULL OR \"t2\".\"ExtraType\" IS NOT NULL) AND \"t2\".\"Type\" = @p0 ) AS \"t3\" ON \"t0\".\"ItemId\" = \"t3\".\"Id\" WHERE \"t1\".\"Type\" = @p1 AND \"t1\".\"CleanValue\" IN ( SELECT \"t4\".\"value\" FROM json_each(@p2) AS \"t4\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.111
+        "durationMs": 0.105,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.ByName.cs:385 BaseItemRepository.BuildEpisodeCountsByCleanName"
       },
       {
         "fingerprint": "780ba2103f99",
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t3\".\"AudioStreamIndex\", \"t3\".\"IsFavorite\", \"t3\".\"LastPlayedDate\", \"t3\".\"Likes\", \"t3\".\"PlayCount\", \"t3\".\"PlaybackPositionTicks\", \"t3\".\"Played\", \"t3\".\"Rating\", \"t3\".\"RetentionDate\", \"t3\".\"SubtitleStreamIndex\", \"t4\".\"Id\", \"t4\".\"Blurhash\", \"t4\".\"DateModified\", \"t4\".\"Height\", \"t4\".\"ImageType\", \"t4\".\"ItemId\", \"t4\".\"Path\", \"t4\".\"Width\", \"t5\".\"ParentId\", \"t5\".\"SortOrder\", \"t5\".\"ChildId\", \"t5\".\"ChildType\" FROM \"BaseItems\" AS \"t0\" LEFT JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t2\" ON \"t0\".\"Id\" = \"t2\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t3\" ON \"t0\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t4\" ON \"t0\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t5\" ON \"t0\".\"Id\" = \"t5\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t6\".\"value\" FROM json_each(@p0) AS \"t6\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Id\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t4\".\"Id\", \"t5\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.27
+        "durationMs": 0.243,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:251 BaseItemRepository.GetItemValues"
       },
       {
         "fingerprint": "8a53c7d4cca5",
         "shape": "SELECT MIN(\"t0\".\"Id\") FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Type\" = @p0 AND EXISTS ( SELECT 1 FROM \"ItemValuesMap\" AS \"t1\" INNER JOIN \"ItemValues\" AS \"t2\" ON \"t1\".\"ItemValueId\" = \"t2\".\"ItemValueId\" INNER JOIN ( SELECT \"t3\".\"Id\" FROM \"BaseItems\" AS \"t3\" WHERE \"t3\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t3\".\"Type\" = @p1 AND \"t3\".\"PrimaryVersionId\" IS NULL AND (\"t3\".\"OwnerId\" IS NULL OR \"t3\".\"ExtraType\" IS NOT NULL) ) AS \"t4\" ON \"t1\".\"ItemId\" = \"t4\".\"Id\" WHERE \"t2\".\"Type\" = @p2 AND \"t2\".\"CleanValue\" = \"t0\".\"CleanName\") AND \"t0\".\"PrimaryVersionId\" IS NULL AND (\"t0\".\"OwnerId\" IS NULL OR \"t0\".\"ExtraType\" IS NOT NULL) GROUP BY \"t0\".\"PresentationUniqueKey\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.161
+        "durationMs": 0.15,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:222 BaseItemRepository.GetItemValues"
       },
       {
         "fingerprint": "c7a2b5b34585",
         "shape": "SELECT \"t1\".\"CleanValue\" AS \"CleanName\", \"t3\".\"Type\", \"t3\".\"SeriesId\", COUNT(DISTINCT (\"t3\".\"Id\")) AS \"Count\" FROM \"ItemValuesMap\" AS \"t0\" INNER JOIN \"ItemValues\" AS \"t1\" ON \"t0\".\"ItemValueId\" = \"t1\".\"ItemValueId\" INNER JOIN ( SELECT \"t2\".\"Id\", \"t2\".\"SeriesId\", \"t2\".\"Type\" FROM \"BaseItems\" AS \"t2\" WHERE \"t2\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t2\".\"PrimaryVersionId\" IS NULL AND (\"t2\".\"OwnerId\" IS NULL OR \"t2\".\"ExtraType\" IS NOT NULL) ) AS \"t3\" ON \"t0\".\"ItemId\" = \"t3\".\"Id\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"CleanValue\" IN ( SELECT \"t4\".\"value\" FROM json_each(@p1) AS \"t4\" ) GROUP BY \"t1\".\"CleanValue\", \"t3\".\"Type\", \"t3\".\"SeriesId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.157
+        "durationMs": 0.135,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:326 BaseItemRepository.BuildItemCountsByCleanName"
       }
     ],
     "diagnostics": [],
@@ -47,10 +55,10 @@
   {
     "version": 1,
     "scope": "genres/run-2",
-    "startedAt": "2026-09-09T22:02:29.429027+00:00",
-    "elapsedMs": 29.421,
+    "startedAt": "2026-09-09T22:41:04.798879+00:00",
+    "elapsedMs": 26.278,
     "queryCount": 4,
-    "commandDurationMs": 0.591,
+    "commandDurationMs": 0.457,
     "overflowed": false,
     "queries": [
       {
@@ -58,28 +66,36 @@
         "shape": "SELECT \"t1\".\"CleanValue\" AS \"CleanName\", \"t3\".\"Id\" AS \"SeriesId\" FROM \"ItemValuesMap\" AS \"t0\" INNER JOIN \"ItemValues\" AS \"t1\" ON \"t0\".\"ItemValueId\" = \"t1\".\"ItemValueId\" INNER JOIN ( SELECT \"t2\".\"Id\" FROM \"BaseItems\" AS \"t2\" WHERE \"t2\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t2\".\"PrimaryVersionId\" IS NULL AND (\"t2\".\"OwnerId\" IS NULL OR \"t2\".\"ExtraType\" IS NOT NULL) AND \"t2\".\"Type\" = @p0 ) AS \"t3\" ON \"t0\".\"ItemId\" = \"t3\".\"Id\" WHERE \"t1\".\"Type\" = @p1 AND \"t1\".\"CleanValue\" IN ( SELECT \"t4\".\"value\" FROM json_each(@p2) AS \"t4\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.08
+        "durationMs": 0.041,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.ByName.cs:385 BaseItemRepository.BuildEpisodeCountsByCleanName"
       },
       {
         "fingerprint": "780ba2103f99",
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t3\".\"AudioStreamIndex\", \"t3\".\"IsFavorite\", \"t3\".\"LastPlayedDate\", \"t3\".\"Likes\", \"t3\".\"PlayCount\", \"t3\".\"PlaybackPositionTicks\", \"t3\".\"Played\", \"t3\".\"Rating\", \"t3\".\"RetentionDate\", \"t3\".\"SubtitleStreamIndex\", \"t4\".\"Id\", \"t4\".\"Blurhash\", \"t4\".\"DateModified\", \"t4\".\"Height\", \"t4\".\"ImageType\", \"t4\".\"ItemId\", \"t4\".\"Path\", \"t4\".\"Width\", \"t5\".\"ParentId\", \"t5\".\"SortOrder\", \"t5\".\"ChildId\", \"t5\".\"ChildType\" FROM \"BaseItems\" AS \"t0\" LEFT JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t2\" ON \"t0\".\"Id\" = \"t2\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t3\" ON \"t0\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t4\" ON \"t0\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t5\" ON \"t0\".\"Id\" = \"t5\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t6\".\"value\" FROM json_each(@p0) AS \"t6\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Id\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t4\".\"Id\", \"t5\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.223
+        "durationMs": 0.173,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:251 BaseItemRepository.GetItemValues"
       },
       {
         "fingerprint": "8a53c7d4cca5",
         "shape": "SELECT MIN(\"t0\".\"Id\") FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Type\" = @p0 AND EXISTS ( SELECT 1 FROM \"ItemValuesMap\" AS \"t1\" INNER JOIN \"ItemValues\" AS \"t2\" ON \"t1\".\"ItemValueId\" = \"t2\".\"ItemValueId\" INNER JOIN ( SELECT \"t3\".\"Id\" FROM \"BaseItems\" AS \"t3\" WHERE \"t3\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t3\".\"Type\" = @p1 AND \"t3\".\"PrimaryVersionId\" IS NULL AND (\"t3\".\"OwnerId\" IS NULL OR \"t3\".\"ExtraType\" IS NOT NULL) ) AS \"t4\" ON \"t1\".\"ItemId\" = \"t4\".\"Id\" WHERE \"t2\".\"Type\" = @p2 AND \"t2\".\"CleanValue\" = \"t0\".\"CleanName\") AND \"t0\".\"PrimaryVersionId\" IS NULL AND (\"t0\".\"OwnerId\" IS NULL OR \"t0\".\"ExtraType\" IS NOT NULL) GROUP BY \"t0\".\"PresentationUniqueKey\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.166
+        "durationMs": 0.156,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:222 BaseItemRepository.GetItemValues"
       },
       {
         "fingerprint": "c7a2b5b34585",
         "shape": "SELECT \"t1\".\"CleanValue\" AS \"CleanName\", \"t3\".\"Type\", \"t3\".\"SeriesId\", COUNT(DISTINCT (\"t3\".\"Id\")) AS \"Count\" FROM \"ItemValuesMap\" AS \"t0\" INNER JOIN \"ItemValues\" AS \"t1\" ON \"t0\".\"ItemValueId\" = \"t1\".\"ItemValueId\" INNER JOIN ( SELECT \"t2\".\"Id\", \"t2\".\"SeriesId\", \"t2\".\"Type\" FROM \"BaseItems\" AS \"t2\" WHERE \"t2\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t2\".\"PrimaryVersionId\" IS NULL AND (\"t2\".\"OwnerId\" IS NULL OR \"t2\".\"ExtraType\" IS NOT NULL) ) AS \"t3\" ON \"t0\".\"ItemId\" = \"t3\".\"Id\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"CleanValue\" IN ( SELECT \"t4\".\"value\" FROM json_each(@p1) AS \"t4\" ) GROUP BY \"t1\".\"CleanValue\", \"t3\".\"Type\", \"t3\".\"SeriesId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.122
+        "durationMs": 0.086,
+        "rowsReturned": 3,
+        "callSite": "BaseItemRepository.ByName.cs:326 BaseItemRepository.BuildItemCountsByCleanName"
       }
     ],
     "diagnostics": [],
@@ -92,10 +108,10 @@
   {
     "version": 1,
     "scope": "latest-movies/run-1",
-    "startedAt": "2026-09-09T22:02:30.471362+00:00",
-    "elapsedMs": 50.276,
+    "startedAt": "2026-09-09T22:41:05.825224+00:00",
+    "elapsedMs": 47.774,
     "queryCount": 2,
-    "commandDurationMs": 0.51,
+    "commandDurationMs": 0.622,
     "overflowed": false,
     "queries": [
       {
@@ -103,14 +119,18 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"PresentationUniqueKey\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Type\" = @p0 AND \"t0\".\"PrimaryVersionId\" IS NULL AND (\"t0\".\"OwnerId\" IS NULL OR \"t0\".\"ExtraType\" IS NOT NULL) AND \"t0\".\"PresentationUniqueKey\" IS NOT NULL ORDER BY \"t0\".\"DateCreated\" DESC, \"t0\".\"Id\" DESC",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.068
+        "durationMs": 0.093,
+        "rowsReturned": 12,
+        "callSite": "BaseItemRepository.Querying.cs:248 BaseItemRepository.GetLatestMovieItems"
       },
       {
         "fingerprint": "ea4ae500732e",
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t3\".\"AudioStreamIndex\", \"t3\".\"IsFavorite\", \"t3\".\"LastPlayedDate\", \"t3\".\"Likes\", \"t3\".\"PlayCount\", \"t3\".\"PlaybackPositionTicks\", \"t3\".\"Played\", \"t3\".\"Rating\", \"t3\".\"RetentionDate\", \"t3\".\"SubtitleStreamIndex\", \"t4\".\"Id\", \"t4\".\"Blurhash\", \"t4\".\"DateModified\", \"t4\".\"Height\", \"t4\".\"ImageType\", \"t4\".\"ItemId\", \"t4\".\"Path\", \"t4\".\"Width\", \"t5\".\"ParentId\", \"t5\".\"SortOrder\", \"t5\".\"ChildId\", \"t5\".\"ChildType\" FROM \"BaseItems\" AS \"t0\" LEFT JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t2\" ON \"t0\".\"Id\" = \"t2\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t3\" ON \"t0\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t4\" ON \"t0\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t5\" ON \"t0\".\"Id\" = \"t5\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t6\".\"value\" FROM json_each(@p0) AS \"t6\" ) ORDER BY \"t0\".\"DateCreated\" DESC, \"t0\".\"Id\" DESC, \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t4\".\"Id\", \"t5\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.442
+        "durationMs": 0.529,
+        "rowsReturned": 108,
+        "callSite": "BaseItemRepository.Querying.cs:216 BaseItemRepository.LoadLatestByIds"
       }
     ],
     "diagnostics": [
@@ -146,10 +166,10 @@
   {
     "version": 1,
     "scope": "latest-movies/run-2",
-    "startedAt": "2026-09-09T22:02:30.52218+00:00",
-    "elapsedMs": 5.276,
+    "startedAt": "2026-09-09T22:41:05.87357+00:00",
+    "elapsedMs": 5.045,
     "queryCount": 2,
-    "commandDurationMs": 0.389,
+    "commandDurationMs": 0.509,
     "overflowed": false,
     "queries": [
       {
@@ -157,14 +177,18 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"PresentationUniqueKey\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Type\" = @p0 AND \"t0\".\"PrimaryVersionId\" IS NULL AND (\"t0\".\"OwnerId\" IS NULL OR \"t0\".\"ExtraType\" IS NOT NULL) AND \"t0\".\"PresentationUniqueKey\" IS NOT NULL ORDER BY \"t0\".\"DateCreated\" DESC, \"t0\".\"Id\" DESC",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.064
+        "durationMs": 0.088,
+        "rowsReturned": 12,
+        "callSite": "BaseItemRepository.Querying.cs:248 BaseItemRepository.GetLatestMovieItems"
       },
       {
         "fingerprint": "ea4ae500732e",
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\", \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t3\".\"AudioStreamIndex\", \"t3\".\"IsFavorite\", \"t3\".\"LastPlayedDate\", \"t3\".\"Likes\", \"t3\".\"PlayCount\", \"t3\".\"PlaybackPositionTicks\", \"t3\".\"Played\", \"t3\".\"Rating\", \"t3\".\"RetentionDate\", \"t3\".\"SubtitleStreamIndex\", \"t4\".\"Id\", \"t4\".\"Blurhash\", \"t4\".\"DateModified\", \"t4\".\"Height\", \"t4\".\"ImageType\", \"t4\".\"ItemId\", \"t4\".\"Path\", \"t4\".\"Width\", \"t5\".\"ParentId\", \"t5\".\"SortOrder\", \"t5\".\"ChildId\", \"t5\".\"ChildType\" FROM \"BaseItems\" AS \"t0\" LEFT JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t2\" ON \"t0\".\"Id\" = \"t2\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t3\" ON \"t0\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t4\" ON \"t0\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t5\" ON \"t0\".\"Id\" = \"t5\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t6\".\"value\" FROM json_each(@p0) AS \"t6\" ) ORDER BY \"t0\".\"DateCreated\" DESC, \"t0\".\"Id\" DESC, \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t2\".\"Id\", \"t2\".\"ItemId\", \"t3\".\"ItemId\", \"t3\".\"UserId\", \"t3\".\"CustomDataKey\", \"t4\".\"Id\", \"t5\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.325
+        "durationMs": 0.421,
+        "rowsReturned": 108,
+        "callSite": "BaseItemRepository.Querying.cs:216 BaseItemRepository.LoadLatestByIds"
       }
     ],
     "diagnostics": [
@@ -200,10 +224,10 @@
   {
     "version": 1,
     "scope": "library-ids/run-1",
-    "startedAt": "2026-09-09T22:02:30.334743+00:00",
-    "elapsedMs": 7.641,
+    "startedAt": "2026-09-09T22:41:05.679666+00:00",
+    "elapsedMs": 6.516,
     "queryCount": 1,
-    "commandDurationMs": 0.145,
+    "commandDurationMs": 0.111,
     "overflowed": false,
     "queries": [
       {
@@ -211,7 +235,9 @@
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.145
+        "durationMs": 0.111,
+        "rowsReturned": 24,
+        "callSite": "BaseItemRepository.Querying.cs:27 BaseItemRepository.GetItemIdsList"
       }
     ],
     "diagnostics": [],
@@ -224,10 +250,10 @@
   {
     "version": 1,
     "scope": "library-ids/run-2",
-    "startedAt": "2026-09-09T22:02:30.342856+00:00",
-    "elapsedMs": 1.592,
+    "startedAt": "2026-09-09T22:41:05.686664+00:00",
+    "elapsedMs": 1.246,
     "queryCount": 1,
-    "commandDurationMs": 0.101,
+    "commandDurationMs": 0.097,
     "overflowed": false,
     "queries": [
       {
@@ -235,7 +261,9 @@
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Id\" <> '00000000-0000-0000-0000-000000000001' AND \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.101
+        "durationMs": 0.097,
+        "rowsReturned": 24,
+        "callSite": "BaseItemRepository.Querying.cs:27 BaseItemRepository.GetItemIdsList"
       }
     ],
     "diagnostics": [],
@@ -248,10 +276,10 @@
   {
     "version": 1,
     "scope": "library-page-random/run-1",
-    "startedAt": "2026-09-09T22:02:30.208784+00:00",
-    "elapsedMs": 4.582,
+    "startedAt": "2026-09-09T22:41:05.547496+00:00",
+    "elapsedMs": 4.128,
     "queryCount": 7,
-    "commandDurationMs": 0.41,
+    "commandDurationMs": 0.42,
     "overflowed": false,
     "queries": [
       {
@@ -259,49 +287,63 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.096
+        "durationMs": 0.095,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "487a03a81c0c",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"UserId\", \"t1\".\"CustomDataKey\", \"t1\".\"AudioStreamIndex\", \"t1\".\"IsFavorite\", \"t1\".\"LastPlayedDate\", \"t1\".\"Likes\", \"t1\".\"PlayCount\", \"t1\".\"PlaybackPositionTicks\", \"t1\".\"Played\", \"t1\".\"Rating\", \"t1\".\"RetentionDate\", \"t1\".\"SubtitleStreamIndex\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"UserData\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.037
+        "durationMs": 0.037,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "580f0d6390bd",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"ItemId\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemMetadataFields\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.035
+        "durationMs": 0.034,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "632b401d2744",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"Blurhash\", \"t1\".\"DateModified\", \"t1\".\"Height\", \"t1\".\"ImageType\", \"t1\".\"ItemId\", \"t1\".\"Path\", \"t1\".\"Width\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemImageInfos\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.034
+        "durationMs": 0.033,
+        "rowsReturned": 60,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "73928f3a22e7",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.034
+        "durationMs": 0.033,
+        "rowsReturned": 60,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "dd6307d4bebb",
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY abs(random() / 9.2233720368547799E+18), \"t0\".\"SortName\" LIMIT @p1",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.145
+        "durationMs": 0.143,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:85 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "f681c1b7cc6b",
         "shape": "SELECT \"t1\".\"ParentId\", \"t1\".\"SortOrder\", \"t1\".\"ChildId\", \"t1\".\"ChildType\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"LinkedChildren\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.03
+        "durationMs": 0.046,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       }
     ],
     "diagnostics": [],
@@ -314,10 +356,10 @@
   {
     "version": 1,
     "scope": "library-page-random/run-2",
-    "startedAt": "2026-09-09T22:02:30.213967+00:00",
-    "elapsedMs": 4.654,
+    "startedAt": "2026-09-09T22:41:05.55218+00:00",
+    "elapsedMs": 4.036,
     "queryCount": 7,
-    "commandDurationMs": 0.474,
+    "commandDurationMs": 0.335,
     "overflowed": false,
     "queries": [
       {
@@ -325,49 +367,63 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.096
+        "durationMs": 0.073,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "487a03a81c0c",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"UserId\", \"t1\".\"CustomDataKey\", \"t1\".\"AudioStreamIndex\", \"t1\".\"IsFavorite\", \"t1\".\"LastPlayedDate\", \"t1\".\"Likes\", \"t1\".\"PlayCount\", \"t1\".\"PlaybackPositionTicks\", \"t1\".\"Played\", \"t1\".\"Rating\", \"t1\".\"RetentionDate\", \"t1\".\"SubtitleStreamIndex\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"UserData\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.038
+        "durationMs": 0.035,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "580f0d6390bd",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"ItemId\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemMetadataFields\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.062
+        "durationMs": 0.03,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "632b401d2744",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"Blurhash\", \"t1\".\"DateModified\", \"t1\".\"Height\", \"t1\".\"ImageType\", \"t1\".\"ItemId\", \"t1\".\"Path\", \"t1\".\"Width\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemImageInfos\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.047
+        "durationMs": 0.03,
+        "rowsReturned": 60,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "73928f3a22e7",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.038
+        "durationMs": 0.028,
+        "rowsReturned": 60,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "dd6307d4bebb",
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY abs(random() / 9.2233720368547799E+18), \"t0\".\"SortName\" LIMIT @p1",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.155
+        "durationMs": 0.113,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:85 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "f681c1b7cc6b",
         "shape": "SELECT \"t1\".\"ParentId\", \"t1\".\"SortOrder\", \"t1\".\"ChildId\", \"t1\".\"ChildType\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"LinkedChildren\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.038
+        "durationMs": 0.026,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       }
     ],
     "diagnostics": [],
@@ -380,10 +436,10 @@
   {
     "version": 1,
     "scope": "library-page-rich-random/run-1",
-    "startedAt": "2026-09-09T22:02:29.810323+00:00",
-    "elapsedMs": 56.72,
+    "startedAt": "2026-09-09T22:41:05.169489+00:00",
+    "elapsedMs": 42.878,
     "queryCount": 7,
-    "commandDurationMs": 0.747,
+    "commandDurationMs": 0.695,
     "overflowed": false,
     "queries": [
       {
@@ -391,49 +447,63 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.232
+        "durationMs": 0.246,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "487a03a81c0c",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"UserId\", \"t1\".\"CustomDataKey\", \"t1\".\"AudioStreamIndex\", \"t1\".\"IsFavorite\", \"t1\".\"LastPlayedDate\", \"t1\".\"Likes\", \"t1\".\"PlayCount\", \"t1\".\"PlaybackPositionTicks\", \"t1\".\"Played\", \"t1\".\"Rating\", \"t1\".\"RetentionDate\", \"t1\".\"SubtitleStreamIndex\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"UserData\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.057
+        "durationMs": 0.053,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "580f0d6390bd",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"ItemId\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemMetadataFields\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.052
+        "durationMs": 0.053,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "632b401d2744",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"Blurhash\", \"t1\".\"DateModified\", \"t1\".\"Height\", \"t1\".\"ImageType\", \"t1\".\"ItemId\", \"t1\".\"Path\", \"t1\".\"Width\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemImageInfos\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.074
+        "durationMs": 0.046,
+        "rowsReturned": 200,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "73928f3a22e7",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.06
+        "durationMs": 0.054,
+        "rowsReturned": 80,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "dd6307d4bebb",
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY abs(random() / 9.2233720368547799E+18), \"t0\".\"SortName\" LIMIT @p1",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.228
+        "durationMs": 0.2,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:85 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "f681c1b7cc6b",
         "shape": "SELECT \"t1\".\"ParentId\", \"t1\".\"SortOrder\", \"t1\".\"ChildId\", \"t1\".\"ChildType\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"LinkedChildren\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.046
+        "durationMs": 0.044,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       }
     ],
     "diagnostics": [],
@@ -446,10 +516,10 @@
   {
     "version": 1,
     "scope": "library-page-rich-random/run-2",
-    "startedAt": "2026-09-09T22:02:29.867567+00:00",
-    "elapsedMs": 7.469,
+    "startedAt": "2026-09-09T22:41:05.212895+00:00",
+    "elapsedMs": 8.16,
     "queryCount": 7,
-    "commandDurationMs": 0.43,
+    "commandDurationMs": 0.429,
     "overflowed": false,
     "queries": [
       {
@@ -457,49 +527,63 @@
         "shape": "SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT \"t1\".\"value\" FROM json_each(@p0) AS \"t1\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.083
+        "durationMs": 0.08,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "487a03a81c0c",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"UserId\", \"t1\".\"CustomDataKey\", \"t1\".\"AudioStreamIndex\", \"t1\".\"IsFavorite\", \"t1\".\"LastPlayedDate\", \"t1\".\"Likes\", \"t1\".\"PlayCount\", \"t1\".\"PlaybackPositionTicks\", \"t1\".\"Played\", \"t1\".\"Rating\", \"t1\".\"RetentionDate\", \"t1\".\"SubtitleStreamIndex\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"UserData\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.051
+        "durationMs": 0.062,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "580f0d6390bd",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"ItemId\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemMetadataFields\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.036
+        "durationMs": 0.034,
+        "rowsReturned": 0,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "632b401d2744",
         "shape": "SELECT \"t1\".\"Id\", \"t1\".\"Blurhash\", \"t1\".\"DateModified\", \"t1\".\"Height\", \"t1\".\"ImageType\", \"t1\".\"ItemId\", \"t1\".\"Path\", \"t1\".\"Width\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemImageInfos\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.038
+        "durationMs": 0.04,
+        "rowsReturned": 200,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "73928f3a22e7",
         "shape": "SELECT \"t1\".\"ItemId\", \"t1\".\"ProviderId\", \"t1\".\"ProviderValue\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"BaseItemProviders\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ItemId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.037
+        "durationMs": 0.033,
+        "rowsReturned": 80,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "dd6307d4bebb",
         "shape": "SELECT \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY abs(random() / 9.2233720368547799E+18), \"t0\".\"SortName\" LIMIT @p1",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.151
+        "durationMs": 0.147,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:85 BaseItemRepository.GetItemList"
       },
       {
         "fingerprint": "f681c1b7cc6b",
         "shape": "SELECT \"t1\".\"ParentId\", \"t1\".\"SortOrder\", \"t1\".\"ChildId\", \"t1\".\"ChildType\", \"t0\".\"Id\" FROM \"BaseItems\" AS \"t0\" INNER JOIN \"LinkedChildren\" AS \"t1\" ON \"t0\".\"Id\" = \"t1\".\"ParentId\" WHERE \"t0\".\"Id\" IN ( SELECT \"t2\".\"value\" FROM json_each(@p0) AS \"t2\" ) ORDER BY \"t0\".\"Id\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.033
+        "durationMs": 0.034,
+        "rowsReturned": 20,
+        "callSite": "BaseItemRepository.Querying.cs:91 BaseItemRepository.GetItemList"
       }
     ],
     "diagnostics": [],
@@ -512,10 +596,10 @@
   {
     "version": 1,
     "scope": "library-page-rich/run-1",
-    "startedAt": "2026-09-09T22:02:30.048394+00:00",
-    "elapsedMs": 20.648,
+    "startedAt": "2026-09-09T22:41:05.395181+00:00",
+    "elapsedMs": 19.312,
     "queryCount": 2,
-    "commandDurationMs": 0.718,
+    "commandDurationMs": 0.72,
     "overflowed": false,
     "queries": [
       {
@@ -523,14 +607,18 @@
         "shape": "SELECT COUNT(*) FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.118
+        "durationMs": 0.107,
+        "rowsReturned": 1,
+        "callSite": "BaseItemRepository.Querying.cs:56 BaseItemRepository.GetItems"
       },
       {
         "fingerprint": "a9c5d155d764",
         "shape": "SELECT \"t2\".\"Id\", \"t2\".\"Album\", \"t2\".\"AlbumArtists\", \"t2\".\"Artists\", \"t2\".\"Audio\", \"t2\".\"ChannelId\", \"t2\".\"CleanName\", \"t2\".\"CommunityRating\", \"t2\".\"CriticRating\", \"t2\".\"CustomRating\", \"t2\".\"Data\", \"t2\".\"DateCreated\", \"t2\".\"DateLastMediaAdded\", \"t2\".\"DateLastRefreshed\", \"t2\".\"DateLastSaved\", \"t2\".\"DateModified\", \"t2\".\"EndDate\", \"t2\".\"EpisodeTitle\", \"t2\".\"ExternalId\", \"t2\".\"ExternalSeriesId\", \"t2\".\"ExternalServiceId\", \"t2\".\"ExtraType\", \"t2\".\"ForcedSortName\", \"t2\".\"Genres\", \"t2\".\"Height\", \"t2\".\"IndexNumber\", \"t2\".\"InheritedParentalRatingSubValue\", \"t2\".\"InheritedParentalRatingValue\", \"t2\".\"IsFolder\", \"t2\".\"IsInMixedFolder\", \"t2\".\"IsLocked\", \"t2\".\"IsMovie\", \"t2\".\"IsRepeat\", \"t2\".\"IsSeries\", \"t2\".\"IsVirtualItem\", \"t2\".\"LUFS\", \"t2\".\"MediaType\", \"t2\".\"Name\", \"t2\".\"NormalizationGain\", \"t2\".\"OfficialRating\", \"t2\".\"OriginalLanguage\", \"t2\".\"OriginalTitle\", \"t2\".\"Overview\", \"t2\".\"OwnerId\", \"t2\".\"ParentId\", \"t2\".\"ParentIndexNumber\", \"t2\".\"Path\", \"t2\".\"PreferredMetadataCountryCode\", \"t2\".\"PreferredMetadataLanguage\", \"t2\".\"PremiereDate\", \"t2\".\"PresentationUniqueKey\", \"t2\".\"PrimaryVersionId\", \"t2\".\"ProductionLocations\", \"t2\".\"ProductionYear\", \"t2\".\"RunTimeTicks\", \"t2\".\"SeasonId\", \"t2\".\"SeasonName\", \"t2\".\"SeriesId\", \"t2\".\"SeriesName\", \"t2\".\"SeriesPresentationUniqueKey\", \"t2\".\"ShowId\", \"t2\".\"Size\", \"t2\".\"SortName\", \"t2\".\"StartDate\", \"t2\".\"Studios\", \"t2\".\"Tagline\", \"t2\".\"Tags\", \"t2\".\"TopParentId\", \"t2\".\"TotalBitrate\", \"t2\".\"Type\", \"t2\".\"UnratedType\", \"t2\".\"Width\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t3\".\"ProviderValue\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t5\".\"AudioStreamIndex\", \"t5\".\"IsFavorite\", \"t5\".\"LastPlayedDate\", \"t5\".\"Likes\", \"t5\".\"PlayCount\", \"t5\".\"PlaybackPositionTicks\", \"t5\".\"Played\", \"t5\".\"Rating\", \"t5\".\"RetentionDate\", \"t5\".\"SubtitleStreamIndex\", \"t6\".\"Id\", \"t6\".\"Blurhash\", \"t6\".\"DateModified\", \"t6\".\"Height\", \"t6\".\"ImageType\", \"t6\".\"ItemId\", \"t6\".\"Path\", \"t6\".\"Width\", \"t7\".\"ParentId\", \"t7\".\"SortOrder\", \"t7\".\"ChildId\", \"t7\".\"ChildType\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Name\" LIMIT @p1 ) AS \"t2\" LEFT JOIN \"BaseItemProviders\" AS \"t3\" ON \"t2\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t4\" ON \"t2\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t5\" ON \"t2\".\"Id\" = \"t5\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t6\" ON \"t2\".\"Id\" = \"t6\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t7\" ON \"t2\".\"Id\" = \"t7\".\"ParentId\" ORDER BY \"t2\".\"SortName\", \"t2\".\"Name\", \"t2\".\"Id\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t6\".\"Id\", \"t7\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.601
+        "durationMs": 0.612,
+        "rowsReturned": 800,
+        "callSite": "BaseItemRepository.Querying.cs:62 BaseItemRepository.GetItems"
       }
     ],
     "diagnostics": [
@@ -567,10 +655,10 @@
   {
     "version": 1,
     "scope": "library-page-rich/run-2",
-    "startedAt": "2026-09-09T22:02:30.069909+00:00",
-    "elapsedMs": 20.671,
+    "startedAt": "2026-09-09T22:41:05.415327+00:00",
+    "elapsedMs": 18.916,
     "queryCount": 2,
-    "commandDurationMs": 0.76,
+    "commandDurationMs": 0.713,
     "overflowed": false,
     "queries": [
       {
@@ -578,14 +666,18 @@
         "shape": "SELECT COUNT(*) FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.132
+        "durationMs": 0.116,
+        "rowsReturned": 1,
+        "callSite": "BaseItemRepository.Querying.cs:56 BaseItemRepository.GetItems"
       },
       {
         "fingerprint": "a9c5d155d764",
         "shape": "SELECT \"t2\".\"Id\", \"t2\".\"Album\", \"t2\".\"AlbumArtists\", \"t2\".\"Artists\", \"t2\".\"Audio\", \"t2\".\"ChannelId\", \"t2\".\"CleanName\", \"t2\".\"CommunityRating\", \"t2\".\"CriticRating\", \"t2\".\"CustomRating\", \"t2\".\"Data\", \"t2\".\"DateCreated\", \"t2\".\"DateLastMediaAdded\", \"t2\".\"DateLastRefreshed\", \"t2\".\"DateLastSaved\", \"t2\".\"DateModified\", \"t2\".\"EndDate\", \"t2\".\"EpisodeTitle\", \"t2\".\"ExternalId\", \"t2\".\"ExternalSeriesId\", \"t2\".\"ExternalServiceId\", \"t2\".\"ExtraType\", \"t2\".\"ForcedSortName\", \"t2\".\"Genres\", \"t2\".\"Height\", \"t2\".\"IndexNumber\", \"t2\".\"InheritedParentalRatingSubValue\", \"t2\".\"InheritedParentalRatingValue\", \"t2\".\"IsFolder\", \"t2\".\"IsInMixedFolder\", \"t2\".\"IsLocked\", \"t2\".\"IsMovie\", \"t2\".\"IsRepeat\", \"t2\".\"IsSeries\", \"t2\".\"IsVirtualItem\", \"t2\".\"LUFS\", \"t2\".\"MediaType\", \"t2\".\"Name\", \"t2\".\"NormalizationGain\", \"t2\".\"OfficialRating\", \"t2\".\"OriginalLanguage\", \"t2\".\"OriginalTitle\", \"t2\".\"Overview\", \"t2\".\"OwnerId\", \"t2\".\"ParentId\", \"t2\".\"ParentIndexNumber\", \"t2\".\"Path\", \"t2\".\"PreferredMetadataCountryCode\", \"t2\".\"PreferredMetadataLanguage\", \"t2\".\"PremiereDate\", \"t2\".\"PresentationUniqueKey\", \"t2\".\"PrimaryVersionId\", \"t2\".\"ProductionLocations\", \"t2\".\"ProductionYear\", \"t2\".\"RunTimeTicks\", \"t2\".\"SeasonId\", \"t2\".\"SeasonName\", \"t2\".\"SeriesId\", \"t2\".\"SeriesName\", \"t2\".\"SeriesPresentationUniqueKey\", \"t2\".\"ShowId\", \"t2\".\"Size\", \"t2\".\"SortName\", \"t2\".\"StartDate\", \"t2\".\"Studios\", \"t2\".\"Tagline\", \"t2\".\"Tags\", \"t2\".\"TopParentId\", \"t2\".\"TotalBitrate\", \"t2\".\"Type\", \"t2\".\"UnratedType\", \"t2\".\"Width\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t3\".\"ProviderValue\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t5\".\"AudioStreamIndex\", \"t5\".\"IsFavorite\", \"t5\".\"LastPlayedDate\", \"t5\".\"Likes\", \"t5\".\"PlayCount\", \"t5\".\"PlaybackPositionTicks\", \"t5\".\"Played\", \"t5\".\"Rating\", \"t5\".\"RetentionDate\", \"t5\".\"SubtitleStreamIndex\", \"t6\".\"Id\", \"t6\".\"Blurhash\", \"t6\".\"DateModified\", \"t6\".\"Height\", \"t6\".\"ImageType\", \"t6\".\"ItemId\", \"t6\".\"Path\", \"t6\".\"Width\", \"t7\".\"ParentId\", \"t7\".\"SortOrder\", \"t7\".\"ChildId\", \"t7\".\"ChildType\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Name\" LIMIT @p1 ) AS \"t2\" LEFT JOIN \"BaseItemProviders\" AS \"t3\" ON \"t2\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t4\" ON \"t2\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t5\" ON \"t2\".\"Id\" = \"t5\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t6\" ON \"t2\".\"Id\" = \"t6\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t7\" ON \"t2\".\"Id\" = \"t7\".\"ParentId\" ORDER BY \"t2\".\"SortName\", \"t2\".\"Name\", \"t2\".\"Id\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t6\".\"Id\", \"t7\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.628
+        "durationMs": 0.597,
+        "rowsReturned": 800,
+        "callSite": "BaseItemRepository.Querying.cs:62 BaseItemRepository.GetItems"
       }
     ],
     "diagnostics": [
@@ -622,10 +714,10 @@
   {
     "version": 1,
     "scope": "library-page/run-1",
-    "startedAt": "2026-09-09T22:02:29.57903+00:00",
-    "elapsedMs": 74.052,
+    "startedAt": "2026-09-09T22:41:04.941928+00:00",
+    "elapsedMs": 67.708,
     "queryCount": 2,
-    "commandDurationMs": 0.876,
+    "commandDurationMs": 0.767,
     "overflowed": false,
     "queries": [
       {
@@ -633,14 +725,18 @@
         "shape": "SELECT COUNT(*) FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.139
+        "durationMs": 0.119,
+        "rowsReturned": 1,
+        "callSite": "BaseItemRepository.Querying.cs:56 BaseItemRepository.GetItems"
       },
       {
         "fingerprint": "a9c5d155d764",
         "shape": "SELECT \"t2\".\"Id\", \"t2\".\"Album\", \"t2\".\"AlbumArtists\", \"t2\".\"Artists\", \"t2\".\"Audio\", \"t2\".\"ChannelId\", \"t2\".\"CleanName\", \"t2\".\"CommunityRating\", \"t2\".\"CriticRating\", \"t2\".\"CustomRating\", \"t2\".\"Data\", \"t2\".\"DateCreated\", \"t2\".\"DateLastMediaAdded\", \"t2\".\"DateLastRefreshed\", \"t2\".\"DateLastSaved\", \"t2\".\"DateModified\", \"t2\".\"EndDate\", \"t2\".\"EpisodeTitle\", \"t2\".\"ExternalId\", \"t2\".\"ExternalSeriesId\", \"t2\".\"ExternalServiceId\", \"t2\".\"ExtraType\", \"t2\".\"ForcedSortName\", \"t2\".\"Genres\", \"t2\".\"Height\", \"t2\".\"IndexNumber\", \"t2\".\"InheritedParentalRatingSubValue\", \"t2\".\"InheritedParentalRatingValue\", \"t2\".\"IsFolder\", \"t2\".\"IsInMixedFolder\", \"t2\".\"IsLocked\", \"t2\".\"IsMovie\", \"t2\".\"IsRepeat\", \"t2\".\"IsSeries\", \"t2\".\"IsVirtualItem\", \"t2\".\"LUFS\", \"t2\".\"MediaType\", \"t2\".\"Name\", \"t2\".\"NormalizationGain\", \"t2\".\"OfficialRating\", \"t2\".\"OriginalLanguage\", \"t2\".\"OriginalTitle\", \"t2\".\"Overview\", \"t2\".\"OwnerId\", \"t2\".\"ParentId\", \"t2\".\"ParentIndexNumber\", \"t2\".\"Path\", \"t2\".\"PreferredMetadataCountryCode\", \"t2\".\"PreferredMetadataLanguage\", \"t2\".\"PremiereDate\", \"t2\".\"PresentationUniqueKey\", \"t2\".\"PrimaryVersionId\", \"t2\".\"ProductionLocations\", \"t2\".\"ProductionYear\", \"t2\".\"RunTimeTicks\", \"t2\".\"SeasonId\", \"t2\".\"SeasonName\", \"t2\".\"SeriesId\", \"t2\".\"SeriesName\", \"t2\".\"SeriesPresentationUniqueKey\", \"t2\".\"ShowId\", \"t2\".\"Size\", \"t2\".\"SortName\", \"t2\".\"StartDate\", \"t2\".\"Studios\", \"t2\".\"Tagline\", \"t2\".\"Tags\", \"t2\".\"TopParentId\", \"t2\".\"TotalBitrate\", \"t2\".\"Type\", \"t2\".\"UnratedType\", \"t2\".\"Width\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t3\".\"ProviderValue\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t5\".\"AudioStreamIndex\", \"t5\".\"IsFavorite\", \"t5\".\"LastPlayedDate\", \"t5\".\"Likes\", \"t5\".\"PlayCount\", \"t5\".\"PlaybackPositionTicks\", \"t5\".\"Played\", \"t5\".\"Rating\", \"t5\".\"RetentionDate\", \"t5\".\"SubtitleStreamIndex\", \"t6\".\"Id\", \"t6\".\"Blurhash\", \"t6\".\"DateModified\", \"t6\".\"Height\", \"t6\".\"ImageType\", \"t6\".\"ItemId\", \"t6\".\"Path\", \"t6\".\"Width\", \"t7\".\"ParentId\", \"t7\".\"SortOrder\", \"t7\".\"ChildId\", \"t7\".\"ChildType\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Name\" LIMIT @p1 ) AS \"t2\" LEFT JOIN \"BaseItemProviders\" AS \"t3\" ON \"t2\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t4\" ON \"t2\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t5\" ON \"t2\".\"Id\" = \"t5\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t6\" ON \"t2\".\"Id\" = \"t6\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t7\" ON \"t2\".\"Id\" = \"t7\".\"ParentId\" ORDER BY \"t2\".\"SortName\", \"t2\".\"Name\", \"t2\".\"Id\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t6\".\"Id\", \"t7\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.737
+        "durationMs": 0.648,
+        "rowsReturned": 180,
+        "callSite": "BaseItemRepository.Querying.cs:62 BaseItemRepository.GetItems"
       }
     ],
     "diagnostics": [
@@ -677,10 +773,10 @@
   {
     "version": 1,
     "scope": "library-page/run-2",
-    "startedAt": "2026-09-09T22:02:29.65812+00:00",
-    "elapsedMs": 6.872,
+    "startedAt": "2026-09-09T22:41:05.014016+00:00",
+    "elapsedMs": 6.65,
     "queryCount": 2,
-    "commandDurationMs": 0.65,
+    "commandDurationMs": 0.639,
     "overflowed": false,
     "queries": [
       {
@@ -688,14 +784,18 @@
         "shape": "SELECT COUNT(*) FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" )",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.129
+        "durationMs": 0.126,
+        "rowsReturned": 1,
+        "callSite": "BaseItemRepository.Querying.cs:56 BaseItemRepository.GetItems"
       },
       {
         "fingerprint": "a9c5d155d764",
         "shape": "SELECT \"t2\".\"Id\", \"t2\".\"Album\", \"t2\".\"AlbumArtists\", \"t2\".\"Artists\", \"t2\".\"Audio\", \"t2\".\"ChannelId\", \"t2\".\"CleanName\", \"t2\".\"CommunityRating\", \"t2\".\"CriticRating\", \"t2\".\"CustomRating\", \"t2\".\"Data\", \"t2\".\"DateCreated\", \"t2\".\"DateLastMediaAdded\", \"t2\".\"DateLastRefreshed\", \"t2\".\"DateLastSaved\", \"t2\".\"DateModified\", \"t2\".\"EndDate\", \"t2\".\"EpisodeTitle\", \"t2\".\"ExternalId\", \"t2\".\"ExternalSeriesId\", \"t2\".\"ExternalServiceId\", \"t2\".\"ExtraType\", \"t2\".\"ForcedSortName\", \"t2\".\"Genres\", \"t2\".\"Height\", \"t2\".\"IndexNumber\", \"t2\".\"InheritedParentalRatingSubValue\", \"t2\".\"InheritedParentalRatingValue\", \"t2\".\"IsFolder\", \"t2\".\"IsInMixedFolder\", \"t2\".\"IsLocked\", \"t2\".\"IsMovie\", \"t2\".\"IsRepeat\", \"t2\".\"IsSeries\", \"t2\".\"IsVirtualItem\", \"t2\".\"LUFS\", \"t2\".\"MediaType\", \"t2\".\"Name\", \"t2\".\"NormalizationGain\", \"t2\".\"OfficialRating\", \"t2\".\"OriginalLanguage\", \"t2\".\"OriginalTitle\", \"t2\".\"Overview\", \"t2\".\"OwnerId\", \"t2\".\"ParentId\", \"t2\".\"ParentIndexNumber\", \"t2\".\"Path\", \"t2\".\"PreferredMetadataCountryCode\", \"t2\".\"PreferredMetadataLanguage\", \"t2\".\"PremiereDate\", \"t2\".\"PresentationUniqueKey\", \"t2\".\"PrimaryVersionId\", \"t2\".\"ProductionLocations\", \"t2\".\"ProductionYear\", \"t2\".\"RunTimeTicks\", \"t2\".\"SeasonId\", \"t2\".\"SeasonName\", \"t2\".\"SeriesId\", \"t2\".\"SeriesName\", \"t2\".\"SeriesPresentationUniqueKey\", \"t2\".\"ShowId\", \"t2\".\"Size\", \"t2\".\"SortName\", \"t2\".\"StartDate\", \"t2\".\"Studios\", \"t2\".\"Tagline\", \"t2\".\"Tags\", \"t2\".\"TopParentId\", \"t2\".\"TotalBitrate\", \"t2\".\"Type\", \"t2\".\"UnratedType\", \"t2\".\"Width\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t3\".\"ProviderValue\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t5\".\"AudioStreamIndex\", \"t5\".\"IsFavorite\", \"t5\".\"LastPlayedDate\", \"t5\".\"Likes\", \"t5\".\"PlayCount\", \"t5\".\"PlaybackPositionTicks\", \"t5\".\"Played\", \"t5\".\"Rating\", \"t5\".\"RetentionDate\", \"t5\".\"SubtitleStreamIndex\", \"t6\".\"Id\", \"t6\".\"Blurhash\", \"t6\".\"DateModified\", \"t6\".\"Height\", \"t6\".\"ImageType\", \"t6\".\"ItemId\", \"t6\".\"Path\", \"t6\".\"Width\", \"t7\".\"ParentId\", \"t7\".\"SortOrder\", \"t7\".\"ChildId\", \"t7\".\"ChildType\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"Album\", \"t0\".\"AlbumArtists\", \"t0\".\"Artists\", \"t0\".\"Audio\", \"t0\".\"ChannelId\", \"t0\".\"CleanName\", \"t0\".\"CommunityRating\", \"t0\".\"CriticRating\", \"t0\".\"CustomRating\", \"t0\".\"Data\", \"t0\".\"DateCreated\", \"t0\".\"DateLastMediaAdded\", \"t0\".\"DateLastRefreshed\", \"t0\".\"DateLastSaved\", \"t0\".\"DateModified\", \"t0\".\"EndDate\", \"t0\".\"EpisodeTitle\", \"t0\".\"ExternalId\", \"t0\".\"ExternalSeriesId\", \"t0\".\"ExternalServiceId\", \"t0\".\"ExtraType\", \"t0\".\"ForcedSortName\", \"t0\".\"Genres\", \"t0\".\"Height\", \"t0\".\"IndexNumber\", \"t0\".\"InheritedParentalRatingSubValue\", \"t0\".\"InheritedParentalRatingValue\", \"t0\".\"IsFolder\", \"t0\".\"IsInMixedFolder\", \"t0\".\"IsLocked\", \"t0\".\"IsMovie\", \"t0\".\"IsRepeat\", \"t0\".\"IsSeries\", \"t0\".\"IsVirtualItem\", \"t0\".\"LUFS\", \"t0\".\"MediaType\", \"t0\".\"Name\", \"t0\".\"NormalizationGain\", \"t0\".\"OfficialRating\", \"t0\".\"OriginalLanguage\", \"t0\".\"OriginalTitle\", \"t0\".\"Overview\", \"t0\".\"OwnerId\", \"t0\".\"ParentId\", \"t0\".\"ParentIndexNumber\", \"t0\".\"Path\", \"t0\".\"PreferredMetadataCountryCode\", \"t0\".\"PreferredMetadataLanguage\", \"t0\".\"PremiereDate\", \"t0\".\"PresentationUniqueKey\", \"t0\".\"PrimaryVersionId\", \"t0\".\"ProductionLocations\", \"t0\".\"ProductionYear\", \"t0\".\"RunTimeTicks\", \"t0\".\"SeasonId\", \"t0\".\"SeasonName\", \"t0\".\"SeriesId\", \"t0\".\"SeriesName\", \"t0\".\"SeriesPresentationUniqueKey\", \"t0\".\"ShowId\", \"t0\".\"Size\", \"t0\".\"SortName\", \"t0\".\"StartDate\", \"t0\".\"Studios\", \"t0\".\"Tagline\", \"t0\".\"Tags\", \"t0\".\"TopParentId\", \"t0\".\"TotalBitrate\", \"t0\".\"Type\", \"t0\".\"UnratedType\", \"t0\".\"Width\" FROM \"BaseItems\" AS \"t0\" WHERE \"t0\".\"Id\" IN ( SELECT COALESCE(MIN(CASE WHEN \"t1\".\"PrimaryVersionId\" IS NULL THEN \"t1\".\"Id\" END), MIN(\"t1\".\"Id\")) FROM \"BaseItems\" AS \"t1\" WHERE \"t1\".\"Type\" = @p0 AND \"t1\".\"PrimaryVersionId\" IS NULL AND (\"t1\".\"OwnerId\" IS NULL OR \"t1\".\"ExtraType\" IS NOT NULL) GROUP BY \"t1\".\"PresentationUniqueKey\" ) ORDER BY \"t0\".\"SortName\", \"t0\".\"Name\" LIMIT @p1 ) AS \"t2\" LEFT JOIN \"BaseItemProviders\" AS \"t3\" ON \"t2\".\"Id\" = \"t3\".\"ItemId\" LEFT JOIN \"BaseItemMetadataFields\" AS \"t4\" ON \"t2\".\"Id\" = \"t4\".\"ItemId\" LEFT JOIN \"UserData\" AS \"t5\" ON \"t2\".\"Id\" = \"t5\".\"ItemId\" LEFT JOIN \"BaseItemImageInfos\" AS \"t6\" ON \"t2\".\"Id\" = \"t6\".\"ItemId\" LEFT JOIN \"LinkedChildren\" AS \"t7\" ON \"t2\".\"Id\" = \"t7\".\"ParentId\" ORDER BY \"t2\".\"SortName\", \"t2\".\"Name\", \"t2\".\"Id\", \"t3\".\"ItemId\", \"t3\".\"ProviderId\", \"t4\".\"Id\", \"t4\".\"ItemId\", \"t5\".\"ItemId\", \"t5\".\"UserId\", \"t5\".\"CustomDataKey\", \"t6\".\"Id\", \"t7\".\"ParentId\"",
         "source": "Linq",
         "count": 1,
-        "durationMs": 0.521
+        "durationMs": 0.513,
+        "rowsReturned": 180,
+        "callSite": "BaseItemRepository.Querying.cs:62 BaseItemRepository.GetItems"
       }
     ],
     "diagnostics": [
