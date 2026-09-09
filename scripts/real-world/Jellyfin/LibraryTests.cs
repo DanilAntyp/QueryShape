@@ -156,6 +156,7 @@ public sealed class LibraryTests : IDisposable
         {
             _output.WriteLine($"  [{command.Sequence}] {command.Fingerprint} rows={command.RowsReturned?.ToString() ?? "-"} " +
                 $"roots={command.DistinctRootsEstimate?.ToString() ?? "-"} {command.Duration.TotalMilliseconds:F1}ms " +
+                $"split={command.Query?.SplittingBehavior}{(command.Query?.SplittingIsExplicit == true ? "(explicit)" : "(default)")} " +
                 $"{command.CallSite?.ToString() ?? "call site unknown"}");
             _output.WriteLine($"      {Truncate(command.Shape, 400)}");
         }

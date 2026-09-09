@@ -301,8 +301,12 @@ QueryShape.QueryInfo.RootTableName.get -> string?
 QueryShape.QueryInfo.RootTableName.init -> void
 QueryShape.QueryInfo.SplittingBehavior.get -> string!
 QueryShape.QueryInfo.SplittingBehavior.init -> void
+QueryShape.QueryInfo.SplittingIsExplicit.get -> bool
+QueryShape.QueryInfo.SplittingIsExplicit.init -> void
 QueryShape.QueryInfo.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryInfo.Tags.init -> void
+QueryShape.QueryInfo.TrackingIsExplicit.get -> bool
+QueryShape.QueryInfo.TrackingIsExplicit.init -> void
 QueryShape.QueryInfo.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryShapeDbContextOptionsBuilderExtensions
 QueryShape.QueryShapeOptions

@@ -117,13 +117,13 @@ A deliberately incorrect candidate dropped contributors without phone numbers. Q
 
 | Actual operation | What QueryShape recorded | Why it matters |
 |---|---|---|
-| `GetItems` with all fields, the poster-grid request | **QS006:** 5 collection includes, **180 rows for 20 items** | `PrepareItemQuery` pins item queries to `AsSingleQuery()`, so rows multiply per item. |
+| `GetItems` with all fields, the poster-grid request | **QS006:** 5 collection includes, **180 rows for 20 items** | Five collections in one statement, so rows multiply per item. |
 | The same query at one image per type and four provider ids | **QS002:** **800 rows for the same 20 items**, 40 per item | The fan-out, not the page size, is what grows. |
 | `GetLatestItemList(movies)` | **QS006** at `LoadLatestByIds`: 108 rows for 12 items | The same include set is reached by a second path. |
 | Upstream's own random-sort `AsSplitQuery` branch, same fan-out | **360 rows across 7 commands**, no finding | Bounds the row cost of the alternative, using upstream code. |
 | `GetItemIdsList`, `GetGenres` | silent; **QS003 did not fire** on the `AsEnumerable()` deserialization boundaries | Deliberate client-side work was not reported as client-side evaluation. |
 
-This pattern is deliberate upstream: Jellyfin globally ignores EF Core's own `MultipleCollectionIncludeWarning`. What QueryShape adds is the measured multiplier and the call site per request, not a bug report — splitting these queries trades rows for round trips, which is an upstream judgement call.
+This pattern is deliberate upstream: Jellyfin globally ignores EF Core's own `MultipleCollectionIncludeWarning`, and uses `AsSplitQuery()` where it wants splitting. What QueryShape adds is the measured multiplier, the call site, and whether single-query loading was chosen there or inherited from the context — at both flagged sites it is inherited. Splitting trades rows for round trips, so the decision stays upstream's; this is not a bug report.
 
 [Read the case study and scope reports →](docs/validation/jellyfin.md) · [Reproduce the run →](scripts/real-world/Jellyfin/README.md)
 

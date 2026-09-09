@@ -57,7 +57,10 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                 $"Queries that return entity types are tracked by default: for every {root} it materializes, EF Core also creates an entry in the change tracker " +
                 "with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for " + root +
                 ", so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, " +
-                "but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
+                "but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis." +
+                (q.TrackingIsExplicit
+                    ? " This query calls AsTracking() itself, so tracking was asked for here rather than inherited from the context: something outside this scope probably relies on it."
+                    : string.Empty),
                 c.CallSite,
                 [c.Fingerprint],
                 new Evidence(
@@ -68,6 +71,7 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                     SampleExpression: q.Expression,
                     Details: RuleHelpers.Details(
                         ("saveChangesInScope", scope.SaveChanges.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                        ("tracking", q.TrackingIsExplicit ? "AsTracking (explicit)" : "context default"),
                         ("trackedEntitiesObserved", c.TrackedEntities.ToString(System.Globalization.CultureInfo.InvariantCulture)))),
                 new Fix(
                     $"Add .AsNoTracking() to the {root} query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",

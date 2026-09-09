@@ -47,6 +47,7 @@ public sealed class MissingSplitQueryRule : IRule
             var root = q.RootEntityShortName ?? "root";
             var includes = string.Join(", ", q.CollectionIncludes);
             var rootsText = roots is { } rr ? $" for {RuleHelpers.N(rr)} {root} entities" : string.Empty;
+            var chosen = q.SplittingIsExplicit;
 
             yield return new Diagnosis(
                 RuleId,
@@ -55,7 +56,10 @@ public sealed class MissingSplitQueryRule : IRule
                 $"This query includes {q.CollectionIncludes.Count} collections ({includes}) and EF Core loads them with a single SELECT that LEFT JOINs every collection, " +
                 $"so the row count is the product of the collection sizes per {root} rather than their sum. Today that is {RuleHelpers.N(rows)} rows{rootsText}, which is tolerable, " +
                 "but the multiplication grows with the data: as either collection gets longer the same query turns into a Cartesian explosion (QS002). " +
-                "EF Core itself warns about this pattern (MultipleCollectionIncludeWarning) and offers AsSplitQuery as the switch.",
+                "EF Core itself warns about this pattern (MultipleCollectionIncludeWarning) and offers AsSplitQuery as the switch." +
+                (chosen
+                    ? " This query calls AsSingleQuery() itself, so that warning was already answered here: treat this as the current cost of that decision, not as an oversight."
+                    : string.Empty),
                 c.CallSite,
                 [c.Fingerprint],
                 new Evidence(
@@ -67,6 +71,7 @@ public sealed class MissingSplitQueryRule : IRule
                     Details: RuleHelpers.Details(
                         ("collectionIncludes", includes),
                         ("distinctRoots", roots?.ToString(CultureInfo.InvariantCulture) ?? "unknown"),
+                        ("splitting", chosen ? "AsSingleQuery (explicit)" : "SingleQuery (context default)"),
                         ("efCoreWarning", efWarned ? "MultipleCollectionInclude" : "none"))),
                 new Fix(
                     $"Add .AsSplitQuery() to the {root} query (or UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) for the whole context)",
@@ -75,7 +80,10 @@ public sealed class MissingSplitQueryRule : IRule
                     RuleHelpers.InsertAfterRoot(q.Expression, "AsSplitQuery()"),
                     c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()", q) : null,
                     "Split queries load each collection with its own statement keyed by the root ids, so rows are transferred once. The price is one extra round trip per collection " +
-                    "and no snapshot consistency across the statements (wrap in a transaction if that matters). Setting the default on the DbContext makes every multi-include query split.",
+                    "and no snapshot consistency across the statements (wrap in a transaction if that matters). Setting the default on the DbContext makes every multi-include query split." +
+                    (chosen
+                        ? " This chain already calls AsSingleQuery(), so the patch reverses an explicit choice: check why it was made first."
+                        : string.Empty),
                     scope.Options.DocsUrlFor(RuleId)));
         }
     }

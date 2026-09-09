@@ -42,6 +42,8 @@ public sealed class CartesianExplosionRule : IRule
             var includes = string.Join(", ", q.CollectionIncludes);
             var ratio = (double)rows / roots;
             var x = RuleHelpers.LambdaName(root);
+            // Single-query loading can be inherited from the context or written here. Saying which changes what the reader should do about it.
+            var chosen = q.SplittingIsExplicit;
 
             yield return new Diagnosis(
                 RuleId,
@@ -51,7 +53,10 @@ public sealed class CartesianExplosionRule : IRule
                 $"The database returns one row for every combination: a {root} with 5 {q.CollectionIncludes[0]} and 4 {q.CollectionIncludes[1]} comes back as 20 rows, not 9. " +
                 $"Here {RuleHelpers.N(roots)} {root} entities produced {RuleHelpers.N(rows)} rows ({ratio.ToString("0.#", CultureInfo.InvariantCulture)} per root), " +
                 $"and every one of those rows repeats all the {root} columns and the columns of the other collection. EF Core de-duplicates them in memory afterwards, " +
-                "so the app pays for transferring and parsing rows that carry no new information, and the multiplication grows with each additional collection.",
+                "so the app pays for transferring and parsing rows that carry no new information, and the multiplication grows with each additional collection." +
+                (chosen
+                    ? " This query calls AsSingleQuery() itself, so single-query loading was chosen here rather than inherited: the number above is what that choice costs at this data size."
+                    : string.Empty),
                 c.CallSite,
                 [c.Fingerprint],
                 new Evidence(
@@ -64,6 +69,7 @@ public sealed class CartesianExplosionRule : IRule
                         ("distinctRoots", roots.ToString(CultureInfo.InvariantCulture)),
                         ("rowsPerRoot", ratio.ToString("0.#", CultureInfo.InvariantCulture)),
                         ("collectionIncludes", includes),
+                        ("splitting", chosen ? "AsSingleQuery (explicit)" : "SingleQuery (context default)"),
                         ("efCoreWarning", q.Warnings.Contains("MultipleCollectionInclude", StringComparer.Ordinal) ? "MultipleCollectionInclude" : "none"))),
                 new Fix(
                     $"Add .AsSplitQuery() to the {root} query so each collection loads with its own SELECT",
@@ -73,7 +79,10 @@ public sealed class CartesianExplosionRule : IRule
                     c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()", q) : null,
                     $"With AsSplitQuery, EF Core issues one SELECT for {root} and one per collection, joined by the root keys: rows are transferred once each. " +
                     "It costs extra round trips and gives up consistency between the statements unless you wrap them in a transaction; if you only need a few fields, " +
-                    $"a Select projection ({x} => new {{ {x}.Id, Count = {x}.{q.CollectionIncludes[0]}.Count }}) avoids the includes entirely.",
+                    $"a Select projection ({x} => new {{ {x}.Id, Count = {x}.{q.CollectionIncludes[0]}.Count }}) avoids the includes entirely." +
+                    (chosen
+                        ? " This chain already calls AsSingleQuery(), so applying the patch reverses a decision someone made deliberately: find out why before accepting it."
+                        : string.Empty),
                     scope.Options.DocsUrlFor(RuleId)));
         }
     }

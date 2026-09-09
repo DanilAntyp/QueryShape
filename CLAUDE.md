@@ -109,7 +109,7 @@ Two normalized forms of every SQL command, both deterministic:
 - **Shape**: SQL with parameter *values* stripped and parameter *names* canonicalized positionally (`@p0`, `@p1`… — EF Core derives names from C# variables, see ADR-0006), whitespace collapsed, EF Core's auto-generated aliases (`[t]`, `[o0]`…) canonicalized to positional aliases, tags/comments removed. Two queries with the same shape are "the same query with different arguments."
 - **Fingerprint**: SHA-256 of the shape, first 12 hex chars. Used in snapshots and OTel attributes.
 
-Also record: provider name, `CommandType`, rows affected/returned where available, duration, whether tracking was on, `QuerySplittingBehavior`.
+Also record: provider name, `CommandType`, rows affected/returned where available, duration, whether tracking was on, `QuerySplittingBehavior`, and for the last two whether the query asked for them itself (`AsNoTracking`/`AsSplitQuery`/`AsSingleQuery`) or inherited the context default — a rule that reports an inherited default is reporting something nobody decided, which reads differently from one that reverses a deliberate choice.
 
 ### 4.4 Raw ADO.NET escape hatch
 

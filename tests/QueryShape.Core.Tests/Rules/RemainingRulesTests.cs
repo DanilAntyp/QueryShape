@@ -6,12 +6,12 @@ namespace QueryShape.Core.Tests.Rules;
 
 public class CartesianExplosionRuleTests
 {
-    private static CapturedCommand IncludeQuery(QueryShapeScope scope, int rows, int roots, string splitting = "SingleQuery")
+    private static CapturedCommand IncludeQuery(QueryShapeScope scope, int rows, int roots, string splitting = "SingleQuery", bool explicitSplitting = false)
     {
         var q = new QueryInfo
         {
             Expression = "DbSet<Customer>()\n    .Include(c => c.Orders)\n    .Include(c => c.Addresses)",
-            ExpressionHash = Fingerprint.Compute("inc" + splitting),
+            ExpressionHash = Fingerprint.Compute("inc" + splitting + explicitSplitting),
             RootEntityShortName = "Customer",
             RootEntityType = "Test.Customer",
             RootTableName = "Customers",
@@ -19,6 +19,7 @@ public class CartesianExplosionRuleTests
             IsTracking = true,
             CollectionIncludes = ["Orders", "Addresses"],
             SplittingBehavior = splitting,
+            SplittingIsExplicit = explicitSplitting,
         };
         var c = scope.Add("SELECT * FROM Customers c LEFT JOIN Orders o ON ... LEFT JOIN Addresses a ON ...", query: q, rows: rows);
         c.DistinctRootsEstimate = roots;
@@ -56,6 +57,35 @@ public class CartesianExplosionRuleTests
     }
 
     [Fact]
+    public void An_explicit_AsSingleQuery_is_reported_as_a_decision_rather_than_an_oversight()
+    {
+        using var scope = Synthetic.Scope();
+        IncludeQuery(scope, rows: 400, roots: 40, explicitSplitting: true);
+        IncludeQuery(scope, rows: 60, roots: 20, explicitSplitting: true);
+
+        var explosion = new CartesianExplosionRule().Analyze(scope).Should().ContainSingle().Subject;
+        explosion.Explanation.Should().Contain("calls AsSingleQuery() itself");
+        explosion.Evidence.Details!["splitting"].Should().Be("AsSingleQuery (explicit)");
+        explosion.SuggestedFix!.Rationale.Should().Contain("reverses a decision someone made deliberately");
+
+        var candidate = new MissingSplitQueryRule().Analyze(scope).Should().ContainSingle().Subject;
+        candidate.Explanation.Should().Contain("that warning was already answered here");
+        candidate.Evidence.Details!["splitting"].Should().Be("AsSingleQuery (explicit)");
+    }
+
+    [Fact]
+    public void An_inherited_single_query_default_is_not_described_as_a_choice()
+    {
+        using var scope = Synthetic.Scope();
+        IncludeQuery(scope, rows: 400, roots: 40);
+
+        var d = new CartesianExplosionRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Explanation.Should().NotContain("AsSingleQuery() itself");
+        d.Evidence.Details!["splitting"].Should().Be("SingleQuery (context default)");
+        d.SuggestedFix!.Rationale.Should().NotContain("reverses a decision");
+    }
+
+    [Fact]
     public void Neither_fires_for_split_queries_or_tiny_results()
     {
         using var scope = Synthetic.Scope();
@@ -86,6 +116,18 @@ public class TrackingOnReadOnlyQueryRuleTests
         d.Explanation.Should().Contain("snapshot of every property");
         d.SuggestedFix!.Summary.Should().StartWith("Add .AsNoTracking() to the Product query");
         d.SuggestedFix.AfterSnippet.Should().Be("DbSet<Product>()\n    .AsNoTracking()\n    .Where(p => p.Price > @__min_0)");
+    }
+
+    [Fact]
+    public void Says_so_when_the_query_asked_for_tracking_itself()
+    {
+        using var scope = Synthetic.Scope();
+        var q = Synthetic.Query("DbSet<Product>()\n    .AsTracking()", "Product", tracking: true, trackingIsExplicit: true);
+        scope.Add("SELECT * FROM Products", query: q, rows: 10);
+
+        var d = new TrackingOnReadOnlyQueryRule().Analyze(scope).Should().ContainSingle().Subject;
+        d.Explanation.Should().Contain("calls AsTracking() itself");
+        d.Evidence.Details!["tracking"].Should().Be("AsTracking (explicit)");
     }
 
     [Fact]

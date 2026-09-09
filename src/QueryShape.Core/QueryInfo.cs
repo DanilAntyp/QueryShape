@@ -53,6 +53,12 @@ public sealed class QueryInfo
     /// <summary><c>true</c> when the query materializes entity instances the change tracker will track.</summary>
     public bool IsTracking { get; init; }
 
+    /// <summary>
+    /// <c>true</c> when the query itself calls <c>AsTracking</c>/<c>AsNoTracking</c>(<c>WithIdentityResolution</c>), so the tracking behavior is a
+    /// decision written at the call site; <c>false</c> when it is inherited from the context default.
+    /// </summary>
+    public bool TrackingIsExplicit { get; init; }
+
     /// <summary><c>true</c> when the result element type is an entity type (as opposed to a projection or scalar).</summary>
     public bool ReturnsEntities { get; init; }
 
@@ -76,6 +82,12 @@ public sealed class QueryInfo
 
     /// <summary>Effective query splitting behavior (from <c>AsSplitQuery</c>/<c>AsSingleQuery</c> or the context default).</summary>
     public string SplittingBehavior { get; init; } = "SingleQuery";
+
+    /// <summary>
+    /// <c>true</c> when the query itself calls <c>AsSplitQuery</c>/<c>AsSingleQuery</c>, so <see cref="SplittingBehavior"/> is a decision someone
+    /// wrote at the call site; <c>false</c> when it is inherited from the context default. The last such call in the chain wins, as in EF Core.
+    /// </summary>
+    public bool SplittingIsExplicit { get; init; }
 
     /// <summary>Distinct collection navigations loaded via <c>Include</c>/<c>ThenInclude</c>.</summary>
     public IReadOnlyList<string> CollectionIncludes { get; init; } = [];

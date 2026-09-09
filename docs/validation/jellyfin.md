@@ -19,7 +19,7 @@ remained unchanged.
 
 ## What was found
 
-`BaseItemRepository.PrepareItemQuery` pins every item query to `AsSingleQuery()`
+`BaseItemRepository.PrepareItemQuery` starts every item query with `AsSingleQuery()`
 (`BaseItemRepository.QueryBuilding.cs:30`), and `ApplyNavigations`
 (`BaseItemRepository.QueryBuilding.cs:249-302`) then adds up to seven collection `Include`s depending on the
 `DtoOptions` the caller passes. For a poster-grid request — all fields, images and user data, which is what
@@ -35,6 +35,15 @@ the same query through `LoadLatestByIds` (`BaseItemRepository.Querying.cs:216`):
 
 The row multiplication is independent of the provider; the per-item fan-out, not the page size, is what
 drives it.
+
+Neither flagged query carries the explicit `AsSingleQuery()` that `PrepareItemQuery` set: on the collapsing
+path `ApplyGroupingFilter` rebuilds the query from `context.BaseItems.AsNoTracking()`
+(`QueryBuilding.cs:104-116`), and `LoadLatestByIds` builds its own query the same way, so both inherit the
+context default instead. QueryShape reports them as `splitting: SingleQuery (context default)`, while the
+queries that do keep the call — `GetLatestMovieItems` (`Querying.cs:248`) and `GetItemValues`
+(`ByName.cs:222`, `:251`) — come back as `SingleQuery (explicit)`, and all six commands of the random-sort
+path as `SplitQuery (explicit)`. The executed behavior is the same either way, because single-query loading
+is also the default; what the rebuild drops is the statement of intent at the call site that pays for it.
 
 ## Measured alternative, using upstream's own code
 
@@ -56,8 +65,9 @@ ignores it globally in `SqliteDatabaseProvider.Initialise`
 (`src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/SqliteDatabaseProvider.cs:85-87`, marked TODO
 pending [efcore#35873](https://github.com/dotnet/efcore/pull/35873)). So the pattern is deliberate and the
 framework's own warning is off in production. What QueryShape adds is the measured multiplier per request
-scope and the call site, not the news that collection includes join. Whether to split these queries is an
-upstream judgement call about round trips versus rows; this is not a bug report.
+scope, the call site, and whether the splitting behavior was chosen there or inherited — not the news that
+collection includes join. Whether to split these queries is an upstream judgement call about round trips
+versus rows; this is not a bug report.
 
 ## No false positives in the silent scenarios
 

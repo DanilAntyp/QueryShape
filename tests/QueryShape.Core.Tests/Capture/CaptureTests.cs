@@ -43,6 +43,48 @@ public class CaptureTests : IDisposable
         diagnosis.Title.Should().Contain("Customer entities");
     }
 
+
+    [Fact]
+    public async Task Explicit_splitting_and_tracking_are_distinguished_from_the_context_default()
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        await ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines).ToListAsync();
+        var inherited = scope.Commands[^1].Query!;
+        inherited.SplittingBehavior.Should().Be("SingleQuery");
+        inherited.SplittingIsExplicit.Should().BeFalse("nothing in the query asked for it");
+        inherited.IsTracking.Should().BeTrue();
+        inherited.TrackingIsExplicit.Should().BeFalse();
+
+        await ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines).AsSingleQuery().AsNoTracking().ToListAsync();
+        var chosen = scope.Commands[^1].Query!;
+        chosen.SplittingBehavior.Should().Be("SingleQuery");
+        chosen.SplittingIsExplicit.Should().BeTrue("the query calls AsSingleQuery itself");
+        chosen.IsTracking.Should().BeFalse();
+        chosen.TrackingIsExplicit.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task The_last_splitting_call_in_the_chain_is_the_one_reported_and_the_one_EF_Core_applies(bool splitLast)
+    {
+        using var scope = QueryShapeScope.Begin(options: _shop.Options);
+        await using var ctx = _shop.CreateContext();
+
+        var query = ctx.Customers.Include(c => c.Orders).ThenInclude(o => o.Lines);
+        await (splitLast
+            ? query.AsSingleQuery().AsSplitQuery().ToListAsync()
+            : query.AsSplitQuery().AsSingleQuery().ToListAsync());
+
+        // EF Core splits into one statement per collection level; a single query stays one statement.
+        scope.Commands.Should().HaveCount(splitLast ? 3 : 1);
+        var reported = scope.Commands[0].Query!;
+        reported.SplittingIsExplicit.Should().BeTrue();
+        reported.SplittingBehavior.Should().Be(splitLast ? "SplitQuery" : "SingleQuery");
+    }
+
     public void Dispose() => _shop.Dispose();
 
     [Fact]
