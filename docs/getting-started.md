@@ -16,6 +16,18 @@ For scaling, make the fixture implement `IAsyncDisposable`. `PrepareAsync(input,
 
 Use `QueryScenario<int, MyFixture, MyDto[]>` for size-based data. Use `RunCasesAsync` with named inputs for distributions and multiple dimensions. Existing runnable examples are in `tests/QueryShape.Testing.Tests/AdoptionTests.cs`, `ScenarioTests.cs`, and the [real-repository harnesses](../scripts/real-world).
 
+## When the finding points at your data-access layer
+
+A finding names the first user frame that ran the query. In an application with repositories or a specification evaluator, that frame is the repository, which is where the LINQ is written but not where the decision to ask for the data was made. Diagnoses also carry the frames above it (`from A ← B ← C`, innermost first; `QueryShapeOptions.CallPathDepth`, default 3, `1` records only the call site).
+
+To attribute the finding to the caller instead, name the layer:
+
+```csharp
+o.InfrastructurePrefixes.Add("Shop.Infrastructure");   // assembly or namespace prefix
+```
+
+Those frames stay in the path, but the call site becomes the first caller above them. Suggested patches still target the frame that wrote the LINQ — the caller's line names the operation, only the query's line can be edited.
+
 ## Common first-run problems
 
 | Symptom | What to check |

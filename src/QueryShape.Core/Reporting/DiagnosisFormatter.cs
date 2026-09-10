@@ -43,6 +43,12 @@ public static class DiagnosisFormatter
             sb.Append(indent).Append("  at   ").Append(d.CallSite).Append('\n');
         }
 
+        if (d.Evidence.CallPath.Count > 1)
+        {
+            // Innermost first: the frame that ran the query, then who asked it to.
+            sb.Append(indent).Append("  from ").Append(string.Join(" ← ", d.Evidence.CallPath)).Append('\n');
+        }
+
         AppendWrapped(sb, indent + "  why  ", indent + "       ", d.Explanation);
 
         if (d.SuggestedFix is { } fix)

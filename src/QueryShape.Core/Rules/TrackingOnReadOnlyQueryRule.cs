@@ -78,7 +78,7 @@ public sealed class TrackingOnReadOnlyQueryRule : IRule
                     FixKind.CodeChange,
                     q.Expression,
                     RuleHelpers.InsertAfterRoot(q.Expression, "AsNoTracking()"),
-                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsNoTracking()", q) : null,
+                    scope.Options.ShouldReadSourceFiles && RuleHelpers.PatchSite(c) is { } site ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsNoTracking()", q) : null,
                     $"No-tracking queries can avoid change-tracker entries and snapshots for {root}; compare results and persisted state before accepting the change. " +
                     $"Use AsNoTrackingWithIdentityResolution() if the same {root} appears several times in the result and you want one instance ({x} references stay consistent).",
                     scope.Options.DocsUrlFor(RuleId)));

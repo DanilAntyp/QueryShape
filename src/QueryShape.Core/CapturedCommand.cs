@@ -90,6 +90,12 @@ public sealed class CapturedCommand
     /// <summary>How <see cref="CallSite"/> was obtained.</summary>
     public CallSiteOrigin CallSiteOrigin { get; init; }
 
+    /// <summary>
+    /// User-code frames the query was reached through, innermost first, when the stack was walked with <see cref="QueryShapeOptions.CallPathDepth"/> &gt; 1.
+    /// The first entry is the frame that issued the query; <see cref="CallSite"/> is the one it is attributed to, which differs when infrastructure frames were skipped.
+    /// </summary>
+    public IReadOnlyList<CallSite> CallPath { get; init; } = [];
+
     /// <summary>EF Core's command id.</summary>
     public Guid CommandId { get; init; }
 

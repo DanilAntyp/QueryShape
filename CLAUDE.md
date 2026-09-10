@@ -96,6 +96,7 @@ Correlate expression → command via `QueryExpressionEventData` and the `Command
 1. Default: capture call site only when `QueryShapeOptions.CaptureCallSites = true` (on by default in test mode, off in production).
 2. Cheap alternative always available: honor `.TagWith(...)`; provide a `TagWithCallSite()` extension using `[CallerFilePath]`/`[CallerLineNumber]`/`[CallerMemberName]` that injects the tag into the SQL comment. This is zero-cost and works in production.
 3. Stack walking, when enabled, must skip frames in `Microsoft.EntityFrameworkCore.*`, `System.*`, `QueryShape.*` and report the first user frame as `file:line member`.
+4. The same walk keeps the frames above it as a **call path** (`CallPathDepth`, default 3, innermost first): in an app with a data-access layer the first user frame is the repository, while the decision to ask for the data was made by its caller. `InfrastructurePrefixes` (assembly or namespace prefixes) marks such layers, and the query is then attributed to the first caller above them — the path still shows the skipped frames. Patches always target the frame that wrote the LINQ, never the frame blamed for asking (ADR-0014).
 
 ### 4.2 Scope
 

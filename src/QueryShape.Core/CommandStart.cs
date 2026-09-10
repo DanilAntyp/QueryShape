@@ -21,4 +21,8 @@ public sealed record CommandStart(
     IReadOnlyList<string> Tags,
     CallSite? CallSite,
     CallSiteOrigin CallSiteOrigin,
-    DateTimeOffset StartTime);
+    DateTimeOffset StartTime)
+{
+    /// <summary>User-code frames the command was reached through, innermost first; empty unless <see cref="QueryShapeOptions.CallPathDepth"/> asks for more than one.</summary>
+    public IReadOnlyList<CallSite> CallPath { get; init; } = [];
+}

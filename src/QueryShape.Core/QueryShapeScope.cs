@@ -188,6 +188,8 @@ public sealed class QueryShapeScope : IDisposable
                     Options.DocsUrlFor(OverflowRuleId))));
         }
 
+        AttachCallPaths(results);
+
         results.Sort(static (a, b) =>
         {
             var bySeverity = b.Severity.CompareTo(a.Severity);
@@ -200,6 +202,51 @@ public sealed class QueryShapeScope : IDisposable
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Adds the recorded call path to every diagnosis whose command has one, so rules do not each have to carry it.
+    /// A diagnosis keeps the path of the first of its commands that recorded more than one frame.
+    /// </summary>
+    private void AttachCallPaths(List<Diagnosis> results)
+    {
+        if (Options.CallPathDepth <= 1)
+        {
+            return;
+        }
+
+        Dictionary<string, IReadOnlyList<CallSite>>? paths = null;
+        foreach (var command in Commands)
+        {
+            if (command.CallPath.Count > 1)
+            {
+                paths ??= new Dictionary<string, IReadOnlyList<CallSite>>(StringComparer.Ordinal);
+                paths.TryAdd(command.Fingerprint, command.CallPath);
+            }
+        }
+
+        if (paths is null)
+        {
+            return;
+        }
+
+        for (var i = 0; i < results.Count; i++)
+        {
+            var d = results[i];
+            if (d.Evidence.CallPath.Count > 0)
+            {
+                continue;
+            }
+
+            foreach (var fingerprint in d.Fingerprints)
+            {
+                if (paths.TryGetValue(fingerprint, out var path))
+                {
+                    results[i] = d with { Evidence = d.Evidence with { CallPath = path } };
+                    break;
+                }
+            }
+        }
     }
 
     /// <summary>Closes the scope, restores the parent as current and notifies listeners.</summary>

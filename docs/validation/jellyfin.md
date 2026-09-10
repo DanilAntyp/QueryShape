@@ -36,6 +36,11 @@ the same query through `LoadLatestByIds` (`BaseItemRepository.Querying.cs:216`):
 The row multiplication is independent of the provider; the per-item fan-out, not the page size, is what
 drives it.
 
+Both findings also record the frames above them. The `latest-movies` one reads
+`LoadLatestByIds (Querying.cs:216) ← GetLatestMovieItems (:255) ← GetLatestItemList (:131)`, which is the route
+that reaches the shared include set; a deployment that also configured `InfrastructurePrefixes` would see the
+API frame that asked for those fields instead of the repository.
+
 Neither flagged query carries the explicit `AsSingleQuery()` that `PrepareItemQuery` set: on the collapsing
 path `ApplyGroupingFilter` rebuilds the query from `context.BaseItems.AsNoTracking()`
 (`QueryBuilding.cs:104-116`), and `LoadLatestByIds` builds its own query the same way, so both inherit the

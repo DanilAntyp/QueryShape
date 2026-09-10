@@ -30,7 +30,7 @@ internal sealed class CommandCapturer
     private int _sampleKeyCount;
     private int _sampledSiteCount;
     private readonly ConcurrentDictionary<string, int> _sampleCounts = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, CallSite> _sampledCallSites = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, CallStack> _sampledCallSites = new(StringComparer.Ordinal);
     private int _unscopedSequence;
 
     public ExpressionCorrelator Correlator { get; } = new();
@@ -156,8 +156,11 @@ internal sealed class CommandCapturer
             }
 
             var normalized = Normalize(command.CommandText ?? string.Empty, maskLiterals: source == QuerySource.Raw);
-            var (callSite, origin) = ResolveCallSite(options, scope, normalized.Tags, normalized.Fingerprint);
-            var start = new CommandStart(commandId, normalized.Fingerprint, normalized.Shape, source, CallSiteCapture.WithoutCallSiteTags(normalized.Tags), callSite, origin, startTime);
+            var (stack, origin) = ResolveCallSite(options, scope, normalized.Tags, normalized.Fingerprint);
+            var start = new CommandStart(commandId, normalized.Fingerprint, normalized.Shape, source, CallSiteCapture.WithoutCallSiteTags(normalized.Tags), stack.Site, origin, startTime)
+            {
+                CallPath = stack.Path,
+            };
 
             if (Interlocked.Increment(ref _pendingStartCount) > 10_000)
             {
@@ -233,15 +236,17 @@ internal sealed class CommandCapturer
 
             // The Executing side may have resolved the call site already (and consumed the sampling slot): reuse it rather than walking twice.
             CallSite? callSite;
+            IReadOnlyList<CallSite> callPath;
             CallSiteOrigin callSiteOrigin;
             if (_pendingStarts.TryRemove(commandId, out var start))
             {
                 Interlocked.Decrement(ref _pendingStartCount);
-                (callSite, callSiteOrigin) = (start.CallSite, start.CallSiteOrigin);
+                (callSite, callPath, callSiteOrigin) = (start.CallSite, start.CallPath, start.CallSiteOrigin);
             }
             else
             {
-                (callSite, callSiteOrigin) = ResolveCallSite(options, scope, allTags, normalized.Fingerprint);
+                var (stack, origin) = ResolveCallSite(options, scope, allTags, normalized.Fingerprint);
+                (callSite, callPath, callSiteOrigin) = (stack.Site, stack.Path, origin);
             }
 
             var parameters = CaptureParameters(command, options.IncludeParameterValues, raw ? command.CommandText : null, out var parameterHash, out var maxCollectionCount);
@@ -264,6 +269,7 @@ internal sealed class CommandCapturer
                 ProviderName = contextState is null ? null : (contextState.ProviderName ??= SafeProviderName(context)),
                 Query = query,
                 CallSite = callSite,
+                CallPath = callPath,
                 CallSiteOrigin = callSiteOrigin,
                 CommandId = commandId,
                 ConnectionId = connectionId,
@@ -390,23 +396,25 @@ internal sealed class CommandCapturer
     }
 
     /// <summary>Tag first (free), then a full stack walk when asked for, then sampling: first execution of a shape and every N-th after it.</summary>
-    private (CallSite? Site, CallSiteOrigin Origin) ResolveCallSite(QueryShapeOptions options, QueryShapeScope? scope, IReadOnlyList<string> tags, string fingerprint)
+    private (CallStack Stack, CallSiteOrigin Origin) ResolveCallSite(QueryShapeOptions options, QueryShapeScope? scope, IReadOnlyList<string> tags, string fingerprint)
     {
         if (CallSiteCapture.FromTags(tags) is { } tagged)
         {
-            return (tagged, CallSiteOrigin.Tag);
+            return (new CallStack(tagged, [tagged]), CallSiteOrigin.Tag); // the tag names one line; there is no path to walk
         }
 
-        if (options.CaptureCallSites || (scope?.Options.CaptureCallSites ?? false))
+        // The scope decides too: a test opts into call sites for the queries inside it even when the context was configured for production.
+        var walkOptions = options.CaptureCallSites ? options : scope?.Options.CaptureCallSites == true ? scope.Options : null;
+        if (walkOptions is not null)
         {
-            var walked = CallSiteCapture.Capture();
-            return (walked, walked is null ? CallSiteOrigin.None : CallSiteOrigin.StackWalk);
+            var walked = CallSiteCapture.Capture(walkOptions);
+            return (walked, walked.Site is null ? CallSiteOrigin.None : CallSiteOrigin.StackWalk);
         }
 
         var interval = options.CallSiteSamplingInterval;
         if (interval <= 0)
         {
-            return (null, CallSiteOrigin.None);
+            return (CallStack.None, CallSiteOrigin.None);
         }
 
         var count = _sampleCounts.AddOrUpdate(fingerprint, 0, static (_, c) => c + 1);
@@ -418,8 +426,8 @@ internal sealed class CommandCapturer
 
         if (count % interval == 0)
         {
-            var sampled = CallSiteCapture.Capture();
-            if (sampled is not null)
+            var sampled = CallSiteCapture.Capture(options);
+            if (sampled.Site is not null)
             {
                 if (_sampledCallSites.TryAdd(fingerprint, sampled))
                 {
@@ -437,10 +445,10 @@ internal sealed class CommandCapturer
                 return (sampled, CallSiteOrigin.Sampled);
             }
 
-            return (null, CallSiteOrigin.None);
+            return (CallStack.None, CallSiteOrigin.None);
         }
 
-        return _sampledCallSites.TryGetValue(fingerprint, out var cached) ? (cached, CallSiteOrigin.Cached) : (null, CallSiteOrigin.None);
+        return _sampledCallSites.TryGetValue(fingerprint, out var cached) ? (cached, CallSiteOrigin.Cached) : (CallStack.None, CallSiteOrigin.None);
     }
 
     /// <summary>The same SQL text is executed over and over (compiled query cache); normalize each distinct text once.</summary>

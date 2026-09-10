@@ -76,7 +76,7 @@ public sealed class CartesianExplosionRule : IRule
                     FixKind.CodeChange,
                     q.Expression,
                     RuleHelpers.InsertAfterRoot(q.Expression, "AsSplitQuery()"),
-                    c.CallSite is { FilePath: not null } site && scope.Options.ShouldReadSourceFiles ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()", q) : null,
+                    scope.Options.ShouldReadSourceFiles && RuleHelpers.PatchSite(c) is { } site ? SourcePatcher.TryInsertBeforeTerminalOperator(site, ".AsSplitQuery()", q) : null,
                     $"With AsSplitQuery, EF Core issues one SELECT for {root} and one per collection, joined by the root keys: rows are transferred once each. " +
                     "It costs extra round trips and gives up consistency between the statements unless you wrap them in a transaction; if you only need a few fields, " +
                     $"a Select projection ({x} => new {{ {x}.Id, Count = {x}.{q.CollectionIncludes[0]}.Count }}) avoids the includes entirely." +

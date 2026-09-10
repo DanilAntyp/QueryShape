@@ -4,9 +4,21 @@ using System.Text.RegularExpressions;
 
 namespace QueryShape.Capture;
 
-/// <summary>Finds the first user-code frame above EF Core / QueryShape, or parses EF Core's own <c>TagWithCallSite</c> tag.</summary>
+/// <summary>One stack walk: the frame the query is attributed to, plus the user frames it was reached through.</summary>
+/// <param name="Site">The frame to blame, or <c>null</c> when no user frame was found.</param>
+/// <param name="Path">User frames, innermost first, at most <see cref="QueryShapeOptions.CallPathDepth"/> of them. Starts at the frame that issued the query, which is <paramref name="Site"/> unless infrastructure frames were skipped for attribution.</param>
+internal readonly record struct CallStack(CallSite? Site, IReadOnlyList<CallSite> Path)
+{
+    /// <summary>Nothing found.</summary>
+    public static readonly CallStack None = new(null, []);
+}
+
+/// <summary>Finds the user-code frames above EF Core / QueryShape, or parses EF Core's own <c>TagWithCallSite</c> tag.</summary>
 internal static partial class CallSiteCapture
 {
+    /// <summary>Never walk further than this many user frames: the path is for reading, and deep recursion must not turn one query into a long walk.</summary>
+    private const int MaxUserFrames = 8;
+
     /// <summary>QueryShape's own assemblies (never user code), by assembly name. The test projects and the sample app keep their names deliberately distinct.</summary>
     private static readonly string[] s_ownAssemblies =
     [
@@ -33,53 +45,99 @@ internal static partial class CallSiteCapture
         "Oracle.",
         "Pomelo.",
         "SQLitePCLRaw",
+
+        // Test runners: they call the user's test method, so they sit above it in the path the same way EF Core sits below it.
+        // Only reachable now that the walk keeps more than one frame (ADR-0014).
+        "xunit.",
+        "nunit.framework",
+        "NUnit3.",
+        "TUnit.",
+        "testhost",
     ];
 
     /// <summary>
     /// Walks the stack. Expensive (needs file info); only call when call-site capture is enabled.
-    /// The first frame outside the skipped assemblies that has source information wins: a data-access library in between
+    /// Frames of EF Core, the BCL and the providers are skipped; what is left is user code, innermost first.
+    /// The attributed site is the first of those frames that has source information and is not
+    /// <see cref="QueryShapeOptions.InfrastructurePrefixes">infrastructure</see>: a data-access library in between
     /// (a repository base class, a specification evaluator) ships without symbols, while the user's code was compiled with them.
     /// Without any source information anywhere, the first non-skipped frame is reported as is.
     /// </summary>
-    public static CallSite? Capture()
+    public static CallStack Capture(QueryShapeOptions? options = null)
     {
         try
         {
+            var depth = Math.Clamp(options?.CallPathDepth ?? 1, 1, MaxUserFrames);
+            var infrastructure = options?.InfrastructurePrefixes;
             var trace = new StackTrace(fNeedFileInfo: true);
-            CallSite? withoutSource = null;
-            for (var i = 0; i < trace.FrameCount; i++)
+            var frames = new List<(CallSite Site, bool IsInfrastructure)>(depth);
+
+            for (var i = 0; i < trace.FrameCount && frames.Count < MaxUserFrames; i++)
             {
                 var frame = trace.GetFrame(i);
                 var method = frame?.GetMethod();
                 var type = method?.DeclaringType;
-                if (method is null || type is null || frame is null)
+                if (method is null || type is null || frame is null || ShouldSkip(type))
                 {
                     continue;
                 }
 
-                if (ShouldSkip(type))
-                {
-                    continue;
-                }
+                frames.Add((new CallSite(frame.GetFileName(), frame.GetFileLineNumber(), DescribeMember(type, method)), IsInfrastructure(type, infrastructure)));
 
-                var file = frame.GetFileName();
-                var site = new CallSite(file, frame.GetFileLineNumber(), DescribeMember(type, method));
-                if (file is not null)
+                // Enough for the path, and the frame to blame is already among them: no reason to keep walking.
+                if (frames.Count >= depth && frames.Exists(f => !f.IsInfrastructure && f.Site.FilePath is not null))
                 {
-                    return site;
+                    break;
                 }
-
-                withoutSource ??= site;
             }
 
-            return withoutSource;
+            if (frames.Count == 0)
+            {
+                return CallStack.None;
+            }
+
+            // Best available: user code with symbols, then user code, then anything with symbols, then the innermost frame.
+            var site = frames.Find(f => !f.IsInfrastructure && f.Site.FilePath is not null).Site
+                ?? frames.Find(f => !f.IsInfrastructure).Site
+                ?? frames.Find(f => f.Site.FilePath is not null).Site
+                ?? frames[0].Site;
+
+            return new CallStack(site, frames.Take(depth).Select(f => f.Site).ToArray());
         }
         catch
         {
             // Stack inspection is best-effort.
         }
 
-        return null;
+        return CallStack.None;
+    }
+
+    /// <summary>Whether a frame belongs to code that issues queries on behalf of its callers, so the query is attributed to the caller instead.</summary>
+    private static bool IsInfrastructure(Type type, IList<string>? prefixes)
+    {
+        if (prefixes is null || prefixes.Count == 0)
+        {
+            return false;
+        }
+
+        var assembly = type.Assembly.GetName().Name;
+        var fullName = type.FullName;
+        for (var i = 0; i < prefixes.Count; i++)
+        {
+            var prefix = prefixes[i];
+            if (prefix.Length == 0)
+            {
+                continue;
+            }
+
+            if ((assembly is not null && assembly.StartsWith(prefix, StringComparison.Ordinal))
+                || (fullName is not null && fullName.StartsWith(prefix, StringComparison.Ordinal)))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Parses EF Core's <c>TagWithCallSite()</c> tag (<c>File: /path/File.cs:42</c>) into a call site. Zero cost at query time.</summary>

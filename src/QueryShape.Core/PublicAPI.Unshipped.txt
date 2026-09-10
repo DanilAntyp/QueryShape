@@ -44,6 +44,8 @@ QueryShape.Capture.QueryShapeInterceptor.ScalarExecutedAsync(System.Data.Common.
 QueryShape.Capture.QueryShapeInterceptor.ScalarExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>
 QueryShape.Capture.QueryShapeInterceptor.ScalarExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>>
 QueryShape.CapturedCommand
+QueryShape.CapturedCommand.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.CapturedCommand.CallPath.init -> void
 QueryShape.CapturedCommand.CallSite.get -> QueryShape.CallSite?
 QueryShape.CapturedCommand.CallSite.init -> void
 QueryShape.CapturedCommand.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
@@ -126,6 +128,8 @@ QueryShape.ClientEvaluatedCall.Operator.get -> string!
 QueryShape.ClientEvaluatedCall.Operator.init -> void
 QueryShape.CommandStart
 QueryShape.CommandStart.<Clone>$() -> QueryShape.CommandStart!
+QueryShape.CommandStart.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.CommandStart.CallPath.init -> void
 QueryShape.CommandStart.CallSite.get -> QueryShape.CallSite?
 QueryShape.CommandStart.CallSite.init -> void
 QueryShape.CommandStart.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
@@ -168,6 +172,8 @@ QueryShape.Diagnosis.Title.get -> string!
 QueryShape.Diagnosis.Title.init -> void
 QueryShape.Evidence
 QueryShape.Evidence.<Clone>$() -> QueryShape.Evidence!
+QueryShape.Evidence.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.Evidence.CallPath.init -> void
 QueryShape.Evidence.Count.get -> int?
 QueryShape.Evidence.Count.init -> void
 QueryShape.Evidence.Deconstruct(out int? Count, out System.TimeSpan? TotalDuration, out long? Rows, out string? SampleSql, out string? SampleExpression, out System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Details) -> void
@@ -310,6 +316,8 @@ QueryShape.QueryInfo.TrackingIsExplicit.init -> void
 QueryShape.QueryInfo.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 QueryShape.QueryShapeDbContextOptionsBuilderExtensions
 QueryShape.QueryShapeOptions
+QueryShape.QueryShapeOptions.CallPathDepth.get -> int
+QueryShape.QueryShapeOptions.CallPathDepth.set -> void
 QueryShape.QueryShapeOptions.CallSiteSamplingInterval.get -> int
 QueryShape.QueryShapeOptions.CallSiteSamplingInterval.set -> void
 QueryShape.QueryShapeOptions.CaptureCallSites.get -> bool
@@ -329,6 +337,7 @@ QueryShape.QueryShapeOptions.Enabled.get -> bool
 QueryShape.QueryShapeOptions.Enabled.set -> void
 QueryShape.QueryShapeOptions.IncludeParameterValues.get -> bool
 QueryShape.QueryShapeOptions.IncludeParameterValues.set -> void
+QueryShape.QueryShapeOptions.InfrastructurePrefixes.get -> System.Collections.Generic.IList<string!>!
 QueryShape.QueryShapeOptions.Listeners.get -> System.Collections.Generic.IList<QueryShape.IQueryShapeListener!>!
 QueryShape.QueryShapeOptions.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory?
 QueryShape.QueryShapeOptions.LoggerFactory.set -> void
@@ -411,6 +420,8 @@ QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceExpiresOn.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceReason.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceReason.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.Basis.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.CallPath.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallPath.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.CallSite.get -> string?
 QueryShape.Reporting.ScopeReportDiagnosis.CallSite.init -> void
 QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.get -> string?

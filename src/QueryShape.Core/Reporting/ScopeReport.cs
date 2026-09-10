@@ -44,6 +44,9 @@ public sealed record ScopeReportDiagnosis(
 {
     /// <summary>Evidence category; a detected pattern is not a measured application slowdown.</summary>
     public string Basis => RuleId is "QS011" or "QS_OVERFLOW" ? "Observed pattern" : "Heuristic risk";
+    /// <summary>The user frames the query was reached through, innermost first, joined with <c>←</c>; <c>null</c> when only the call site was recorded.</summary>
+    public string? CallPath { get; init; }
+
     public string? FindingId { get; init; }
     public string Disposition { get; init; } = "active";
     public string? AcceptanceReason { get; init; }
@@ -120,7 +123,10 @@ public sealed record ScopeReport(
             d.SuggestedFix?.UnifiedDiff,
             d.SuggestedFix?.DocsUrl,
             d.SuggestedFix?.IsPartial ?? false,
-            d.SuggestedFix?.ManualStep)).ToArray();
+            d.SuggestedFix?.ManualStep)
+        {
+            CallPath = d.Evidence.CallPath.Count > 1 ? string.Join(" ← ", d.Evidence.CallPath) : null,
+        }).ToArray();
 
         return new ScopeReport(
             CurrentVersion,

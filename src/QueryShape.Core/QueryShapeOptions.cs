@@ -43,6 +43,20 @@ public sealed class QueryShapeOptions
     public bool CaptureCallSites { get; set; } = Internal.TestEnvironment.IsTestProcess;
 
     /// <summary>
+    /// How many user-code frames to record per command when the stack is walked: 1 keeps only the call site, more record the path it was reached
+    /// through (innermost first), which is what tells you which endpoint or handler asked for the query. Clamped to 1..8. Default 3.
+    /// The frames come out of the walk that already happens for the call site, so a deeper path costs no extra walk.
+    /// </summary>
+    public int CallPathDepth { get; set; } = 3;
+
+    /// <summary>
+    /// Assembly-name or namespace prefixes of code that issues queries on behalf of its callers: repositories, specification evaluators, a data-access
+    /// library of your own. Frames matching one of these are still recorded in the path, but the query is attributed to the first caller above them,
+    /// because that is where the decision to ask for this data was made. Empty by default, which blames the innermost user frame.
+    /// </summary>
+    public IList<string> InfrastructurePrefixes { get; } = new List<string>();
+
+    /// <summary>
     /// Let rules read source files to produce real unified diffs (and the CLI's LLM prompts). <c>null</c> (default) follows <see cref="CaptureCallSites"/>:
     /// on in tests, off in production, where QueryShape must never touch the file system on the request path. Set <c>true</c>/<c>false</c> to decide explicitly.
     /// </summary>

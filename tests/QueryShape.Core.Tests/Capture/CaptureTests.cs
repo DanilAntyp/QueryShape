@@ -85,6 +85,62 @@ public class CaptureTests : IDisposable
         reported.SplittingBehavior.Should().Be(splitLast ? "SplitQuery" : "SingleQuery");
     }
 
+
+    [Fact]
+    public async Task The_call_path_records_who_asked_for_the_query_not_only_who_ran_it()
+    {
+        var options = new QueryShapeOptions { CaptureCallSites = true, CallPathDepth = 3 };
+        using var scope = QueryShapeScope.Begin(options: options);
+        await using var ctx = _shop.CreateContext(options);
+
+        await new Infrastructure.CustomerRepository(ctx).ListAsync();
+
+        var command = scope.Commands.Should().ContainSingle().Subject;
+        // Innermost first: the repository ran it, this test asked for it.
+        command.CallPath.Select(f => f.Member).Should().StartWith(["CustomerRepository.ListAsync", "CaptureTests.The_call_path_records_who_asked_for_the_query_not_only_who_ran_it"]);
+        command.CallSite!.Member.Should().Be("CustomerRepository.ListAsync", "nothing is configured as infrastructure yet");
+    }
+
+    [Fact]
+    public async Task Infrastructure_frames_are_kept_in_the_path_but_the_caller_is_blamed()
+    {
+        var options = new QueryShapeOptions { CaptureCallSites = true, CallPathDepth = 3, ReadSourceFiles = true };
+        options.InfrastructurePrefixes.Add("QueryShape.Core.Tests.Infrastructure");
+        using var scope = QueryShapeScope.Begin(options: options);
+        await using var ctx = _shop.CreateContext(options);
+
+        await new Infrastructure.CustomerRepository(ctx).ListAsync();
+
+        var command = scope.Commands.Should().ContainSingle().Subject;
+        command.CallSite!.Member.Should().Be("CaptureTests.Infrastructure_frames_are_kept_in_the_path_but_the_caller_is_blamed");
+        command.CallPath[0].Member.Should().Be("CustomerRepository.ListAsync", "the frame that ran the query is still worth seeing");
+        command.CallSite.FilePath.Should().EndWith("CaptureTests.cs");
+
+        // Every rule reports the path the same way, without each rule having to carry it.
+        var diagnosis = scope.Analyze().Should().ContainSingle(d => d.RuleId == "QS005").Subject;
+        diagnosis.Evidence.CallPath.Should().Equal(command.CallPath);
+        diagnosis.Title.Should().Contain("CaptureTests.cs");
+        QueryShape.Reporting.DiagnosisFormatter.Format(diagnosis).Should().Contain("from ").And.Contain(" ← ");
+
+        // Blame follows the caller, but only the frame that wrote the LINQ can be edited, so that is where the patch lands.
+        diagnosis.SuggestedFix!.UnifiedDiff.Should().Contain("DataAccessLayer.cs").And.Contain("+    public Task<List<Customer>> ListAsync() => context.Customers.Include(c => c.Orders).AsNoTracking().ToListAsync();");
+    }
+
+    [Fact]
+    public async Task A_single_frame_path_costs_nothing_and_reports_nothing_extra()
+    {
+        var options = new QueryShapeOptions { CaptureCallSites = true, CallPathDepth = 1 };
+        using var scope = QueryShapeScope.Begin(options: options);
+        await using var ctx = _shop.CreateContext(options);
+
+        await new Infrastructure.CustomerRepository(ctx).ListAsync();
+
+        var command = scope.Commands.Should().ContainSingle().Subject;
+        command.CallPath.Should().ContainSingle().Which.Member.Should().Be("CustomerRepository.ListAsync");
+        scope.Analyze().Should().OnlyContain(d => d.Evidence.CallPath.Count == 0);
+    }
+
+
     public void Dispose() => _shop.Dispose();
 
     [Fact]
@@ -170,6 +226,7 @@ public class CaptureTests : IDisposable
     [InlineData(typeof(string), true)]                                    // System.Private.CoreLib
     [InlineData(typeof(CaptureTests), false)]                             // user code (the test assembly is not one of ours)
     [InlineData(typeof(System.Fake.UserCodeInASystemNamespace), false)]  // user code that happens to use a System.* namespace
+    [InlineData(typeof(FactAttribute), true)]                             // the test runner calls the test method: above user code, like EF Core is below it
     public void Frames_are_skipped_by_assembly_not_namespace(Type type, bool skipped)
         => QueryShape.Capture.CallSiteCapture.ShouldSkip(type).Should().Be(skipped);
 

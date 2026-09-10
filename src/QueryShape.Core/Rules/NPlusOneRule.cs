@@ -157,14 +157,14 @@ public sealed class NPlusOneRule : IRule
 
                 // Hunk 1: the Include on the parent query. Hunk 2: the loop reads the navigation instead of querying.
                 var edits = new List<SourcePatcher.LineEdit>();
-                if (scope.Options.ShouldReadSourceFiles && parent?.CallSite is { FilePath: not null } parentSite && SourcePatcher.TryInsertBeforeTerminalOperatorEdit(parentSite, "." + include, parent.Query) is { } includeEdit)
+                if (scope.Options.ShouldReadSourceFiles && parent is not null && RuleHelpers.PatchSite(parent) is { } parentSite && SourcePatcher.TryInsertBeforeTerminalOperatorEdit(parentSite, "." + include, parent.Query) is { } includeEdit)
                 {
                     edits.Add(includeEdit);
                 }
 
                 string? parentVariable = null;
                 SourcePatcher.LineEdit? loopEdit = null;
-                if (plainLoopQuery && edits.Count > 0 && repeated.CallSite is { FilePath: not null } loopSite)
+                if (plainLoopQuery && edits.Count > 0 && RuleHelpers.PatchSite(repeated) is { } loopSite)
                 {
                     loopEdit = SourcePatcher.TryRewriteLoopQuery(loopSite, kf.PropertyName, kf.NavigationOnRelated!, navigationIsCollection: !kf.IsPrimaryKey, out parentVariable);
                     if (loopEdit is not null)

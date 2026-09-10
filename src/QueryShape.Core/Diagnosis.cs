@@ -72,4 +72,11 @@ public sealed record Evidence(
     long? Rows = null,
     string? SampleSql = null,
     string? SampleExpression = null,
-    IReadOnlyDictionary<string, string>? Details = null);
+    IReadOnlyDictionary<string, string>? Details = null)
+{
+    /// <summary>
+    /// User-code frames the query was reached through, innermost first, when more than one was recorded
+    /// (<see cref="QueryShapeOptions.CallPathDepth"/>). Attached by the scope after the rules run, so every rule reports it the same way.
+    /// </summary>
+    public IReadOnlyList<CallSite> CallPath { get; init; } = [];
+}

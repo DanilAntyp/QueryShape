@@ -86,6 +86,11 @@ stack for the first execution of each query shape and then one in every N execut
 call site marked `Cached`, which rules use but the OpenTelemetry listener does not export (so the `queryshape.callsite` attribute stays at sample rate).
 The walk happens synchronously inside the interceptor on the request's own path, sampled or not; there is no background work.
 
+`CallPathDepth` (default 3) decides how many user frames that same walk keeps. The cost of a walk is dominated by building the stack trace with
+file information, which resolves symbols for every frame up front; keeping three frames instead of one adds a few comparisons and a small array to
+a walk that already happened, and the walk stops as soon as it has the frames it needs. `CallPathDepth = 1` restores the pre-0.1 behaviour of
+recording only the call site.
+
 ### Not measured yet
 
 - SQL Server / PostgreSQL providers (Testcontainers), where the row-counting reader wrapper adds one virtual call per column read.

@@ -45,6 +45,24 @@ internal static class RuleHelpers
     public static string AtCallSite(CapturedCommand c)
         => c.CallSite is { } cs ? " at " + cs : string.Empty;
 
+    /// <summary>
+    /// Where a patch has to be applied: the innermost user frame with source, which is the call site unless
+    /// <see cref="QueryShapeOptions.InfrastructurePrefixes"/> moved attribution up to a caller. The caller's line names the
+    /// operation; only the frame that wrote the LINQ can be edited.
+    /// </summary>
+    public static CallSite? PatchSite(CapturedCommand c)
+    {
+        foreach (var frame in c.CallPath)
+        {
+            if (frame.FilePath is not null)
+            {
+                return frame;
+            }
+        }
+
+        return c.CallSite is { FilePath: not null } site ? site : null;
+    }
+
     /// <summary>Lower-camel identifier for a lambda parameter: Customer -> c, OrderLine -> ol.</summary>
     public static string LambdaName(string entityShortName)
     {
