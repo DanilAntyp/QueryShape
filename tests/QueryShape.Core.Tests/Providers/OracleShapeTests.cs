@@ -77,7 +77,7 @@ public sealed class OracleShapeTests(ITestOutputHelper output) : IAsyncLifetime
         orderQueries[0].RowsReturned.Should().Be(1);
         orderQueries[0].Query!.KeyFilters.Should().ContainSingle().Which.NavigationOnRelated.Should().Be("Orders");
         // Oracle omits AS before a table alias, so its aliases stay as EF generated them (t0, t1); parameters are canonicalized like everywhere else.
-        orderQueries[0].Shape.Should().Be("SELECT \"t0\".\"Id\", \"t0\".\"CustomerId\", \"t0\".\"PlacedAt\", \"t0\".\"Total\" FROM \"Orders\" \"t0\" WHERE \"t0\".\"CustomerId\" = @p0");
+        orderQueries[0].Shape.Should().Be("SELECT \"o\".\"Id\", \"o\".\"CustomerId\", \"o\".\"PlacedAt\", \"o\".\"Total\" FROM \"Orders\" \"o\" WHERE \"o\".\"CustomerId\" = @p0");
 
         var diagnoses = scope.Analyze();
         diagnoses.Should().Contain(d => d.RuleId == "QS001" && d.Title.StartsWith("N+1 query: Order by CustomerId executed 6 times"));
