@@ -1,1 +1,6 @@
 #nullable enable
+QueryShape.Analyzers.MaterializedQueryOperatorAnalyzer
+QueryShape.Analyzers.MaterializedQueryOperatorAnalyzer.MaterializedQueryOperatorAnalyzer() -> void
+const QueryShape.Analyzers.MaterializedQueryOperatorAnalyzer.DiagnosticId = "QSA001" -> string!
+override QueryShape.Analyzers.MaterializedQueryOperatorAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override QueryShape.Analyzers.MaterializedQueryOperatorAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>

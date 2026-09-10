@@ -1,13 +1,1 @@
 #nullable enable
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.FailOn.get -> QueryShape.Severity
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.FailOn.set -> void
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.IgnoreDiagnostics.get -> bool
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.IgnoreDiagnostics.set -> void
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.MaxDurationMs.get -> double
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.MaxDurationMs.set -> void
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.MaxQueries.get -> int
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.MaxQueries.set -> void
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.QueryBudgetTestMethodAttribute(string! callerFilePath = "", int callerLineNumber = -1) -> void
-QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.ToBudget() -> QueryShape.Testing.QueryBudget!
-override QueryShape.Testing.MSTest.QueryBudgetTestMethodAttribute.ExecuteAsync(Microsoft.VisualStudio.TestTools.UnitTesting.ITestMethod! testMethod) -> System.Threading.Tasks.Task<Microsoft.VisualStudio.TestTools.UnitTesting.TestResult![]!>!

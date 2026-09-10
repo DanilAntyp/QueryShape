@@ -1,0 +1,116 @@
+name: Release
+
+# Publishing is irreversible: a version pushed to NuGet.org can be unlisted or deprecated, never replaced.
+# The `nuget` environment is where required reviewers belong, so a tag alone cannot publish.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to pack, e.g. 0.1.0-preview.1. Packs and uploads artifacts; never pushes to NuGet.'
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  CI: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # SourceLink embeds the commit; a shallow clone has no repository to point at
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Resolve the version and check it against Directory.Build.props
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version='${{ inputs.version }}'
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          prefix=$(grep -o '<VersionPrefix>[^<]*' Directory.Build.props | head -1 | cut -d'>' -f2)
+          suffix=$(grep -o '<VersionSuffix Condition[^>]*>[^<]*' Directory.Build.props | head -1 | cut -d'>' -f2)
+          declared="$prefix${suffix:+-$suffix}"
+          if [ "$version" != "$declared" ]; then
+            echo "::error::Version $version does not match Directory.Build.props ($declared). Update the file, or tag the version it declares."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing $version"
+
+      - name: Build
+        run: dotnet build QueryShape.slnx --configuration Release
+
+      # The same split as CI: each target on its own runtime, so a packaged binary is tested on the runtime it claims.
+      - name: Test (net8.0 and net10.0 on their real runtimes)
+        run: |
+          for framework in net8.0 net10.0; do
+            for p in tests/QueryShape.Core.Tests tests/QueryShape.Testing.Tests tests/QueryShape.Testing.NUnit.Tests tests/QueryShape.Testing.MSTest.Tests tests/QueryShape.Testing.Xunit.v3.Tests tests/QueryShape.OpenTelemetry.Tests tests/QueryShape.SampleApp.Tests; do
+              dotnet test "$p" --configuration Release --no-build --framework "$framework" --filter "Category!=Slow" || exit 1
+            done
+          done
+          for p in tests/QueryShape.Cli.Tests tests/QueryShape.Analyzers.Tests; do
+            dotnet test "$p" --configuration Release --no-build --filter "Category!=Slow" || exit 1
+          done
+
+      - name: Test (slow CLI end-to-end verify)
+        run: dotnet test tests/QueryShape.Cli.Tests --configuration Release --no-build --framework net10.0 --filter "Category=Slow"
+
+      - name: Pack
+        run: dotnet pack QueryShape.slnx --configuration Release --no-build -p:Version=${{ steps.version.outputs.version }} --output artifacts
+
+      - name: Verify the packages a consumer would install
+        run: ./scripts/verify-packages.sh artifacts ${{ steps.version.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/*
+
+  # Separate job so the `nuget` environment gates only the irreversible step: a dry run never waits for approval,
+  # and required reviewers on that environment mean a tag alone cannot publish.
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: nuget
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: artifacts
+
+      - name: Push to NuGet.org
+        run: dotnet nuget push 'artifacts/*.nupkg' --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Create the GitHub release
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/*.nupkg \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Packages for $GITHUB_REF_NAME (version ${{ needs.build.outputs.version }}). What the rules detect: docs/rules. This is a preview: the public API is recorded in PublicAPI.Shipped.txt and may still change." \
+            --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

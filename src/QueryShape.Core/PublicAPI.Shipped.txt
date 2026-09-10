@@ -1,1 +1,697 @@
 #nullable enable
+QueryShape.CallSite
+QueryShape.CallSite.<Clone>$() -> QueryShape.CallSite!
+QueryShape.CallSite.CallSite(string? FilePath, int Line, string! Member) -> void
+QueryShape.CallSite.Deconstruct(out string? FilePath, out int Line, out string! Member) -> void
+QueryShape.CallSite.Equals(QueryShape.CallSite? other) -> bool
+QueryShape.CallSite.FileName.get -> string?
+QueryShape.CallSite.FilePath.get -> string?
+QueryShape.CallSite.FilePath.init -> void
+QueryShape.CallSite.Label.get -> string!
+QueryShape.CallSite.Line.get -> int
+QueryShape.CallSite.Line.init -> void
+QueryShape.CallSite.Member.get -> string!
+QueryShape.CallSite.Member.init -> void
+QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Cached = 4 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.None = 0 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Sampled = 3 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.StackWalk = 2 -> QueryShape.CallSiteOrigin
+QueryShape.CallSiteOrigin.Tag = 1 -> QueryShape.CallSiteOrigin
+QueryShape.Capture.QueryShapeDbConnection
+QueryShape.Capture.QueryShapeDbConnection.Inner.get -> System.Data.Common.DbConnection!
+QueryShape.Capture.QueryShapeDbConnection.QueryShapeDbConnection(System.Data.Common.DbConnection! inner, QueryShape.QueryShapeOptions? options = null) -> void
+QueryShape.Capture.QueryShapeInterceptor
+QueryShape.Capture.QueryShapeInterceptor.CommandFailed(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandErrorEventData! eventData) -> void
+QueryShape.Capture.QueryShapeInterceptor.CommandFailedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandErrorEventData! eventData, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, int result) -> int
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, int result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>
+QueryShape.Capture.QueryShapeInterceptor.NonQueryExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>>
+QueryShape.Capture.QueryShapeInterceptor.OptionsFor(Microsoft.EntityFrameworkCore.DbContext! context) -> QueryShape.QueryShapeOptions!
+QueryShape.Capture.QueryShapeInterceptor.QueryCompilationStarting(System.Linq.Expressions.Expression! queryExpression, Microsoft.EntityFrameworkCore.Diagnostics.QueryExpressionEventData! eventData) -> System.Linq.Expressions.Expression!
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result) -> System.Data.Common.DbDataReader!
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader!>
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!>
+QueryShape.Capture.QueryShapeInterceptor.ReaderExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader!>>
+QueryShape.Capture.QueryShapeInterceptor.RecentUnscopedCommands.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>!
+QueryShape.Capture.QueryShapeInterceptor.SaveChangesFailed(Microsoft.EntityFrameworkCore.Diagnostics.DbContextErrorEventData! eventData) -> void
+QueryShape.Capture.QueryShapeInterceptor.SaveChangesFailedAsync(Microsoft.EntityFrameworkCore.Diagnostics.DbContextErrorEventData! eventData, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+QueryShape.Capture.QueryShapeInterceptor.SavedChanges(Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesCompletedEventData! eventData, int result) -> int
+QueryShape.Capture.QueryShapeInterceptor.SavedChangesAsync(Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesCompletedEventData! eventData, int result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<int>
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, object? result) -> object?
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, object? result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecuting(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result) -> Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>
+QueryShape.Capture.QueryShapeInterceptor.ScalarExecutingAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData! eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!> result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<object!>>
+QueryShape.CapturedCommand
+QueryShape.CapturedCommand.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.CapturedCommand.CallPath.init -> void
+QueryShape.CapturedCommand.CallSite.get -> QueryShape.CallSite?
+QueryShape.CapturedCommand.CallSite.init -> void
+QueryShape.CapturedCommand.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
+QueryShape.CapturedCommand.CallSiteOrigin.init -> void
+QueryShape.CapturedCommand.CapturedCommand() -> void
+QueryShape.CapturedCommand.CommandId.get -> System.Guid
+QueryShape.CapturedCommand.CommandId.init -> void
+QueryShape.CapturedCommand.CommandSource.get -> Microsoft.EntityFrameworkCore.Diagnostics.CommandSource
+QueryShape.CapturedCommand.CommandSource.init -> void
+QueryShape.CapturedCommand.CommandText.get -> string!
+QueryShape.CapturedCommand.CommandText.init -> void
+QueryShape.CapturedCommand.CommandType.get -> System.Data.CommandType
+QueryShape.CapturedCommand.CommandType.init -> void
+QueryShape.CapturedCommand.ConnectionId.get -> System.Guid
+QueryShape.CapturedCommand.ConnectionId.init -> void
+QueryShape.CapturedCommand.ContextId.get -> System.Guid?
+QueryShape.CapturedCommand.ContextId.init -> void
+QueryShape.CapturedCommand.DistinctRootsEstimate.get -> int?
+QueryShape.CapturedCommand.Duration.get -> System.TimeSpan
+QueryShape.CapturedCommand.Duration.init -> void
+QueryShape.CapturedCommand.ErrorType.get -> string?
+QueryShape.CapturedCommand.ErrorType.init -> void
+QueryShape.CapturedCommand.ExecuteMethod.get -> Microsoft.EntityFrameworkCore.Diagnostics.DbCommandMethod
+QueryShape.CapturedCommand.ExecuteMethod.init -> void
+QueryShape.CapturedCommand.Failed.get -> bool
+QueryShape.CapturedCommand.Failed.init -> void
+QueryShape.CapturedCommand.Fingerprint.get -> string!
+QueryShape.CapturedCommand.Fingerprint.init -> void
+QueryShape.CapturedCommand.IsAsync.get -> bool
+QueryShape.CapturedCommand.IsAsync.init -> void
+QueryShape.CapturedCommand.IsTracking.get -> bool?
+QueryShape.CapturedCommand.MaxCollectionParameterCount.get -> int?
+QueryShape.CapturedCommand.MaxCollectionParameterCount.init -> void
+QueryShape.CapturedCommand.Origin.get -> string!
+QueryShape.CapturedCommand.ParameterHash.get -> string!
+QueryShape.CapturedCommand.ParameterHash.init -> void
+QueryShape.CapturedCommand.Parameters.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedParameter!>!
+QueryShape.CapturedCommand.Parameters.init -> void
+QueryShape.CapturedCommand.ProviderName.get -> string?
+QueryShape.CapturedCommand.ProviderName.init -> void
+QueryShape.CapturedCommand.Query.get -> QueryShape.QueryInfo?
+QueryShape.CapturedCommand.Query.init -> void
+QueryShape.CapturedCommand.RowsAffected.get -> int?
+QueryShape.CapturedCommand.RowsReturned.get -> int?
+QueryShape.CapturedCommand.Sequence.get -> int
+QueryShape.CapturedCommand.Shape.get -> string!
+QueryShape.CapturedCommand.Shape.init -> void
+QueryShape.CapturedCommand.Source.get -> QueryShape.QuerySource
+QueryShape.CapturedCommand.Source.init -> void
+QueryShape.CapturedCommand.StartTime.get -> System.DateTimeOffset
+QueryShape.CapturedCommand.StartTime.init -> void
+QueryShape.CapturedCommand.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.CapturedCommand.Tags.init -> void
+QueryShape.CapturedCommand.TrackedEntities.get -> int
+QueryShape.CapturedParameter
+QueryShape.CapturedParameter.<Clone>$() -> QueryShape.CapturedParameter!
+QueryShape.CapturedParameter.CapturedParameter(string! Name, System.Data.DbType DbType, System.Data.ParameterDirection Direction, object? Value, bool IsNull) -> void
+QueryShape.CapturedParameter.DbType.get -> System.Data.DbType
+QueryShape.CapturedParameter.DbType.init -> void
+QueryShape.CapturedParameter.Deconstruct(out string! Name, out System.Data.DbType DbType, out System.Data.ParameterDirection Direction, out object? Value, out bool IsNull) -> void
+QueryShape.CapturedParameter.Direction.get -> System.Data.ParameterDirection
+QueryShape.CapturedParameter.Direction.init -> void
+QueryShape.CapturedParameter.Equals(QueryShape.CapturedParameter? other) -> bool
+QueryShape.CapturedParameter.IsNull.get -> bool
+QueryShape.CapturedParameter.IsNull.init -> void
+QueryShape.CapturedParameter.Name.get -> string!
+QueryShape.CapturedParameter.Name.init -> void
+QueryShape.CapturedParameter.Value.get -> object?
+QueryShape.CapturedParameter.Value.init -> void
+QueryShape.ClientEvaluatedCall
+QueryShape.ClientEvaluatedCall.<Clone>$() -> QueryShape.ClientEvaluatedCall!
+QueryShape.ClientEvaluatedCall.ClientEvaluatedCall(string! Method, string! DeclaringType, string! Operator) -> void
+QueryShape.ClientEvaluatedCall.DeclaringType.get -> string!
+QueryShape.ClientEvaluatedCall.DeclaringType.init -> void
+QueryShape.ClientEvaluatedCall.Deconstruct(out string! Method, out string! DeclaringType, out string! Operator) -> void
+QueryShape.ClientEvaluatedCall.Equals(QueryShape.ClientEvaluatedCall? other) -> bool
+QueryShape.ClientEvaluatedCall.Method.get -> string!
+QueryShape.ClientEvaluatedCall.Method.init -> void
+QueryShape.ClientEvaluatedCall.Operator.get -> string!
+QueryShape.ClientEvaluatedCall.Operator.init -> void
+QueryShape.CommandStart
+QueryShape.CommandStart.<Clone>$() -> QueryShape.CommandStart!
+QueryShape.CommandStart.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.CommandStart.CallPath.init -> void
+QueryShape.CommandStart.CallSite.get -> QueryShape.CallSite?
+QueryShape.CommandStart.CallSite.init -> void
+QueryShape.CommandStart.CallSiteOrigin.get -> QueryShape.CallSiteOrigin
+QueryShape.CommandStart.CallSiteOrigin.init -> void
+QueryShape.CommandStart.CommandId.get -> System.Guid
+QueryShape.CommandStart.CommandId.init -> void
+QueryShape.CommandStart.CommandStart(System.Guid CommandId, string! Fingerprint, string! Shape, QueryShape.QuerySource Source, System.Collections.Generic.IReadOnlyList<string!>! Tags, QueryShape.CallSite? CallSite, QueryShape.CallSiteOrigin CallSiteOrigin, System.DateTimeOffset StartTime) -> void
+QueryShape.CommandStart.Deconstruct(out System.Guid CommandId, out string! Fingerprint, out string! Shape, out QueryShape.QuerySource Source, out System.Collections.Generic.IReadOnlyList<string!>! Tags, out QueryShape.CallSite? CallSite, out QueryShape.CallSiteOrigin CallSiteOrigin, out System.DateTimeOffset StartTime) -> void
+QueryShape.CommandStart.Equals(QueryShape.CommandStart? other) -> bool
+QueryShape.CommandStart.Fingerprint.get -> string!
+QueryShape.CommandStart.Fingerprint.init -> void
+QueryShape.CommandStart.Shape.get -> string!
+QueryShape.CommandStart.Shape.init -> void
+QueryShape.CommandStart.Source.get -> QueryShape.QuerySource
+QueryShape.CommandStart.Source.init -> void
+QueryShape.CommandStart.StartTime.get -> System.DateTimeOffset
+QueryShape.CommandStart.StartTime.init -> void
+QueryShape.CommandStart.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.CommandStart.Tags.init -> void
+QueryShape.Diagnosis
+QueryShape.Diagnosis.<Clone>$() -> QueryShape.Diagnosis!
+QueryShape.Diagnosis.CallSite.get -> QueryShape.CallSite?
+QueryShape.Diagnosis.CallSite.init -> void
+QueryShape.Diagnosis.Deconstruct(out string! RuleId, out QueryShape.Severity Severity, out string! Title, out string! Explanation, out QueryShape.CallSite? CallSite, out System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, out QueryShape.Evidence! Evidence, out QueryShape.Fix? SuggestedFix) -> void
+QueryShape.Diagnosis.Diagnosis(string! RuleId, QueryShape.Severity Severity, string! Title, string! Explanation, QueryShape.CallSite? CallSite, System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, QueryShape.Evidence! Evidence, QueryShape.Fix? SuggestedFix) -> void
+QueryShape.Diagnosis.Equals(QueryShape.Diagnosis? other) -> bool
+QueryShape.Diagnosis.Evidence.get -> QueryShape.Evidence!
+QueryShape.Diagnosis.Evidence.init -> void
+QueryShape.Diagnosis.Explanation.get -> string!
+QueryShape.Diagnosis.Explanation.init -> void
+QueryShape.Diagnosis.Fingerprints.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Diagnosis.Fingerprints.init -> void
+QueryShape.Diagnosis.RuleId.get -> string!
+QueryShape.Diagnosis.RuleId.init -> void
+QueryShape.Diagnosis.Severity.get -> QueryShape.Severity
+QueryShape.Diagnosis.Severity.init -> void
+QueryShape.Diagnosis.SuggestedFix.get -> QueryShape.Fix?
+QueryShape.Diagnosis.SuggestedFix.init -> void
+QueryShape.Diagnosis.Title.get -> string!
+QueryShape.Diagnosis.Title.init -> void
+QueryShape.Evidence
+QueryShape.Evidence.<Clone>$() -> QueryShape.Evidence!
+QueryShape.Evidence.CallPath.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CallSite!>!
+QueryShape.Evidence.CallPath.init -> void
+QueryShape.Evidence.Count.get -> int?
+QueryShape.Evidence.Count.init -> void
+QueryShape.Evidence.Deconstruct(out int? Count, out System.TimeSpan? TotalDuration, out long? Rows, out string? SampleSql, out string? SampleExpression, out System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Details) -> void
+QueryShape.Evidence.Details.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+QueryShape.Evidence.Details.init -> void
+QueryShape.Evidence.Equals(QueryShape.Evidence? other) -> bool
+QueryShape.Evidence.Evidence(int? Count = null, System.TimeSpan? TotalDuration = null, long? Rows = null, string? SampleSql = null, string? SampleExpression = null, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Details = null) -> void
+QueryShape.Evidence.Rows.get -> long?
+QueryShape.Evidence.Rows.init -> void
+QueryShape.Evidence.SampleExpression.get -> string?
+QueryShape.Evidence.SampleExpression.init -> void
+QueryShape.Evidence.SampleSql.get -> string?
+QueryShape.Evidence.SampleSql.init -> void
+QueryShape.Evidence.TotalDuration.get -> System.TimeSpan?
+QueryShape.Evidence.TotalDuration.init -> void
+QueryShape.Fix
+QueryShape.Fix.<Clone>$() -> QueryShape.Fix!
+QueryShape.Fix.AfterSnippet.get -> string?
+QueryShape.Fix.AfterSnippet.init -> void
+QueryShape.Fix.BeforeSnippet.get -> string?
+QueryShape.Fix.BeforeSnippet.init -> void
+QueryShape.Fix.Deconstruct(out string! Summary, out QueryShape.FixKind Kind, out string? BeforeSnippet, out string? AfterSnippet, out string? UnifiedDiff, out string! Rationale, out string! DocsUrl) -> void
+QueryShape.Fix.DocsUrl.get -> string!
+QueryShape.Fix.DocsUrl.init -> void
+QueryShape.Fix.Equals(QueryShape.Fix? other) -> bool
+QueryShape.Fix.Fix(string! Summary, QueryShape.FixKind Kind, string? BeforeSnippet, string? AfterSnippet, string? UnifiedDiff, string! Rationale, string! DocsUrl) -> void
+QueryShape.Fix.IsPartial.get -> bool
+QueryShape.Fix.IsPartial.init -> void
+QueryShape.Fix.Kind.get -> QueryShape.FixKind
+QueryShape.Fix.Kind.init -> void
+QueryShape.Fix.ManualStep.get -> string?
+QueryShape.Fix.ManualStep.init -> void
+QueryShape.Fix.Rationale.get -> string!
+QueryShape.Fix.Rationale.init -> void
+QueryShape.Fix.Summary.get -> string!
+QueryShape.Fix.Summary.init -> void
+QueryShape.Fix.UnifiedDiff.get -> string?
+QueryShape.Fix.UnifiedDiff.init -> void
+QueryShape.FixKind
+QueryShape.FixKind.CodeChange = 0 -> QueryShape.FixKind
+QueryShape.FixKind.ConfigChange = 1 -> QueryShape.FixKind
+QueryShape.FixKind.Manual = 3 -> QueryShape.FixKind
+QueryShape.FixKind.SchemaChange = 2 -> QueryShape.FixKind
+QueryShape.IQueryShapeListener
+QueryShape.IQueryShapeListener.OnCommandCaptured(QueryShape.CapturedCommand! command, QueryShape.QueryShapeScope? scope) -> void
+QueryShape.IQueryShapeListener.OnCommandExecuting(QueryShape.CommandStart! start, QueryShape.QueryShapeScope? scope) -> void
+QueryShape.IQueryShapeListener.OnScopeCompleted(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses) -> void
+QueryShape.IRule
+QueryShape.IRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.IRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.IRule.Id.get -> string!
+QueryShape.IRule.Name.get -> string!
+QueryShape.KeyFilter
+QueryShape.KeyFilter.<Clone>$() -> QueryShape.KeyFilter!
+QueryShape.KeyFilter.Deconstruct(out string! EntityType, out string! PropertyName, out bool IsPrimaryKey, out string? RelatedEntityType, out string? NavigationOnRelated, out string? NavigationToRelated, out bool IsSolePredicate) -> void
+QueryShape.KeyFilter.EntityType.get -> string!
+QueryShape.KeyFilter.EntityType.init -> void
+QueryShape.KeyFilter.Equals(QueryShape.KeyFilter? other) -> bool
+QueryShape.KeyFilter.IsPrimaryKey.get -> bool
+QueryShape.KeyFilter.IsPrimaryKey.init -> void
+QueryShape.KeyFilter.IsSolePredicate.get -> bool
+QueryShape.KeyFilter.IsSolePredicate.init -> void
+QueryShape.KeyFilter.KeyFilter(string! EntityType, string! PropertyName, bool IsPrimaryKey, string? RelatedEntityType, string? NavigationOnRelated, string? NavigationToRelated, bool IsSolePredicate = false) -> void
+QueryShape.KeyFilter.NavigationOnRelated.get -> string?
+QueryShape.KeyFilter.NavigationOnRelated.init -> void
+QueryShape.KeyFilter.NavigationToRelated.get -> string?
+QueryShape.KeyFilter.NavigationToRelated.init -> void
+QueryShape.KeyFilter.PropertyName.get -> string!
+QueryShape.KeyFilter.PropertyName.init -> void
+QueryShape.KeyFilter.RelatedEntityType.get -> string?
+QueryShape.KeyFilter.RelatedEntityType.init -> void
+QueryShape.Normalization.Fingerprint
+QueryShape.Normalization.NormalizedSql
+QueryShape.Normalization.NormalizedSql.<Clone>$() -> QueryShape.Normalization.NormalizedSql!
+QueryShape.Normalization.NormalizedSql.Deconstruct(out string! Shape, out System.Collections.Generic.IReadOnlyList<string!>! Tags) -> void
+QueryShape.Normalization.NormalizedSql.Equals(QueryShape.Normalization.NormalizedSql? other) -> bool
+QueryShape.Normalization.NormalizedSql.Fingerprint.get -> string!
+QueryShape.Normalization.NormalizedSql.NormalizedSql(string! Shape, System.Collections.Generic.IReadOnlyList<string!>! Tags) -> void
+QueryShape.Normalization.NormalizedSql.Shape.get -> string!
+QueryShape.Normalization.NormalizedSql.Shape.init -> void
+QueryShape.Normalization.NormalizedSql.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Normalization.NormalizedSql.Tags.init -> void
+QueryShape.Normalization.SqlNormalizer
+QueryShape.QueryInfo
+QueryShape.QueryInfo.ClientEvaluatedCalls.get -> System.Collections.Generic.IReadOnlyList<QueryShape.ClientEvaluatedCall!>!
+QueryShape.QueryInfo.ClientEvaluatedCalls.init -> void
+QueryShape.QueryInfo.CollectionIncludes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.CollectionIncludes.init -> void
+QueryShape.QueryInfo.Expression.get -> string!
+QueryShape.QueryInfo.Expression.init -> void
+QueryShape.QueryInfo.ExpressionHash.get -> string!
+QueryShape.QueryInfo.ExpressionHash.init -> void
+QueryShape.QueryInfo.HasFilter.get -> bool
+QueryShape.QueryInfo.HasFilter.init -> void
+QueryShape.QueryInfo.HasGrouping.get -> bool
+QueryShape.QueryInfo.HasGrouping.init -> void
+QueryShape.QueryInfo.HasLimit.get -> bool
+QueryShape.QueryInfo.HasLimit.init -> void
+QueryShape.QueryInfo.HasOrdering.get -> bool
+QueryShape.QueryInfo.HasOrdering.init -> void
+QueryShape.QueryInfo.HasParameterCollectionContains.get -> bool
+QueryShape.QueryInfo.HasParameterCollectionContains.init -> void
+QueryShape.QueryInfo.HasProjection.get -> bool
+QueryShape.QueryInfo.HasProjection.init -> void
+QueryShape.QueryInfo.IncludedEntityTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.IncludedEntityTypes.init -> void
+QueryShape.QueryInfo.IsBulkOperation.get -> bool
+QueryShape.QueryInfo.IsBulkOperation.init -> void
+QueryShape.QueryInfo.IsFromSql.get -> bool
+QueryShape.QueryInfo.IsFromSql.init -> void
+QueryShape.QueryInfo.IsTracking.get -> bool
+QueryShape.QueryInfo.IsTracking.init -> void
+QueryShape.QueryInfo.KeyFilters.get -> System.Collections.Generic.IReadOnlyList<QueryShape.KeyFilter!>!
+QueryShape.QueryInfo.KeyFilters.init -> void
+QueryShape.QueryInfo.Operators.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.Operators.init -> void
+QueryShape.QueryInfo.ParameterNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.ParameterNames.init -> void
+QueryShape.QueryInfo.QueryInfo() -> void
+QueryShape.QueryInfo.ResultType.get -> string?
+QueryShape.QueryInfo.ResultType.init -> void
+QueryShape.QueryInfo.ReturnsEntities.get -> bool
+QueryShape.QueryInfo.ReturnsEntities.init -> void
+QueryShape.QueryInfo.RootEntityShortName.get -> string?
+QueryShape.QueryInfo.RootEntityShortName.init -> void
+QueryShape.QueryInfo.RootEntityType.get -> string?
+QueryShape.QueryInfo.RootEntityType.init -> void
+QueryShape.QueryInfo.RootKeyProperties.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.RootKeyProperties.init -> void
+QueryShape.QueryInfo.RootTableName.get -> string?
+QueryShape.QueryInfo.RootTableName.init -> void
+QueryShape.QueryInfo.SplittingBehavior.get -> string!
+QueryShape.QueryInfo.SplittingBehavior.init -> void
+QueryShape.QueryInfo.SplittingIsExplicit.get -> bool
+QueryShape.QueryInfo.SplittingIsExplicit.init -> void
+QueryShape.QueryInfo.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryInfo.Tags.init -> void
+QueryShape.QueryInfo.TrackingIsExplicit.get -> bool
+QueryShape.QueryInfo.TrackingIsExplicit.init -> void
+QueryShape.QueryInfo.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.QueryShapeDbContextOptionsBuilderExtensions
+QueryShape.QueryShapeOptions
+QueryShape.QueryShapeOptions.CallPathDepth.get -> int
+QueryShape.QueryShapeOptions.CallPathDepth.set -> void
+QueryShape.QueryShapeOptions.CallSiteSamplingInterval.get -> int
+QueryShape.QueryShapeOptions.CallSiteSamplingInterval.set -> void
+QueryShape.QueryShapeOptions.CaptureCallSites.get -> bool
+QueryShape.QueryShapeOptions.CaptureCallSites.set -> void
+QueryShape.QueryShapeOptions.CartesianExplosionFactor.get -> int
+QueryShape.QueryShapeOptions.CartesianExplosionFactor.set -> void
+QueryShape.QueryShapeOptions.CartesianMinimumRows.get -> int
+QueryShape.QueryShapeOptions.CartesianMinimumRows.set -> void
+QueryShape.QueryShapeOptions.ContainsCollectionThreshold.get -> int
+QueryShape.QueryShapeOptions.ContainsCollectionThreshold.set -> void
+QueryShape.QueryShapeOptions.CreateActivitiesWhenNoneExist.get -> bool
+QueryShape.QueryShapeOptions.CreateActivitiesWhenNoneExist.set -> void
+QueryShape.QueryShapeOptions.DocsBaseUrl.get -> string!
+QueryShape.QueryShapeOptions.DocsBaseUrl.set -> void
+QueryShape.QueryShapeOptions.DocsUrlFor(string! ruleId) -> string!
+QueryShape.QueryShapeOptions.Enabled.get -> bool
+QueryShape.QueryShapeOptions.Enabled.set -> void
+QueryShape.QueryShapeOptions.IncludeParameterValues.get -> bool
+QueryShape.QueryShapeOptions.IncludeParameterValues.set -> void
+QueryShape.QueryShapeOptions.InfrastructurePrefixes.get -> System.Collections.Generic.IList<string!>!
+QueryShape.QueryShapeOptions.Listeners.get -> System.Collections.Generic.IList<QueryShape.IQueryShapeListener!>!
+QueryShape.QueryShapeOptions.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory?
+QueryShape.QueryShapeOptions.LoggerFactory.set -> void
+QueryShape.QueryShapeOptions.MaxCommandsPerScope.get -> int
+QueryShape.QueryShapeOptions.MaxCommandsPerScope.set -> void
+QueryShape.QueryShapeOptions.NPlusOneThreshold.get -> int
+QueryShape.QueryShapeOptions.NPlusOneThreshold.set -> void
+QueryShape.QueryShapeOptions.QueryShapeOptions() -> void
+QueryShape.QueryShapeOptions.ReadSourceFiles.get -> bool?
+QueryShape.QueryShapeOptions.ReadSourceFiles.set -> void
+QueryShape.QueryShapeOptions.Rules.get -> System.Collections.Generic.IList<QueryShape.IRule!>!
+QueryShape.QueryShapeOptions.UnboundedMinimumRows.get -> int
+QueryShape.QueryShapeOptions.UnboundedMinimumRows.set -> void
+QueryShape.QueryShapeOptions.UnboundedRowThreshold.get -> int
+QueryShape.QueryShapeOptions.UnboundedRowThreshold.set -> void
+QueryShape.QueryShapeOptions.UnscopedBufferSize.get -> int
+QueryShape.QueryShapeOptions.UnscopedBufferSize.set -> void
+QueryShape.QueryShapeScope
+QueryShape.QueryShapeScope.Analyze() -> System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>!
+QueryShape.QueryShapeScope.Annotate(string! key, string! value) -> void
+QueryShape.QueryShapeScope.Annotations.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+QueryShape.QueryShapeScope.CommandCount.get -> int
+QueryShape.QueryShapeScope.Commands.get -> System.Collections.Generic.IReadOnlyList<QueryShape.CapturedCommand!>!
+QueryShape.QueryShapeScope.Dispose() -> void
+QueryShape.QueryShapeScope.DroppedCommands.get -> int
+QueryShape.QueryShapeScope.Elapsed.get -> System.TimeSpan
+QueryShape.QueryShapeScope.IsCompleted.get -> bool
+QueryShape.QueryShapeScope.Name.get -> string?
+QueryShape.QueryShapeScope.Name.set -> void
+QueryShape.QueryShapeScope.Options.get -> QueryShape.QueryShapeOptions!
+QueryShape.QueryShapeScope.Overflowed.get -> bool
+QueryShape.QueryShapeScope.Parent.get -> QueryShape.QueryShapeScope?
+QueryShape.QueryShapeScope.SaveChanges.get -> System.Collections.Generic.IReadOnlyList<QueryShape.SaveChangesRecord!>!
+QueryShape.QueryShapeScope.StartedAt.get -> System.DateTimeOffset
+QueryShape.QueryShapeScope.TotalCommandDuration.get -> System.TimeSpan
+QueryShape.QueryShapeServiceCollectionExtensions
+QueryShape.QuerySource
+QueryShape.QuerySource.Linq = 0 -> QueryShape.QuerySource
+QueryShape.QuerySource.Other = 3 -> QueryShape.QuerySource
+QueryShape.QuerySource.Raw = 1 -> QueryShape.QuerySource
+QueryShape.QuerySource.SaveChanges = 2 -> QueryShape.QuerySource
+QueryShape.Reporting.DiagnosisFormatter
+QueryShape.Reporting.ScopeReport
+QueryShape.Reporting.ScopeReport.<Clone>$() -> QueryShape.Reporting.ScopeReport!
+QueryShape.Reporting.ScopeReport.Annotations.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+QueryShape.Reporting.ScopeReport.Annotations.init -> void
+QueryShape.Reporting.ScopeReport.CaptureComplete.get -> bool?
+QueryShape.Reporting.ScopeReport.CaptureComplete.init -> void
+QueryShape.Reporting.ScopeReport.CommandDurationMs.get -> double
+QueryShape.Reporting.ScopeReport.CommandDurationMs.init -> void
+QueryShape.Reporting.ScopeReport.Deconstruct(out int Version, out string? Scope, out System.DateTimeOffset StartedAt, out double ElapsedMs, out int QueryCount, out double CommandDurationMs, out bool Overflowed, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, out System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics, out System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Annotations) -> void
+QueryShape.Reporting.ScopeReport.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>!
+QueryShape.Reporting.ScopeReport.Diagnostics.init -> void
+QueryShape.Reporting.ScopeReport.ElapsedMs.get -> double
+QueryShape.Reporting.ScopeReport.ElapsedMs.init -> void
+QueryShape.Reporting.ScopeReport.Equals(QueryShape.Reporting.ScopeReport? other) -> bool
+QueryShape.Reporting.ScopeReport.Overflowed.get -> bool
+QueryShape.Reporting.ScopeReport.Overflowed.init -> void
+QueryShape.Reporting.ScopeReport.Providers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Reporting.ScopeReport.Providers.init -> void
+QueryShape.Reporting.ScopeReport.Queries.get -> System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>!
+QueryShape.Reporting.ScopeReport.Queries.init -> void
+QueryShape.Reporting.ScopeReport.QueryCount.get -> int
+QueryShape.Reporting.ScopeReport.QueryCount.init -> void
+QueryShape.Reporting.ScopeReport.RowsReturned.get -> long?
+QueryShape.Reporting.ScopeReport.RowsReturned.init -> void
+QueryShape.Reporting.ScopeReport.Scope.get -> string?
+QueryShape.Reporting.ScopeReport.Scope.init -> void
+QueryShape.Reporting.ScopeReport.ScopeReport(int Version, string? Scope, System.DateTimeOffset StartedAt, double ElapsedMs, int QueryCount, double CommandDurationMs, bool Overflowed, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportQuery!>! Queries, System.Collections.Generic.IReadOnlyList<QueryShape.Reporting.ScopeReportDiagnosis!>! Diagnostics, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? Annotations = null) -> void
+QueryShape.Reporting.ScopeReport.StartedAt.get -> System.DateTimeOffset
+QueryShape.Reporting.ScopeReport.StartedAt.init -> void
+QueryShape.Reporting.ScopeReport.ToJson() -> string!
+QueryShape.Reporting.ScopeReport.Version.get -> int
+QueryShape.Reporting.ScopeReport.Version.init -> void
+QueryShape.Reporting.ScopeReport.WriteTo(string! directory) -> string!
+QueryShape.Reporting.ScopeReportDiagnosis
+QueryShape.Reporting.ScopeReportDiagnosis.<Clone>$() -> QueryShape.Reporting.ScopeReportDiagnosis!
+QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceExpiresOn.get -> System.DateOnly?
+QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceExpiresOn.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceReason.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.AcceptanceReason.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Basis.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.CallPath.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallPath.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.CallSite.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallSite.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteFile.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.get -> int
+QueryShape.Reporting.ScopeReportDiagnosis.CallSiteLine.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Deconstruct(out string! RuleId, out string! Severity, out string! Title, out string! Explanation, out string? CallSite, out string? CallSiteFile, out int CallSiteLine, out System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, out string? SampleSql, out string? SampleExpression, out string? FixSummary, out string? FixRationale, out string? FixBefore, out string? FixAfter, out string? UnifiedDiff, out string? DocsUrl, out bool FixIsPartial, out string? ManualStep) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Disposition.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Disposition.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.DocsUrl.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Equals(QueryShape.Reporting.ScopeReportDiagnosis? other) -> bool
+QueryShape.Reporting.ScopeReportDiagnosis.Explanation.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Explanation.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FindingId.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FindingId.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Fingerprints.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.Reporting.ScopeReportDiagnosis.Fingerprints.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixAfter.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixBefore.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixIsPartial.get -> bool
+QueryShape.Reporting.ScopeReportDiagnosis.FixIsPartial.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixRationale.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.FixSummary.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.ManualStep.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.ManualStep.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.RuleId.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.RuleId.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.SampleExpression.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.SampleSql.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.ScopeReportDiagnosis(string! RuleId, string! Severity, string! Title, string! Explanation, string? CallSite, string? CallSiteFile, int CallSiteLine, System.Collections.Generic.IReadOnlyList<string!>! Fingerprints, string? SampleSql, string? SampleExpression, string? FixSummary, string? FixRationale, string? FixBefore, string? FixAfter, string? UnifiedDiff, string? DocsUrl, bool FixIsPartial = false, string? ManualStep = null) -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Severity.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Severity.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.Title.get -> string!
+QueryShape.Reporting.ScopeReportDiagnosis.Title.init -> void
+QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.get -> string?
+QueryShape.Reporting.ScopeReportDiagnosis.UnifiedDiff.init -> void
+QueryShape.Reporting.ScopeReportQuery
+QueryShape.Reporting.ScopeReportQuery.<Clone>$() -> QueryShape.Reporting.ScopeReportQuery!
+QueryShape.Reporting.ScopeReportQuery.CallSite.get -> string?
+QueryShape.Reporting.ScopeReportQuery.CallSite.init -> void
+QueryShape.Reporting.ScopeReportQuery.Count.get -> int
+QueryShape.Reporting.ScopeReportQuery.Count.init -> void
+QueryShape.Reporting.ScopeReportQuery.Deconstruct(out string! Fingerprint, out string! Shape, out string! Source, out int Count, out double DurationMs) -> void
+QueryShape.Reporting.ScopeReportQuery.DurationMs.get -> double
+QueryShape.Reporting.ScopeReportQuery.DurationMs.init -> void
+QueryShape.Reporting.ScopeReportQuery.Equals(QueryShape.Reporting.ScopeReportQuery? other) -> bool
+QueryShape.Reporting.ScopeReportQuery.Fingerprint.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Fingerprint.init -> void
+QueryShape.Reporting.ScopeReportQuery.RowsReturned.get -> long?
+QueryShape.Reporting.ScopeReportQuery.RowsReturned.init -> void
+QueryShape.Reporting.ScopeReportQuery.ScopeReportQuery(string! Fingerprint, string! Shape, string! Source, int Count, double DurationMs) -> void
+QueryShape.Reporting.ScopeReportQuery.Shape.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Shape.init -> void
+QueryShape.Reporting.ScopeReportQuery.Source.get -> string!
+QueryShape.Reporting.ScopeReportQuery.Source.init -> void
+QueryShape.Rules.BuiltInRules
+QueryShape.Rules.CartesianExplosionRule
+QueryShape.Rules.CartesianExplosionRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.CartesianExplosionRule.CartesianExplosionRule() -> void
+QueryShape.Rules.CartesianExplosionRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.CartesianExplosionRule.Id.get -> string!
+QueryShape.Rules.CartesianExplosionRule.Name.get -> string!
+QueryShape.Rules.ClientEvaluationRule
+QueryShape.Rules.ClientEvaluationRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.ClientEvaluationRule.ClientEvaluationRule() -> void
+QueryShape.Rules.ClientEvaluationRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.ClientEvaluationRule.Id.get -> string!
+QueryShape.Rules.ClientEvaluationRule.Name.get -> string!
+QueryShape.Rules.ContainsLargeCollectionRule
+QueryShape.Rules.ContainsLargeCollectionRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.ContainsLargeCollectionRule.ContainsLargeCollectionRule() -> void
+QueryShape.Rules.ContainsLargeCollectionRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.ContainsLargeCollectionRule.Id.get -> string!
+QueryShape.Rules.ContainsLargeCollectionRule.Name.get -> string!
+QueryShape.Rules.DuplicateQueryRule
+QueryShape.Rules.DuplicateQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.DuplicateQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.DuplicateQueryRule.DuplicateQueryRule() -> void
+QueryShape.Rules.DuplicateQueryRule.Id.get -> string!
+QueryShape.Rules.DuplicateQueryRule.Name.get -> string!
+QueryShape.Rules.MissingSplitQueryRule
+QueryShape.Rules.MissingSplitQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.MissingSplitQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.MissingSplitQueryRule.Id.get -> string!
+QueryShape.Rules.MissingSplitQueryRule.MissingSplitQueryRule() -> void
+QueryShape.Rules.MissingSplitQueryRule.Name.get -> string!
+QueryShape.Rules.NPlusOneRule
+QueryShape.Rules.NPlusOneRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.NPlusOneRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.NPlusOneRule.Id.get -> string!
+QueryShape.Rules.NPlusOneRule.NPlusOneRule() -> void
+QueryShape.Rules.NPlusOneRule.Name.get -> string!
+QueryShape.Rules.QueryInLoopRule
+QueryShape.Rules.QueryInLoopRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.QueryInLoopRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.QueryInLoopRule.Id.get -> string!
+QueryShape.Rules.QueryInLoopRule.Name.get -> string!
+QueryShape.Rules.QueryInLoopRule.QueryInLoopRule() -> void
+QueryShape.Rules.RawSqlConcatenationRule
+QueryShape.Rules.RawSqlConcatenationRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.RawSqlConcatenationRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.RawSqlConcatenationRule.Id.get -> string!
+QueryShape.Rules.RawSqlConcatenationRule.Name.get -> string!
+QueryShape.Rules.RawSqlConcatenationRule.RawSqlConcatenationRule() -> void
+QueryShape.Rules.RowLimitingWithoutOrderByRule
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Id.get -> string!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.Name.get -> string!
+QueryShape.Rules.RowLimitingWithoutOrderByRule.RowLimitingWithoutOrderByRule() -> void
+QueryShape.Rules.SynchronousQueryRule
+QueryShape.Rules.SynchronousQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.SynchronousQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.SynchronousQueryRule.Id.get -> string!
+QueryShape.Rules.SynchronousQueryRule.Name.get -> string!
+QueryShape.Rules.SynchronousQueryRule.SynchronousQueryRule() -> void
+QueryShape.Rules.TrackingOnReadOnlyQueryRule
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Id.get -> string!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.Name.get -> string!
+QueryShape.Rules.TrackingOnReadOnlyQueryRule.TrackingOnReadOnlyQueryRule() -> void
+QueryShape.Rules.UnboundedResultSetRule
+QueryShape.Rules.UnboundedResultSetRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.UnboundedResultSetRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.UnboundedResultSetRule.Id.get -> string!
+QueryShape.Rules.UnboundedResultSetRule.Name.get -> string!
+QueryShape.Rules.UnboundedResultSetRule.UnboundedResultSetRule() -> void
+QueryShape.SaveChangesRecord
+QueryShape.SaveChangesRecord.<Clone>$() -> QueryShape.SaveChangesRecord!
+QueryShape.SaveChangesRecord.ContextId.get -> System.Guid
+QueryShape.SaveChangesRecord.ContextId.init -> void
+QueryShape.SaveChangesRecord.Deconstruct(out System.Guid ContextId, out System.Collections.Generic.IReadOnlyList<string!>! ModifiedEntityTypes, out int EntriesWritten) -> void
+QueryShape.SaveChangesRecord.EntriesWritten.get -> int
+QueryShape.SaveChangesRecord.EntriesWritten.init -> void
+QueryShape.SaveChangesRecord.Equals(QueryShape.SaveChangesRecord? other) -> bool
+QueryShape.SaveChangesRecord.ModifiedEntityTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+QueryShape.SaveChangesRecord.ModifiedEntityTypes.init -> void
+QueryShape.SaveChangesRecord.SaveChangesRecord(System.Guid ContextId, System.Collections.Generic.IReadOnlyList<string!>! ModifiedEntityTypes, int EntriesWritten) -> void
+QueryShape.Severity
+QueryShape.Severity.Error = 2 -> QueryShape.Severity
+QueryShape.Severity.Info = 0 -> QueryShape.Severity
+QueryShape.Severity.Warning = 1 -> QueryShape.Severity
+const QueryShape.Normalization.Fingerprint.Length = 12 -> int
+const QueryShape.QueryShapeScope.AsyncHostAnnotation = "host.async" -> string!
+const QueryShape.QueryShapeScope.OverflowRuleId = "QS_OVERFLOW" -> string!
+const QueryShape.Reporting.ScopeReport.CurrentVersion = 1 -> int
+const QueryShape.Reporting.ScopeReport.DirectoryEnvironmentVariable = "QUERYSHAPE_REPORT_DIR" -> string!
+const QueryShape.Rules.CartesianExplosionRule.RuleId = "QS002" -> string!
+const QueryShape.Rules.ClientEvaluationRule.RuleId = "QS003" -> string!
+const QueryShape.Rules.ContainsLargeCollectionRule.RuleId = "QS007" -> string!
+const QueryShape.Rules.DuplicateQueryRule.RuleId = "QS008" -> string!
+const QueryShape.Rules.MissingSplitQueryRule.RuleId = "QS006" -> string!
+const QueryShape.Rules.NPlusOneRule.RuleId = "QS001" -> string!
+const QueryShape.Rules.QueryInLoopRule.RuleId = "QS009" -> string!
+const QueryShape.Rules.RawSqlConcatenationRule.RuleId = "QS010" -> string!
+const QueryShape.Rules.RowLimitingWithoutOrderByRule.RuleId = "QS011" -> string!
+const QueryShape.Rules.SynchronousQueryRule.RuleId = "QS012" -> string!
+const QueryShape.Rules.TrackingOnReadOnlyQueryRule.RuleId = "QS005" -> string!
+const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
+override QueryShape.CallSite.Equals(object? obj) -> bool
+override QueryShape.CallSite.GetHashCode() -> int
+override QueryShape.CallSite.ToString() -> string!
+override QueryShape.Capture.QueryShapeDbConnection.CanCreateBatch.get -> bool
+override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabase(string! databaseName) -> void
+override QueryShape.Capture.QueryShapeDbConnection.ChangeDatabaseAsync(string! databaseName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+override QueryShape.Capture.QueryShapeDbConnection.Close() -> void
+override QueryShape.Capture.QueryShapeDbConnection.CloseAsync() -> System.Threading.Tasks.Task!
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionString.set -> void
+override QueryShape.Capture.QueryShapeDbConnection.ConnectionTimeout.get -> int
+override QueryShape.Capture.QueryShapeDbConnection.DataSource.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.Database.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.DisposeAsync() -> System.Threading.Tasks.ValueTask
+override QueryShape.Capture.QueryShapeDbConnection.EnlistTransaction(System.Transactions.Transaction? transaction) -> void
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema() -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName) -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchema(string! collectionName, string?[]! restrictionValues) -> System.Data.DataTable!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(string! collectionName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
+override QueryShape.Capture.QueryShapeDbConnection.GetSchemaAsync(string! collectionName, string?[]! restrictionValues, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Data.DataTable!>!
+override QueryShape.Capture.QueryShapeDbConnection.Open() -> void
+override QueryShape.Capture.QueryShapeDbConnection.OpenAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override QueryShape.Capture.QueryShapeDbConnection.ServerVersion.get -> string!
+override QueryShape.Capture.QueryShapeDbConnection.State.get -> System.Data.ConnectionState
+override QueryShape.CapturedCommand.ToString() -> string!
+override QueryShape.CapturedParameter.Equals(object? obj) -> bool
+override QueryShape.CapturedParameter.GetHashCode() -> int
+override QueryShape.CapturedParameter.ToString() -> string!
+override QueryShape.ClientEvaluatedCall.Equals(object? obj) -> bool
+override QueryShape.ClientEvaluatedCall.GetHashCode() -> int
+override QueryShape.ClientEvaluatedCall.ToString() -> string!
+override QueryShape.CommandStart.Equals(object? obj) -> bool
+override QueryShape.CommandStart.GetHashCode() -> int
+override QueryShape.CommandStart.ToString() -> string!
+override QueryShape.Diagnosis.Equals(object? obj) -> bool
+override QueryShape.Diagnosis.GetHashCode() -> int
+override QueryShape.Diagnosis.ToString() -> string!
+override QueryShape.Evidence.Equals(object? obj) -> bool
+override QueryShape.Evidence.GetHashCode() -> int
+override QueryShape.Evidence.ToString() -> string!
+override QueryShape.Fix.Equals(object? obj) -> bool
+override QueryShape.Fix.GetHashCode() -> int
+override QueryShape.Fix.ToString() -> string!
+override QueryShape.KeyFilter.Equals(object? obj) -> bool
+override QueryShape.KeyFilter.GetHashCode() -> int
+override QueryShape.KeyFilter.ToString() -> string!
+override QueryShape.Normalization.NormalizedSql.Equals(object? obj) -> bool
+override QueryShape.Normalization.NormalizedSql.GetHashCode() -> int
+override QueryShape.Normalization.NormalizedSql.ToString() -> string!
+override QueryShape.QueryInfo.ToString() -> string!
+override QueryShape.Reporting.ScopeReport.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReport.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReport.ToString() -> string!
+override QueryShape.Reporting.ScopeReportDiagnosis.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReportDiagnosis.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReportDiagnosis.ToString() -> string!
+override QueryShape.Reporting.ScopeReportQuery.Equals(object? obj) -> bool
+override QueryShape.Reporting.ScopeReportQuery.GetHashCode() -> int
+override QueryShape.Reporting.ScopeReportQuery.ToString() -> string!
+override QueryShape.SaveChangesRecord.Equals(object? obj) -> bool
+override QueryShape.SaveChangesRecord.GetHashCode() -> int
+override QueryShape.SaveChangesRecord.ToString() -> string!
+static QueryShape.CallSite.operator !=(QueryShape.CallSite? left, QueryShape.CallSite? right) -> bool
+static QueryShape.CallSite.operator ==(QueryShape.CallSite? left, QueryShape.CallSite? right) -> bool
+static QueryShape.Capture.QueryShapeInterceptor.Instance.get -> QueryShape.Capture.QueryShapeInterceptor!
+static QueryShape.CapturedParameter.operator !=(QueryShape.CapturedParameter? left, QueryShape.CapturedParameter? right) -> bool
+static QueryShape.CapturedParameter.operator ==(QueryShape.CapturedParameter? left, QueryShape.CapturedParameter? right) -> bool
+static QueryShape.ClientEvaluatedCall.operator !=(QueryShape.ClientEvaluatedCall? left, QueryShape.ClientEvaluatedCall? right) -> bool
+static QueryShape.ClientEvaluatedCall.operator ==(QueryShape.ClientEvaluatedCall? left, QueryShape.ClientEvaluatedCall? right) -> bool
+static QueryShape.CommandStart.operator !=(QueryShape.CommandStart? left, QueryShape.CommandStart? right) -> bool
+static QueryShape.CommandStart.operator ==(QueryShape.CommandStart? left, QueryShape.CommandStart? right) -> bool
+static QueryShape.Diagnosis.operator !=(QueryShape.Diagnosis? left, QueryShape.Diagnosis? right) -> bool
+static QueryShape.Diagnosis.operator ==(QueryShape.Diagnosis? left, QueryShape.Diagnosis? right) -> bool
+static QueryShape.Evidence.operator !=(QueryShape.Evidence? left, QueryShape.Evidence? right) -> bool
+static QueryShape.Evidence.operator ==(QueryShape.Evidence? left, QueryShape.Evidence? right) -> bool
+static QueryShape.Fix.operator !=(QueryShape.Fix? left, QueryShape.Fix? right) -> bool
+static QueryShape.Fix.operator ==(QueryShape.Fix? left, QueryShape.Fix? right) -> bool
+static QueryShape.KeyFilter.operator !=(QueryShape.KeyFilter? left, QueryShape.KeyFilter? right) -> bool
+static QueryShape.KeyFilter.operator ==(QueryShape.KeyFilter? left, QueryShape.KeyFilter? right) -> bool
+static QueryShape.Normalization.Fingerprint.Compute(string! text) -> string!
+static QueryShape.Normalization.NormalizedSql.operator !=(QueryShape.Normalization.NormalizedSql? left, QueryShape.Normalization.NormalizedSql? right) -> bool
+static QueryShape.Normalization.NormalizedSql.operator ==(QueryShape.Normalization.NormalizedSql? left, QueryShape.Normalization.NormalizedSql? right) -> bool
+static QueryShape.Normalization.SqlNormalizer.MaskLiterals(string! sql) -> string!
+static QueryShape.Normalization.SqlNormalizer.Normalize(string! sql) -> QueryShape.Normalization.NormalizedSql!
+static QueryShape.Normalization.SqlNormalizer.Normalize(string! sql, bool maskLiterals) -> QueryShape.Normalization.NormalizedSql!
+static QueryShape.Normalization.SqlNormalizer.Shape(string! sql) -> string!
+static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!
+static QueryShape.QueryShapeDbContextOptionsBuilderExtensions.UseQueryShape<TContext>(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>! builder, QueryShape.QueryShapeOptions? options = null) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<TContext!>!
+static QueryShape.QueryShapeOptions.Default.get -> QueryShape.QueryShapeOptions!
+static QueryShape.QueryShapeScope.Begin(string? name = null, QueryShape.QueryShapeOptions? options = null, string? callerMemberName = null) -> QueryShape.QueryShapeScope!
+static QueryShape.QueryShapeScope.Current.get -> QueryShape.QueryShapeScope?
+static QueryShape.QueryShapeServiceCollectionExtensions.AddQueryShape(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<QueryShape.QueryShapeOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static QueryShape.Reporting.DiagnosisFormatter.Format(QueryShape.Diagnosis! diagnosis, string! indent = "") -> string!
+static QueryShape.Reporting.DiagnosisFormatter.Format(System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>! diagnoses, string! indent = "") -> string!
+static QueryShape.Reporting.ScopeReport.FromJson(string! json) -> QueryShape.Reporting.ScopeReport?
+static QueryShape.Reporting.ScopeReport.FromScope(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses) -> QueryShape.Reporting.ScopeReport!
+static QueryShape.Reporting.ScopeReport.operator !=(QueryShape.Reporting.ScopeReport? left, QueryShape.Reporting.ScopeReport? right) -> bool
+static QueryShape.Reporting.ScopeReport.operator ==(QueryShape.Reporting.ScopeReport? left, QueryShape.Reporting.ScopeReport? right) -> bool
+static QueryShape.Reporting.ScopeReportDiagnosis.operator !=(QueryShape.Reporting.ScopeReportDiagnosis? left, QueryShape.Reporting.ScopeReportDiagnosis? right) -> bool
+static QueryShape.Reporting.ScopeReportDiagnosis.operator ==(QueryShape.Reporting.ScopeReportDiagnosis? left, QueryShape.Reporting.ScopeReportDiagnosis? right) -> bool
+static QueryShape.Reporting.ScopeReportQuery.operator !=(QueryShape.Reporting.ScopeReportQuery? left, QueryShape.Reporting.ScopeReportQuery? right) -> bool
+static QueryShape.Reporting.ScopeReportQuery.operator ==(QueryShape.Reporting.ScopeReportQuery? left, QueryShape.Reporting.ScopeReportQuery? right) -> bool
+static QueryShape.Rules.BuiltInRules.CreateAll() -> System.Collections.Generic.IReadOnlyList<QueryShape.IRule!>!
+static QueryShape.SaveChangesRecord.operator !=(QueryShape.SaveChangesRecord? left, QueryShape.SaveChangesRecord? right) -> bool
+static QueryShape.SaveChangesRecord.operator ==(QueryShape.SaveChangesRecord? left, QueryShape.SaveChangesRecord? right) -> bool

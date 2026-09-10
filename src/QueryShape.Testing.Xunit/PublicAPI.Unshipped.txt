@@ -1,14 +1,1 @@
 #nullable enable
-override QueryShape.Testing.Xunit.QueryBudgetAttribute.After(System.Reflection.MethodInfo! methodUnderTest) -> void
-override QueryShape.Testing.Xunit.QueryBudgetAttribute.Before(System.Reflection.MethodInfo! methodUnderTest) -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute
-QueryShape.Testing.Xunit.QueryBudgetAttribute.FailOn.get -> QueryShape.Severity
-QueryShape.Testing.Xunit.QueryBudgetAttribute.FailOn.set -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute.IgnoreDiagnostics.get -> bool
-QueryShape.Testing.Xunit.QueryBudgetAttribute.IgnoreDiagnostics.set -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute.MaxDurationMs.get -> double
-QueryShape.Testing.Xunit.QueryBudgetAttribute.MaxDurationMs.set -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute.MaxQueries.get -> int
-QueryShape.Testing.Xunit.QueryBudgetAttribute.MaxQueries.set -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute.QueryBudgetAttribute() -> void
-QueryShape.Testing.Xunit.QueryBudgetAttribute.ToBudget() -> QueryShape.Testing.QueryBudget!

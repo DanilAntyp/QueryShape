@@ -1,1 +1,15 @@
 #nullable enable
+QueryShape.Testing.NUnit.QueryBudgetAttribute
+QueryShape.Testing.NUnit.QueryBudgetAttribute.AfterTest(NUnit.Framework.Interfaces.ITest! test) -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.BeforeTest(NUnit.Framework.Interfaces.ITest! test) -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.FailOn.get -> QueryShape.Severity
+QueryShape.Testing.NUnit.QueryBudgetAttribute.FailOn.set -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.IgnoreDiagnostics.get -> bool
+QueryShape.Testing.NUnit.QueryBudgetAttribute.IgnoreDiagnostics.set -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.MaxDurationMs.get -> double
+QueryShape.Testing.NUnit.QueryBudgetAttribute.MaxDurationMs.set -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.MaxQueries.get -> int
+QueryShape.Testing.NUnit.QueryBudgetAttribute.MaxQueries.set -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.QueryBudgetAttribute() -> void
+QueryShape.Testing.NUnit.QueryBudgetAttribute.Targets.get -> NUnit.Framework.ActionTargets
+QueryShape.Testing.NUnit.QueryBudgetAttribute.ToBudget() -> QueryShape.Testing.QueryBudget!

@@ -1,6 +1,6 @@
 # Install the source preview
 
-The repository is usable before a public NuGet release. These instructions build the packages locally; they do not assume that `QueryShape.Cli` has been published to nuget.org.
+The repository is usable before a public NuGet release. These instructions build the packages locally; they do not assume that `QueryShape.Cli` has been published to nuget.org. [Releasing](releasing.md) describes how a published version is produced and what changes here once one exists.
 
 ## Run without installing
 

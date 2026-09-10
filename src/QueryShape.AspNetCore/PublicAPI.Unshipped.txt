@@ -1,14 +1,1 @@
 #nullable enable
-QueryShape.AspNetCore.QueryShapeApplicationBuilderExtensions
-QueryShape.AspNetCore.QueryShapeMiddleware
-QueryShape.AspNetCore.QueryShapeMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-QueryShape.AspNetCore.QueryShapeMiddleware.QueryShapeMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, QueryShape.QueryShapeOptions! options, QueryShape.AspNetCore.QueryShapeMiddlewareOptions! middlewareOptions) -> void
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.EmitResponseHeader.get -> bool
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.EmitResponseHeader.set -> void
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.ExcludedPathPrefixes.get -> System.Collections.Generic.IList<string!>!
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.QueryShapeMiddlewareOptions() -> void
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.ResponseHeaderName.get -> string!
-QueryShape.AspNetCore.QueryShapeMiddlewareOptions.ResponseHeaderName.set -> void
-static QueryShape.AspNetCore.QueryShapeApplicationBuilderExtensions.GetQueryShapeScope(this Microsoft.AspNetCore.Http.HttpContext! context) -> QueryShape.QueryShapeScope?
-static QueryShape.AspNetCore.QueryShapeApplicationBuilderExtensions.UseQueryShape(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Action<QueryShape.AspNetCore.QueryShapeMiddlewareOptions!>? configure = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

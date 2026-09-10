@@ -1,1 +1,40 @@
 #nullable enable
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryExtensions
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.OnCommandCaptured(QueryShape.CapturedCommand! command, QueryShape.QueryShapeScope? scope) -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.OnCommandExecuting(QueryShape.CommandStart! start, QueryShape.QueryShapeScope? scope) -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.OnScopeCompleted(QueryShape.QueryShapeScope! scope, System.Collections.Generic.IReadOnlyList<QueryShape.Diagnosis!>! diagnoses) -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.QueryShapeOpenTelemetryListener(QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions? options = null) -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.EmitMetrics.get -> bool
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.EmitMetrics.set -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.EmitQueryEvents.get -> bool
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.EmitQueryEvents.set -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.IncludeFingerprintInMetrics.get -> bool
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.IncludeFingerprintInMetrics.set -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.MaxShapeLength.get -> int
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.MaxShapeLength.set -> void
+QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.QueryShapeOpenTelemetryOptions() -> void
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.CallSite = "queryshape.callsite" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.DiagnosisCount = "queryshape.diagnosis_count" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.DiagnosisEvent = "queryshape.diagnosis" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.DocsUrl = "queryshape.docs_url" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.DurationMs = "queryshape.duration_ms" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Fingerprint = "queryshape.fingerprint" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.FixSummary = "queryshape.fix.summary" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.MaxSeverity = "queryshape.max_severity" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.QueryCount = "queryshape.query_count" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.QueryEvent = "queryshape.query" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Rows = "queryshape.rows" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.RuleId = "queryshape.rule_id" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Severity = "queryshape.severity" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Shape = "queryshape.shape" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Source = "queryshape.source" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Tags = "queryshape.tags" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Attributes.Title = "queryshape.title" -> string!
+const QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions.SourceName = "QueryShape" -> string!
+static QueryShape.OpenTelemetry.QueryShapeOpenTelemetryExtensions.AddOpenTelemetry(this QueryShape.QueryShapeOptions! options, System.Action<QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions!>? configure = null) -> QueryShape.QueryShapeOptions!
+static QueryShape.OpenTelemetry.QueryShapeOpenTelemetryExtensions.AddQueryShapeOpenTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<QueryShape.OpenTelemetry.QueryShapeOpenTelemetryOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.ActivitySource.get -> System.Diagnostics.ActivitySource!
+static QueryShape.OpenTelemetry.QueryShapeOpenTelemetryListener.Meter.get -> System.Diagnostics.Metrics.Meter!
