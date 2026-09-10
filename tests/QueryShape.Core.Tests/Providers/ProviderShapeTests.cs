@@ -1,16 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using QueryShape.Core.Tests.TestModel;
 using Testcontainers.MsSql;
+using Testcontainers.MySql;
 using Testcontainers.PostgreSql;
 
 namespace QueryShape.Core.Tests.Providers;
 
 /// <summary>Provider-specific SQL (SQL Server brackets, Postgres bare aliases) must normalize to stable shapes and feed the same rules.</summary>
 [Trait("Category", "Integration")]
-public sealed class ProviderShapeTests : IAsyncLifetime
+public sealed class ProviderShapeTests(Xunit.Abstractions.ITestOutputHelper output) : IAsyncLifetime
 {
     private MsSqlContainer? _sqlServer;
     private PostgreSqlContainer? _postgres;
+    private MySqlContainer? _mysql;
 
     public async Task InitializeAsync()
     {
@@ -21,7 +23,8 @@ public sealed class ProviderShapeTests : IAsyncLifetime
 
         _sqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
         _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithDatabase("queryshape_tests").Build();
-        await Task.WhenAll(_sqlServer.StartAsync(), _postgres.StartAsync());
+        _mysql = new MySqlBuilder("mysql:8.4").WithDatabase("queryshape_tests").Build();
+        await Task.WhenAll(_sqlServer.StartAsync(), _postgres.StartAsync(), _mysql.StartAsync());
     }
 
     public async Task DisposeAsync()
@@ -34,6 +37,11 @@ public sealed class ProviderShapeTests : IAsyncLifetime
         if (_postgres is not null)
         {
             await _postgres.DisposeAsync();
+        }
+
+        if (_mysql is not null)
+        {
+            await _mysql.DisposeAsync();
         }
     }
 
@@ -54,7 +62,18 @@ public sealed class ProviderShapeTests : IAsyncLifetime
         await RunAsync(builder.Options, options, expectedShapeStart: "SELECT t0.\"Id\", t0.\"CustomerId\", t0.\"PlacedAt\", t0.\"Total\" FROM \"Orders\" AS t0 WHERE t0.\"CustomerId\" = @p0");
     }
 
-    private static async Task RunAsync(DbContextOptions<ShopContext> dbOptions, QueryShapeOptions options, string expectedShapeStart)
+    [IntegrationFact]
+    public async Task MySql_shapes_and_n_plus_one()
+    {
+        var options = new QueryShapeOptions { CaptureCallSites = true };
+        var connection = _mysql!.GetConnectionString();
+        var builder = new DbContextOptionsBuilder<ShopContext>()
+            .UseMySQL(connection)
+            .UseQueryShape(options);
+        await RunAsync(builder.Options, options, expectedShapeStart: null);
+    }
+
+    private async Task RunAsync(DbContextOptions<ShopContext> dbOptions, QueryShapeOptions options, string? expectedShapeStart)
     {
         await using (var setup = new ShopContext(dbOptions))
         {
@@ -81,7 +100,15 @@ public sealed class ProviderShapeTests : IAsyncLifetime
         var orderQueries = scope.Commands.Where(c => c.Query?.RootEntityShortName == "Order").ToList();
         orderQueries.Should().HaveCount(6);
         orderQueries.Select(c => c.Fingerprint).Distinct().Should().ContainSingle();
-        orderQueries[0].Shape.Should().StartWith(expectedShapeStart);
+        // The shape is pinned per provider once observed; until then the run records what this provider produced.
+        output.WriteLine("shape: " + orderQueries[0].Shape);
+        if (expectedShapeStart is not null)
+        {
+            orderQueries[0].Shape.Should().StartWith(expectedShapeStart);
+        }
+
+        // Whatever the dialect, the six executions differing only by argument must share one shape, and the parameter must be canonical.
+        orderQueries[0].Shape.Should().Contain("Orders").And.MatchRegex(@"[@:]p0\b");
         orderQueries[0].RowsReturned.Should().Be(1);
         orderQueries[0].Query!.KeyFilters.Should().ContainSingle().Which.NavigationOnRelated.Should().Be("Orders");
 
