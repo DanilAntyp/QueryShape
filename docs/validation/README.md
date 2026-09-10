@@ -13,7 +13,7 @@ To rerun both pinned external applications on Linux with native .NET 8 and .NET 
 | [Jellyfin results](jellyfin.md), pinned `cf09de60e4e5844ad181d7ef9019151c54969d44` | Library page, latest items, by-name and id-only paths through the real `BaseItemRepository`; row multiplication of five collection includes; upstream's own split-query branch as the measured alternative | EF10/SQLite native, no mapping adaptation; synthetic 24-movie library with a fixed per-item fan-out; the flagged pattern is deliberate upstream (EF's own warning is suppressed), so it is a measurement, not a bug report |
 | QueryShape sample/test fixtures | Rule detection, query snapshots, batched growth, lost rows/updates, behavior comparisons and actual worktree verification | Designed test cases; cannot establish external false-positive or false-negative rates |
 | SQL Server/PostgreSQL provider tests | Provider shapes, correlation, N+1 | Require Docker; skipped locally when unavailable |
-| Provider overhead benchmark workflow | Plain EF versus capture/scope analysis; allocation and duration distributions | Harness added; provider results pending a Docker-enabled run |
+| Provider overhead benchmark workflow | Plain EF versus capture, and capture plus analysis, on PostgreSQL 16 and SQL Server 2022 containers; allocation and duration distributions | Executed 2026-09-10; means over ten sequential iterations on a two-core runner hosting the database beside the benchmark, not p99 under load |
 
 The adoption audit added regression checks for fewer-but-slower queries, returned-row increases, legitimate budgeted split queries, relocated findings, test identity replacement, acceptance expiry/counts, missing instrumentation, local redaction and foreign-key-preserving shrink candidates.
 
@@ -23,7 +23,7 @@ The adoption audit added regression checks for fewer-but-slower queries, returne
 
 ## Release evidence still required
 
-- Run the provider benchmark workflow and retain the full artifacts, environment, workload and uncertainty. No universal percentage overhead claim is justified by the existing SQLite results.
+- ~~Run the provider benchmark workflow and retain the full artifacts, environment, workload and uncertainty.~~ Done on 2026-09-10 ([run 34490395703](https://github.com/DanilAntyp/QueryShape/actions/runs/34490395703)): PostgreSQL 16 and SQL Server 2022, capture 19–40 µs and ≈ 4 KB per two-query read, analysis a further 7–25 µs. Still no universal percentage claim: a repeat run on the same commit moved the two providers' ratios past each other, the runner shares two cores with the database container, and nothing here measures p99 or concurrency. [Numbers and limits](../performance.md).
 - Validate more applications and production-representative datasets. Record actionable findings, intentional patterns flagged, missed issues, integration effort and confirmed improvements. Three applications do not establish precision/recall or typical adoption effort.
 - Observe actual developers completing the first-run guide and maintaining contracts over time. Usability changes alone do not establish that developers will adopt the tool.
 

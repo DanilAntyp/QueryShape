@@ -91,10 +91,38 @@ file information, which resolves symbols for every frame up front; keeping three
 a walk that already happened, and the walk stops as soon as it has the frames it needs. `CallPathDepth = 1` restores the pre-0.1 behaviour of
 recording only the call site.
 
+### Providers (2026-09-10, measured)
+
+`ProviderOverheadBenchmarks` on the hosted Ubuntu runner, against disposable PostgreSQL 16 and SQL Server 2022 containers:
+one customer lookup plus its orders, two queries, `AsNoTracking`, 3 warmup and 10 measured iterations
+([run 34490395703](https://github.com/DanilAntyp/QueryShape/actions/runs/34490395703), full artifacts attached).
+
+| Provider | Scenario | Mean | Ratio | Allocated |
+|---|---|---:|---:|---:|
+| PostgreSQL 16 | EF Core only | 880.2 µs ± 16.6 | 1.00 | 19.49 KB |
+| PostgreSQL 16 | capture + scope | 920.7 µs ± 85.3 | 1.05 ± 0.05 | 23.15 KB |
+| PostgreSQL 16 | capture + scope + `Analyze()` | 927.7 µs ± 48.7 | 1.05 ± 0.03 | 30.09 KB |
+| SQL Server 2022 | EF Core only | 1 147.5 µs ± 6.8 | 1.00 | 26.67 KB |
+| SQL Server 2022 | capture + scope | 1 166.2 µs ± 9.5 | 1.02 ± 0.01 | 30.61 KB |
+| SQL Server 2022 | capture + scope + `Analyze()` | 1 190.7 µs ± 41.9 | 1.04 ± 0.02 | 37.57 KB |
+
+In absolute terms capture costs **19–40 µs and ≈ 4 KB per two-query operation** (≈ 10–20 µs per command), and running all rules over that scope
+adds a further **7–25 µs and ≈ 7 KB**. Those absolute numbers agree with the SQLite micro-benchmarks; what a real provider adds is the round trip
+in the denominator, not more work in the numerator.
+
+**Do not read the percentages as a bound.** An earlier run of the same benchmark on the same commit
+([34489893743](https://github.com/DanilAntyp/QueryShape/actions/runs/34489893743)) measured capture at 1.02 for PostgreSQL and 1.05 for SQL Server —
+the two providers swapped places, and the run-to-run difference is the size of the effect being measured. The runner has two physical cores and hosts
+the database container beside the benchmark, so the two compete for CPU; the error bars overlap the deltas; and these are means over ten iterations of a
+sequential two-query read, not a p99 under concurrent load. The honest summary is **a few percent on this workload, with the absolute per-command cost
+being the number that transfers** to a different query mix.
+
+The **< 3 % p99 target in CLAUDE.md is therefore still a target**, not a demonstrated bound: nothing here measures p99, and nothing here runs under load.
+
 ### Not measured yet
 
-- SQL Server / PostgreSQL providers (Testcontainers), where the row-counting reader wrapper adds one virtual call per column read.
-  (p99 under concurrent load is measured above; the `Meter("QueryShape")` histogram makes it observable in a real deployment.)
+- p99 under concurrent load against a real provider, and any production-representative result size or row width.
+- MySQL and Oracle: no benchmark and no integration test. Nothing in capture is provider-specific, but that is an argument, not a measurement.
 
 ### Next optimizations, in order of expected payoff
 
@@ -111,6 +139,6 @@ recording only the call site.
 dotnet run -c Release --project tests/QueryShape.Benchmarks -f net10.0 -- --filter '*ProviderOverheadBenchmarks*' --exporters json markdown
 ```
 
-The manual `provider-benchmarks.yml` workflow runs this on a Docker-enabled Ubuntu runner and uploads the full BenchmarkDotNet artifacts. It does not enforce a universal percentage threshold. These provider measurements have **not been executed locally** in the audit-fix session: Docker is not installed. The new benchmark harness compiles; published numbers above remain the historical SQLite measurements with their original environment and limitations.
+The manual `provider-benchmarks.yml` workflow runs this on a Docker-enabled Ubuntu runner and uploads the full BenchmarkDotNet artifacts. It does not enforce a universal percentage threshold. It was executed for the first time on 2026-09-10; the results and their limits are in *Providers (2026-09-10, measured)* above. Docker is not installed on the maintainer's machine, so these numbers come from CI and cannot be reproduced locally without one.
 
 Before a release, inspect absolute overhead, allocation differences, uncertainty and production-representative concurrency and result sizes. The provider microbenchmark is not an HTTP p99 measurement. Caller-supplied scenario metrics and operation elapsed time can provide additional evidence, but QueryShape does not infer database rows scanned or explain plans.

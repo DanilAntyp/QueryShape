@@ -36,4 +36,4 @@ Local detailed test log: `/private/tmp/queryshape-audit-final-tests.log`. Raw ex
 
 ## Remaining external validation
 
-Docker is not installed here, so provider benchmark numbers remain pending. The added workflow can produce those artifacts on a Docker-enabled runner. Native .NET 8/10 Linux/Windows CI has not been executed by this local session. Neither two synthetic-data application trials nor the new onboarding flow establish production latency improvements, population-wide diagnostic accuracy, or developer adoption. These limits remain explicit in the [validation matrix](README.md).
+Docker is not installed here, so provider benchmark numbers remained pending at the time of this audit (they were measured on 2026-09-10; see [performance](../performance.md)). The added workflow can produce those artifacts on a Docker-enabled runner. Native .NET 8/10 Linux/Windows CI has not been executed by this local session. Neither two synthetic-data application trials nor the new onboarding flow establish production latency improvements, population-wide diagnostic accuracy, or developer adoption. These limits remain explicit in the [validation matrix](README.md).
