@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Ombi.Store targets net8.0, so the harness does too; locally it rolls forward to the installed .NET 10 runtime. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS8618;CS8625;CA1707</NoWarn>
+    <OmbiRoot Condition="'$(OmbiRoot)' == ''">/private/tmp/queryshape-ombi-validation</OmbiRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
+    <ProjectReference Include="$(OmbiRoot)/src/Ombi.Store/Ombi.Store.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

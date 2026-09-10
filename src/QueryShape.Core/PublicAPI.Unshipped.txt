@@ -1,1 +1,2 @@
 #nullable enable
+static QueryShape.Reporting.DiagnosisFormatter.Summarize(System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>! diagnoses, string! indent = "") -> string!

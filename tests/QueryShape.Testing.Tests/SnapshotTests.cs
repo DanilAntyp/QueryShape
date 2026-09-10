@@ -166,7 +166,9 @@ public class SnapshotTests : IDisposable
         var ex = (await act.Should().ThrowAsync<QuerySnapshotMismatchException>()).Which;
         ex.Comparison.NewDiagnoses.Should().ContainSingle().Which.RuleId.Should().Be("QS001");
         ex.Comparison.KnownDiagnoses.Select(d => d.RuleId).Should().BeEquivalentTo(["QS004", "QS005", "QS005"], "QS004 and one QS005 are in the snapshot; the second QS005 (OrderLine) is Info, below FailOn");
-        ex.Message.Should().Contain("\nNew diagnostics (severity >= Warning):\n  QS001 ERROR  N+1 query: OrderLine by ProductId executed 3 times at SnapshotTests.cs:");
+        // The reader gets the headline first, then the finding in full.
+        ex.Message.Should().Contain("\nNew diagnostics (severity >= Warning):\n  1 finding: 1 error\n    QS001  ×1  N+1 query  at SnapshotTests.");
+        ex.Message.Should().Contain("\n  QS001 ERROR  N+1 query: OrderLine by ProductId executed 3 times at SnapshotTests.cs:");
         ex.Message.Should().Contain("    fix  Load all OrderLine rows in one query: collect the keys first, then .Where(ol =>",
             "Product has no navigation to OrderLines, so no Include can be suggested");
         ex.Message.Should().Contain("        linq: DbSet<OrderLine>() .Where(l => l.ProductId == ");

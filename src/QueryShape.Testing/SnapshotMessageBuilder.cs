@@ -38,6 +38,7 @@ internal static class SnapshotMessageBuilder
         if (c.NewDiagnoses.Count > 0)
         {
             sb.Append('\n').Append("New diagnostics (severity >= ").Append(failOn).Append("):\n");
+            sb.Append(DiagnosisFormatter.Summarize(c.NewDiagnoses, "  ")).Append('\n');
             sb.Append(DiagnosisFormatter.Format(c.NewDiagnoses, "  "));
         }
 

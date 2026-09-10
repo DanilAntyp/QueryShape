@@ -79,6 +79,7 @@ public sealed class QueryBudget
 
         if (failingDiagnoses.Count > 0)
         {
+            sb.Append('\n').Append(DiagnosisFormatter.Summarize(failingDiagnoses, "  "));
             sb.Append('\n').Append(DiagnosisFormatter.Format(failingDiagnoses, "  "));
         }
 

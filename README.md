@@ -111,6 +111,18 @@ A deliberately incorrect candidate dropped contributors without phone numbers. Q
 
 [Read the case study and machine-readable evidence →](docs/validation/cleanarchitecture.md) · [Reproduce the run →](scripts/real-world/CleanArchitecture/README.md)
 
+### Ombi
+
+**4 harness tests passed** against the real `PlexServerContentRepository` on EF Core 8, SQLite-native, using Ombi's own migrations.
+
+| Actual operation | What QueryShape recorded | Why it matters |
+|---|---|---|
+| `GetByKey` on a show with 8 seasons and 104 episodes | **QS002:** **832 rows for one entity** | `Include(Seasons).Include(Episodes)` in one query multiplies seasons by episodes. |
+| The same call on a 2-season show | 12 rows, no QS002 — same call site, same fingerprint | The problem is invisible in a test library and arrives with a real one. |
+| `GetAllEpisodes().CountAsync()`, `ContentExists(imdbId)` | silent | Count and existence checks are left alone. |
+
+[Read the case study →](docs/validation/ombi.md) · [Reproduce the run →](scripts/real-world/Ombi/README.md)
+
 ### Jellyfin
 
 **7 harness tests passed** against the real `BaseItemRepository`, on the hosted .NET 10 runtime. Jellyfin is SQLite-native, so its mappings needed no adaptation.
@@ -127,7 +139,7 @@ This pattern is deliberate upstream: Jellyfin globally ignores EF Core's own `Mu
 
 [Read the case study and scope reports →](docs/validation/jellyfin.md) · [Reproduce the run →](scripts/real-world/Jellyfin/README.md)
 
-All three application trials used SQLite in memory. They establish results for those fixtures, not production speed or a repository-wide clean bill of health. [Full validation record and remaining gaps](docs/validation/README.md).
+All four application trials used SQLite in memory. They establish results for those fixtures, not production speed or a repository-wide clean bill of health. [Full validation record and remaining gaps](docs/validation/README.md).
 
 ## Use it in your tests
 

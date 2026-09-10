@@ -67,9 +67,12 @@ internal sealed class ReportCommand
         }
 
         out_.WriteLine();
+        WriteSummary(out_, metrics);
+
         foreach (var report in metrics.Reports)
         {
-            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries, {report.CommandDurationMs.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} ms command execution, {report.Diagnostics.Count} diagnostics");
+            var rows = report.RowsReturned is { } r ? $", {r.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} rows" : string.Empty;
+            out_.WriteLine($"== {report.Scope ?? "(unnamed scope)"}: {report.QueryCount} queries{rows}, {report.CommandDurationMs.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} ms command execution, {report.Diagnostics.Count} diagnostics");
             foreach (var d in report.Diagnostics.OrderByDescending(d => d.Severity == "Error" ? 2 : d.Severity == "Warning" ? 1 : 0).ThenBy(d => d.RuleId, StringComparer.Ordinal))
             {
                 out_.WriteLine($"  {d.RuleId} {d.Severity.ToUpperInvariant()}  {d.Title}");
@@ -91,10 +94,61 @@ internal sealed class ReportCommand
             out_.WriteLine();
         }
 
-        var errors = metrics.Diagnostics.Count(d => d.Severity == "Error");
-        out_.WriteLine($"{metrics.Scopes} scope(s), {metrics.Queries} queries, {metrics.Diagnostics.Count} diagnostics ({errors} errors)");
+        WriteSummary(out_, metrics);
         out_.WriteLine("Findings describe observed patterns or heuristic risks. Returned rows are not server rows scanned; command time is not endpoint latency.");
         return exitCode;
+    }
+
+    /// <summary>
+    /// What the run found, before and after the per-scope detail: the totals, then one line per rule with how often it fired, where, and the
+    /// worst scope it appeared in. A run over a whole test suite prints many scopes; this is the part a reader can act on without scrolling.
+    /// </summary>
+    private static void WriteSummary(TextWriter out_, RunMetrics metrics)
+    {
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+        var rows = metrics.Reports.All(r => r.RowsReturned.HasValue)
+            ? $", {metrics.Reports.Sum(r => r.RowsReturned!.Value).ToString("N0", culture)} rows"
+            : string.Empty;
+        out_.WriteLine($"{metrics.Scopes} scope(s), {metrics.Queries.ToString("N0", culture)} queries{rows}, {metrics.DurationMs.ToString("0.#", culture)} ms command execution");
+
+        if (metrics.Diagnostics.Count == 0)
+        {
+            out_.WriteLine("No findings.");
+            out_.WriteLine();
+            return;
+        }
+
+        var bySeverity = new[] { "Error", "Warning", "Info" }
+            .Select(s => (Severity: s, Count: metrics.Diagnostics.Count(d => d.Severity == s)))
+            .Where(x => x.Count > 0)
+            .Select(x => $"{x.Count.ToString("N0", culture)} {x.Severity.ToLowerInvariant()}{(x.Count == 1 || x.Severity == "Info" ? string.Empty : "s")}");
+        out_.WriteLine($"{metrics.Diagnostics.Count.ToString("N0", culture)} finding(s): {string.Join(", ", bySeverity)}");
+
+        var groups = metrics.Diagnostics
+            .GroupBy(d => d.RuleId, StringComparer.Ordinal)
+            .Select(g => (RuleId: g.Key, Rank: g.Max(d => d.Severity == "Error" ? 2 : d.Severity == "Warning" ? 1 : 0), Items: g.ToList()))
+            .OrderByDescending(g => g.Rank)
+            .ThenByDescending(g => g.Items.Count)
+            .ThenBy(g => g.RuleId, StringComparer.Ordinal)
+            .ToList();
+
+        var width = groups.Max(g => Subject(g.Items[0].Title).Length);
+        foreach (var (ruleId, _, items) in groups)
+        {
+            var sites = items.Select(d => d.CallSite).OfType<string>().Distinct(StringComparer.Ordinal).ToList();
+            var where = sites.Count == 0 ? string.Empty
+                : "  at " + sites[0] + (sites.Count > 1 ? $" (+{sites.Count - 1} more)" : string.Empty);
+            out_.WriteLine($"  {ruleId}  ×{items.Count.ToString(culture).PadRight(3)}{Subject(items[0].Title).PadRight(width)}{where}");
+        }
+
+        out_.WriteLine();
+    }
+
+    /// <summary>The part of a title before its colon: enough to recognise the rule, short enough to align.</summary>
+    private static string Subject(string title)
+    {
+        var colon = title.IndexOf(':', StringComparison.Ordinal);
+        return colon > 0 ? title[..colon] : title;
     }
 
     /// <summary>Markdown for step summaries and PR comments: one row per scope, then every diagnosis with its fix.</summary>

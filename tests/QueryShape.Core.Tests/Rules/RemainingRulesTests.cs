@@ -417,3 +417,38 @@ public class MissingSplitQueryWithEfWarningTests
         d.Evidence.Details["distinctRoots"].Should().Be("unknown");
     }
 }
+
+public class DiagnosisSummaryTests
+{
+    private static Diagnosis Finding(string ruleId, Severity severity, string title, CallSite? site = null)
+        => new(ruleId, severity, title, "why", site, [], new Evidence(), null);
+
+    [Fact]
+    public void Summary_names_what_was_found_before_the_detail_explains_it()
+    {
+        var summary = QueryShape.Reporting.DiagnosisFormatter.Summarize(
+        [
+            Finding("QS006", Severity.Warning, "Split query candidate: 2 collection includes", new CallSite("/a/Repo.cs", 62, "Repo.GetItems")),
+            Finding("QS002", Severity.Error, "Cartesian explosion: 800 rows for 20 Customer entities", new CallSite("/a/Repo.cs", 62, "Repo.GetItems")),
+            Finding("QS006", Severity.Warning, "Split query candidate: 5 collection includes", new CallSite("/a/Repo.cs", 216, "Repo.Latest")),
+        ]);
+
+        var lines = summary.TrimEnd('\n').Split('\n');
+        lines[0].Should().Be("3 findings: 1 error, 2 warnings");
+        lines[1].Should().StartWith("  QS002  ×1  Cartesian explosion").And.EndWith("at Repo.GetItems");
+        lines[2].Should().StartWith("  QS006  ×2  Split query candidate").And.EndWith("at Repo.GetItems (+1 more)");
+    }
+
+    [Fact]
+    public void One_finding_reads_as_one_finding_and_nothing_reads_as_nothing()
+    {
+        QueryShape.Reporting.DiagnosisFormatter.Summarize([Finding("QS004", Severity.Warning, "Large result set: 2,400 rows returned")])
+            .Should().StartWith("1 finding: 1 warning");
+        QueryShape.Reporting.DiagnosisFormatter.Summarize([]).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void A_diagnosis_without_a_call_site_still_summarizes()
+        => QueryShape.Reporting.DiagnosisFormatter.Summarize([Finding("QS_OVERFLOW", Severity.Warning, "Scope recorded 10,000 commands and stopped capturing")], "> ")
+            .Should().StartWith("> 1 finding: 1 warning\n>   QS_OVERFLOW  ×1  Scope recorded 10,000 commands and stopped capturing");
+}

@@ -1,0 +1,358 @@
+[
+  {
+    "version": 1,
+    "scope": "all-episodes/run-1",
+    "startedAt": "2026-09-10T18:11:36.21534+00:00",
+    "elapsedMs": 12.096,
+    "queryCount": 1,
+    "commandDurationMs": 0.018,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "b60f951f2cc9",
+        "shape": "SELECT COUNT(*) FROM \"PlexEpisode\" AS \"t0\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.018,
+        "rowsReturned": 1,
+        "callSite": "PlexContentTests.cs:118 PlexContentTests.Exercise"
+      }
+    ],
+    "diagnostics": [],
+    "rowsReturned": 1,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "all-episodes/run-2",
+    "startedAt": "2026-09-10T18:11:36.227973+00:00",
+    "elapsedMs": 2.265,
+    "queryCount": 1,
+    "commandDurationMs": 0.033,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "b60f951f2cc9",
+        "shape": "SELECT COUNT(*) FROM \"PlexEpisode\" AS \"t0\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.033,
+        "rowsReturned": 1,
+        "callSite": "PlexContentTests.cs:118 PlexContentTests.Exercise"
+      }
+    ],
+    "diagnostics": [],
+    "rowsReturned": 1,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "content-exists/run-1",
+    "startedAt": "2026-09-10T18:11:35.975532+00:00",
+    "elapsedMs": 120.69,
+    "queryCount": 1,
+    "commandDurationMs": 0.813,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "0ccf43f88bdd",
+        "shape": "SELECT EXISTS ( SELECT 1 FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"ImdbId\" = @p0)",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.813,
+        "rowsReturned": 1,
+        "callSite": "PlexContentRepository.cs:49 PlexServerContentRepository.ContentExists"
+      }
+    ],
+    "diagnostics": [],
+    "rowsReturned": 1,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "content-exists/run-2",
+    "startedAt": "2026-09-10T18:11:36.135398+00:00",
+    "elapsedMs": 2.045,
+    "queryCount": 1,
+    "commandDurationMs": 0.072,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "0ccf43f88bdd",
+        "shape": "SELECT EXISTS ( SELECT 1 FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"ImdbId\" = @p0)",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.072,
+        "rowsReturned": 1,
+        "callSite": "PlexContentRepository.cs:49 PlexServerContentRepository.ContentExists"
+      }
+    ],
+    "diagnostics": [],
+    "rowsReturned": 1,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "series-by-key-small/run-1",
+    "startedAt": "2026-09-10T18:11:36.213083+00:00",
+    "elapsedMs": 0.806,
+    "queryCount": 1,
+    "commandDurationMs": 0.086,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "6e78aa202d5e",
+        "shape": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.086,
+        "rowsReturned": 12,
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey"
+      }
+    ],
+    "diagnostics": [
+      {
+        "ruleId": "QS005",
+        "severity": "Info",
+        "title": "Tracked read-only query: PlexServerContent entities and included entities loaded with change tracking; no save observed in this scope at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Queries that return entity types are tracked by default: for every PlexServerContent it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for PlexServerContent, so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsNoTracking() to the PlexServerContent query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+        "fixRationale": "No-tracking queries can avoid change-tracker entries and snapshots for PlexServerContent; compare results and persisted state before accepting the change. Use AsNoTrackingWithIdentityResolution() if the same PlexServerContent appears several times in the result and you want one instance (psc references stay consistent).",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsNoTracking()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsNoTracking().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS005.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:113 PlexContentTests.Exercise",
+        "disposition": "active"
+      }
+    ],
+    "rowsReturned": 12,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "series-by-key-small/run-2",
+    "startedAt": "2026-09-10T18:11:36.214338+00:00",
+    "elapsedMs": 0.608,
+    "queryCount": 1,
+    "commandDurationMs": 0.066,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "6e78aa202d5e",
+        "shape": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.066,
+        "rowsReturned": 12,
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey"
+      }
+    ],
+    "diagnostics": [
+      {
+        "ruleId": "QS005",
+        "severity": "Info",
+        "title": "Tracked read-only query: PlexServerContent entities and included entities loaded with change tracking; no save observed in this scope at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Queries that return entity types are tracked by default: for every PlexServerContent it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for PlexServerContent, so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsNoTracking() to the PlexServerContent query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+        "fixRationale": "No-tracking queries can avoid change-tracker entries and snapshots for PlexServerContent; compare results and persisted state before accepting the change. Use AsNoTrackingWithIdentityResolution() if the same PlexServerContent appears several times in the result and you want one instance (psc references stay consistent).",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsNoTracking()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsNoTracking().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS005.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:113 PlexContentTests.Exercise",
+        "disposition": "active"
+      }
+    ],
+    "rowsReturned": 12,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "series-by-key/run-1",
+    "startedAt": "2026-09-10T18:11:36.139706+00:00",
+    "elapsedMs": 65.806,
+    "queryCount": 1,
+    "commandDurationMs": 0.641,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "6e78aa202d5e",
+        "shape": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.641,
+        "rowsReturned": 832,
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey"
+      }
+    ],
+    "diagnostics": [
+      {
+        "ruleId": "QS002",
+        "severity": "Error",
+        "title": "Cartesian explosion: 832 rows for 1 PlexServerContent entities (Seasons, Episodes) at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Including two or more collections in one query makes EF Core LEFT JOIN each collection to the root in the same SELECT. The database returns one row for every combination: a PlexServerContent with 5 Seasons and 4 Episodes comes back as 20 rows, not 9. Here 1 PlexServerContent entities produced 832 rows (832 per root), and every one of those rows repeats all the PlexServerContent columns and the columns of the other collection. EF Core de-duplicates them in memory afterwards, so the app pays for transferring and parsing rows that carry no new information, and the multiplication grows with each additional collection.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsSplitQuery() to the PlexServerContent query so each collection loads with its own SELECT",
+        "fixRationale": "With AsSplitQuery, EF Core issues one SELECT for PlexServerContent and one per collection, joined by the root keys: rows are transferred once each. It costs extra round trips and gives up consistency between the statements unless you wrap them in a transaction; if you only need a few fields, a Select projection (psc => new { psc.Id, Count = psc.Seasons.Count }) avoids the includes entirely.",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsSplitQuery()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsSplitQuery().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS002.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:107 PlexContentTests.Exercise",
+        "disposition": "active"
+      },
+      {
+        "ruleId": "QS005",
+        "severity": "Info",
+        "title": "Tracked read-only query: PlexServerContent entities and included entities loaded with change tracking; no save observed in this scope at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Queries that return entity types are tracked by default: for every PlexServerContent it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for PlexServerContent, so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsNoTracking() to the PlexServerContent query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+        "fixRationale": "No-tracking queries can avoid change-tracker entries and snapshots for PlexServerContent; compare results and persisted state before accepting the change. Use AsNoTrackingWithIdentityResolution() if the same PlexServerContent appears several times in the result and you want one instance (psc references stay consistent).",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsNoTracking()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsNoTracking().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS005.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:107 PlexContentTests.Exercise",
+        "disposition": "active"
+      }
+    ],
+    "rowsReturned": 832,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  },
+  {
+    "version": 1,
+    "scope": "series-by-key/run-2",
+    "startedAt": "2026-09-10T18:11:36.208204+00:00",
+    "elapsedMs": 4.237,
+    "queryCount": 1,
+    "commandDurationMs": 0.584,
+    "overflowed": false,
+    "queries": [
+      {
+        "fingerprint": "6e78aa202d5e",
+        "shape": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "source": "Linq",
+        "count": 1,
+        "durationMs": 0.584,
+        "rowsReturned": 832,
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey"
+      }
+    ],
+    "diagnostics": [
+      {
+        "ruleId": "QS002",
+        "severity": "Error",
+        "title": "Cartesian explosion: 832 rows for 1 PlexServerContent entities (Seasons, Episodes) at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Including two or more collections in one query makes EF Core LEFT JOIN each collection to the root in the same SELECT. The database returns one row for every combination: a PlexServerContent with 5 Seasons and 4 Episodes comes back as 20 rows, not 9. Here 1 PlexServerContent entities produced 832 rows (832 per root), and every one of those rows repeats all the PlexServerContent columns and the columns of the other collection. EF Core de-duplicates them in memory afterwards, so the app pays for transferring and parsing rows that carry no new information, and the multiplication grows with each additional collection.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsSplitQuery() to the PlexServerContent query so each collection loads with its own SELECT",
+        "fixRationale": "With AsSplitQuery, EF Core issues one SELECT for PlexServerContent and one per collection, joined by the root keys: rows are transferred once each. It costs extra round trips and gives up consistency between the statements unless you wrap them in a transaction; if you only need a few fields, a Select projection (psc => new { psc.Id, Count = psc.Seasons.Count }) avoids the includes entirely.",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsSplitQuery()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsSplitQuery().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS002.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:107 PlexContentTests.Exercise",
+        "disposition": "active"
+      },
+      {
+        "ruleId": "QS005",
+        "severity": "Info",
+        "title": "Tracked read-only query: PlexServerContent entities and included entities loaded with change tracking; no save observed in this scope at PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "explanation": "Queries that return entity types are tracked by default: for every PlexServerContent it materializes, EF Core also creates an entry in the change tracker with a snapshot of every property so that SaveChanges can detect edits later. This scope never called SaveChanges for PlexServerContent, so tracking may be avoidable on this path. It can add allocations per row and work during later change detection, but identity resolution or updates saved outside this scope may require it. Check those uses before changing tracking; no latency improvement is established by this diagnosis.",
+        "callSite": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey",
+        "callSiteFile": "/private/tmp/queryshape-ombi-validation/src/Ombi.Store/Repository/PlexContentRepository.cs",
+        "callSiteLine": 97,
+        "fingerprints": [
+          "6e78aa202d5e"
+        ],
+        "sampleSql": "SELECT \"t1\".\"Id\", \"t1\".\"AddedAt\", \"t1\".\"Has4K\", \"t1\".\"ImdbId\", \"t1\".\"Key\", \"t1\".\"Quality\", \"t1\".\"ReleaseYear\", \"t1\".\"RequestId\", \"t1\".\"TheMovieDbId\", \"t1\".\"Title\", \"t1\".\"TvDbId\", \"t1\".\"Type\", \"t1\".\"Url\", \"t2\".\"Id\", \"t2\".\"ParentKey\", \"t2\".\"PlexContentId\", \"t2\".\"PlexServerContentId\", \"t2\".\"SeasonKey\", \"t2\".\"SeasonNumber\", \"t3\".\"Id\", \"t3\".\"EpisodeNumber\", \"t3\".\"GrandparentKey\", \"t3\".\"Key\", \"t3\".\"ParentKey\", \"t3\".\"SeasonNumber\", \"t3\".\"Title\" FROM ( SELECT \"t0\".\"Id\", \"t0\".\"AddedAt\", \"t0\".\"Has4K\", \"t0\".\"ImdbId\", \"t0\".\"Key\", \"t0\".\"Quality\", \"t0\".\"ReleaseYear\", \"t0\".\"RequestId\", \"t0\".\"TheMovieDbId\", \"t0\".\"Title\", \"t0\".\"TvDbId\", \"t0\".\"Type\", \"t0\".\"Url\" FROM \"PlexServerContent\" AS \"t0\" WHERE \"t0\".\"Key\" = @p0 LIMIT 1 ) AS \"t1\" LEFT JOIN \"PlexSeasonsContent\" AS \"t2\" ON \"t1\".\"Id\" = \"t2\".\"PlexServerContentId\" LEFT JOIN \"PlexEpisode\" AS \"t3\" ON \"t1\".\"Key\" = \"t3\".\"GrandparentKey\" ORDER BY \"t1\".\"Id\", \"t2\".\"Id\"",
+        "sampleExpression": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixSummary": "Add .AsNoTracking() to the PlexServerContent query; for read-mostly contexts set optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) and opt in with .AsTracking() where you save",
+        "fixRationale": "No-tracking queries can avoid change-tracker entries and snapshots for PlexServerContent; compare results and persisted state before accepting the change. Use AsNoTrackingWithIdentityResolution() if the same PlexServerContent appears several times in the result and you want one instance (psc references stay consistent).",
+        "fixBefore": "DbSet<PlexServerContent>()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "fixAfter": "DbSet<PlexServerContent>()\n    .AsNoTracking()\n    .Include(x => x.Seasons)\n    .Include(x => x.Episodes)\n    .FirstOrDefault(x => x.Key == __key_0)",
+        "unifiedDiff": "--- a/src/Ombi.Store/Repository/PlexContentRepository.cs\n+++ b/src/Ombi.Store/Repository/PlexContentRepository.cs\n@@ -94,7 +94,7 @@\n \n         public async Task<PlexServerContent> GetByKey(string key)\n         {\n-            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).FirstOrDefaultAsync(x => x.Key == key);\n+            return await Db.PlexServerContent.Include(x => x.Seasons).Include(x => x.Episodes).AsNoTracking().FirstOrDefaultAsync(x => x.Key == key);\n         }\n \n         public IEnumerable<PlexServerContent> GetWhereContentByCustom(Expression<Func<PlexServerContent, bool>> predicate)\n",
+        "docsUrl": "https://github.com/DanilAntyp/QueryShape/blob/main/docs/rules/QS005.md",
+        "fixIsPartial": false,
+        "basis": "Heuristic risk",
+        "callPath": "PlexContentRepository.cs:97 PlexServerContentRepository.GetByKey ← PlexServerContentRepository.GetByKey ← PlexContentTests.cs:107 PlexContentTests.Exercise",
+        "disposition": "active"
+      }
+    ],
+    "rowsReturned": 832,
+    "captureComplete": true,
+    "providers": [
+      "Microsoft.EntityFrameworkCore.Sqlite"
+    ]
+  }
+]

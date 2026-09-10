@@ -15,6 +15,76 @@ public static class DiagnosisFormatter
         return sb.ToString();
     }
 
+    /// <summary>
+    /// One block naming what was found before the detail explains it: totals by severity, then a line per rule with how many times it fired and where.
+    /// Returns an empty string when there is nothing to summarize, so callers can append it unconditionally.
+    /// </summary>
+    /// <param name="diagnoses">The diagnoses to summarize.</param>
+    /// <param name="indent">Prefix for every line.</param>
+    public static string Summarize(IEnumerable<Diagnosis> diagnoses, string indent = "")
+    {
+        ArgumentNullException.ThrowIfNull(diagnoses);
+        var all = diagnoses as IReadOnlyList<Diagnosis> ?? diagnoses.ToList();
+        if (all.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var sb = new StringBuilder();
+        sb.Append(indent).Append(all.Count == 1 ? "1 finding" : all.Count.ToString("N0", CultureInfo.InvariantCulture) + " findings");
+        var bySeverity = Enum.GetValues<Severity>()
+            .OrderByDescending(s => s)
+            .Select(s => (Severity: s, Count: all.Count(d => d.Severity == s)))
+            .Where(x => x.Count > 0)
+            .Select(x => x.Count.ToString("N0", CultureInfo.InvariantCulture) + " " + Plural(x.Severity, x.Count))
+            .ToList();
+        sb.Append(": ").Append(string.Join(", ", bySeverity)).Append('\n');
+
+        var groups = all
+            .GroupBy(d => d.RuleId, StringComparer.Ordinal)
+            .Select(g => (RuleId: g.Key, Severity: g.Max(d => d.Severity), Items: g.ToList()))
+            .OrderByDescending(g => g.Severity)
+            .ThenBy(g => g.RuleId, StringComparer.Ordinal)
+            .ToList();
+
+        var width = groups.Max(g => Subject(g.Items[0].Title).Length);
+        foreach (var (ruleId, _, items) in groups)
+        {
+            sb.Append(indent).Append("  ").Append(ruleId)
+                .Append("  ×").Append(items.Count.ToString(CultureInfo.InvariantCulture).PadRight(3))
+                .Append(Subject(items[0].Title).PadRight(width));
+
+            var sites = items.Select(d => d.CallSite?.Label).OfType<string>().Distinct(StringComparer.Ordinal).ToList();
+            if (sites.Count > 0)
+            {
+                sb.Append("  at ").Append(sites[0]);
+                if (sites.Count > 1)
+                {
+                    sb.Append(CultureInfo.InvariantCulture, $" (+{sites.Count - 1} more)");
+                }
+            }
+
+            sb.Append('\n');
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>The part of a title before its colon: "Cartesian explosion: 800 rows for 20 Customer entities" reads as "Cartesian explosion".</summary>
+    private static string Subject(string title)
+    {
+        var colon = title.IndexOf(':', StringComparison.Ordinal);
+        return colon > 0 ? title[..colon] : title;
+    }
+
+    private static string Plural(Severity severity, int count)
+        => severity switch
+        {
+            Severity.Error => count == 1 ? "error" : "errors",
+            Severity.Warning => count == 1 ? "warning" : "warnings",
+            _ => "info",
+        };
+
     /// <summary>Formats a list of diagnoses, most severe first.</summary>
     public static string Format(IEnumerable<Diagnosis> diagnoses, string indent = "")
     {
