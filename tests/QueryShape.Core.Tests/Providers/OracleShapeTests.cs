@@ -64,10 +64,15 @@ public sealed class OracleShapeTests(ITestOutputHelper output) : IAsyncLifetime
             await ctx.Orders.Where(o => o.CustomerId == customer.Id).ToListAsync();
         }
 
-        var orderQueries = scope.Commands.Where(c => c.Query?.RootEntityShortName == "Order").ToList();
-        output.WriteLine("shape: " + orderQueries[0].Shape);
+        foreach (var command in scope.Commands)
+        {
+            output.WriteLine($"[{command.Sequence}] source={command.Source} root={command.Query?.RootEntityShortName ?? "<uncorrelated>"} rows={command.RowsReturned?.ToString() ?? "-"} {command.Shape}");
+        }
 
+        customers.Should().HaveCount(6, "the seeding block committed six customers");
+        var orderQueries = scope.Commands.Where(c => c.Query?.RootEntityShortName == "Order").ToList();
         orderQueries.Should().HaveCount(6);
+        output.WriteLine("shape: " + orderQueries[0].Shape);
         orderQueries.Select(c => c.Fingerprint).Distinct().Should().ContainSingle("six executions differing only by argument are one shape");
         orderQueries[0].RowsReturned.Should().Be(1);
         orderQueries[0].Query!.KeyFilters.Should().ContainSingle().Which.NavigationOnRelated.Should().Be("Orders");
