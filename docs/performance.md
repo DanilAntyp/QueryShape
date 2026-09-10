@@ -122,7 +122,7 @@ The **< 3 % p99 target in CLAUDE.md is therefore still a target**, not a demonst
 ### Not measured yet
 
 - p99 under concurrent load against a real provider, and any production-representative result size or row width.
-- MySQL and Oracle: no benchmark and no integration test. Nothing in capture is provider-specific, but that is an argument, not a measurement.
+- MySQL and Oracle overhead: both now have integration tests ([providers](providers.md)), but neither is in the benchmark.
 
 ### Next optimizations, in order of expected payoff
 

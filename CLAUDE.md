@@ -32,7 +32,7 @@ Three features, in this order. Each must be independently shippable and useful o
 - **Runtimes for tests**: locally, run with `<RollForward>Major</RollForward>` in test projects (only .NET 10 needs to be installed). In CI, install every targeted runtime via `actions/setup-dotnet` and run `dotnet test -f net8.0` and `dotnet test -f net10.0` as separate steps — roll-forward hides exactly the runtime/EF-version differences this library cares about.
 - **API verification**: before writing the capture layer, check `IQueryExpressionInterceptor`, `IDbCommandInterceptor` and `QueryExpressionEventData` in the EF Core 10 source against the assumptions in section 4.1 and record any differences in an ADR.
 - **Language**: C# 12+, nullable enabled, `TreatWarningsAsErrors` on, implicit usings on.
-- **Testing**: xUnit + FluentAssertions. Fast tests use **SQLite in-memory** via EF Core. Provider-specific behavior (SQL Server, PostgreSQL) uses **Testcontainers**; these tests are tagged `[Trait("Category","Integration")]` and skipped when Docker is unavailable.
+- **Testing**: xUnit + FluentAssertions. Fast tests use **SQLite in-memory** via EF Core. Provider-specific behavior (SQL Server, PostgreSQL, MySQL, and Oracle behind `QUERYSHAPE_ORACLE=1` because its image is measured in gigabytes) uses **Testcontainers**; these tests are tagged `[Trait("Category","Integration")]` and skipped when Docker is unavailable. See `docs/providers.md` for what each provider verifies.
 - **Serialization**: `System.Text.Json` only. Snapshot files must be deterministic (sorted keys, stable ordering, `\n` line endings, trailing newline).
 - **Logging**: `Microsoft.Extensions.Logging` abstractions. Never `Console.WriteLine` inside library code.
 - **Telemetry**: `System.Diagnostics.Activity` / `ActivitySource` (OTel-native in .NET). Do not take a dependency on the OpenTelemetry SDK in the core package — only on `System.Diagnostics.DiagnosticSource`.
@@ -307,7 +307,7 @@ This runs inside other people's production apps. Treat it that way.
 ## 11. Definition of done — v0.1
 
 - [x] `QueryShape.Core`, `QueryShape.Testing`, `QueryShape.OpenTelemetry` build for net8.0/net10.0 against EF Core 8 and 10, warnings-as-errors, public API tracked.
-- [x] Rules QS001, QS003, QS004, QS005, QS008 implemented, documented, tested (unit + SampleApp integration on SQLite; SQL Server + Postgres via Testcontainers in CI). All ten rules are in.
+- [x] Rules QS001, QS003, QS004, QS005, QS008 implemented, documented, tested (unit + SampleApp integration on SQLite; SQL Server, PostgreSQL, MySQL and Oracle via Testcontainers). All twelve rules are in.
 - [x] Snapshot testing works in xUnit with the exact DX in 6.1; failure messages reviewed for readability against every SampleApp endpoint.
 - [x] `CI=true` behavior, `QUERYSHAPE_UPDATE_SNAPSHOTS`, and `QueryBudget` attribute all covered by tests.
 - [x] OTel: spans from SampleApp requests carry `queryshape.*` tags and `queryshape.diagnosis` events; verified with in-memory exporter.

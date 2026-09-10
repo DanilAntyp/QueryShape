@@ -217,7 +217,7 @@ dotnet queryshape report --project tests/Shop.Tests --fail-on warning --acceptan
 | Thread use | Synchronous queries and saves on a request path that declared itself asynchronous |
 | Regression contracts | Query snapshots, command and returned-row budgets, explicit result/state comparison |
 
-[Browse every rule →](docs/rules)
+[Browse every rule →](docs/rules) · [Which databases are tested →](docs/providers.md)
 
 Findings distinguish observed patterns from heuristic risks. **Returned rows are not rows scanned. Command duration is not endpoint latency.** Behavior checks cover only the result/state projections you record. Pair QueryShape with your database's execution plans and production telemetry when investigating server cost.
 
