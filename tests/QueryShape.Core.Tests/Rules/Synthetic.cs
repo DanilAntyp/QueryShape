@@ -22,7 +22,8 @@ internal static class Synthetic
         int? rows = null,
         double ms = 1,
         CallSite? callSite = null,
-        DbCommandMethod method = DbCommandMethod.ExecuteReader)
+        DbCommandMethod method = DbCommandMethod.ExecuteReader,
+        bool isAsync = false)
     {
         var normalized = SqlNormalizer.Normalize(sql, maskLiterals: source == QuerySource.Raw);   // as the capturer does for raw SQL
         var cmd = new CapturedCommand
@@ -40,6 +41,7 @@ internal static class Synthetic
             CallSite = callSite,
             CommandId = Guid.NewGuid(),
             StartTime = DateTimeOffset.UtcNow,
+            IsAsync = isAsync,
         };
         cmd.RowsReturned = rows;
         cmd.IsTracking = query is null ? null : query.ReturnsEntities && query.IsTracking;   // as if this context compiled the query

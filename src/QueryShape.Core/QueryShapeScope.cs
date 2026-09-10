@@ -13,6 +13,13 @@ public sealed class QueryShapeScope : IDisposable
     /// <summary>Pseudo rule id reported when a scope hit <see cref="QueryShapeOptions.MaxCommandsPerScope"/>.</summary>
     public const string OverflowRuleId = "QS_OVERFLOW";
 
+    /// <summary>
+    /// Annotation a host sets (value <c>"true"</c>) to declare that this scope runs on an asynchronous path, so a synchronous database call
+    /// blocks a pooled thread. <c>app.UseQueryShape()</c> sets it on every request scope; a background worker or message consumer can set it too.
+    /// Without it QS012 stays silent, which is why a console application or a synchronous test reports nothing.
+    /// </summary>
+    public const string AsyncHostAnnotation = "host.async";
+
     private static readonly AsyncLocal<QueryShapeScope?> s_current = new();
 
     private readonly object _gate = new();

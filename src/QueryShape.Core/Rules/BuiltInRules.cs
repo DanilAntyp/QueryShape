@@ -18,5 +18,6 @@ public static class BuiltInRules
             new QueryInLoopRule(),
             new RawSqlConcatenationRule(),
             new RowLimitingWithoutOrderByRule(),
+            new SynchronousQueryRule(),
         ];
 }

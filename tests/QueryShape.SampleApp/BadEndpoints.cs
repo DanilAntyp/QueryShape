@@ -117,6 +117,13 @@ public static class BadEndpoints
 
             return Results.Ok(result);
         });
+
+        // QS012: the request is asynchronous, but the query blocks the pooled thread it runs on.
+        app.MapGet("/bad/sync-query", (ShopDbContext db) =>
+        {
+            var customers = db.Customers.AsNoTracking().Where(c => c.Country == "DE").ToList();
+            return Results.Ok(customers.Select(c => new { c.Id, c.Name }));
+        });
     }
 }
 

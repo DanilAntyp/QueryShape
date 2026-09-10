@@ -1,0 +1,11 @@
+# ADR 0015: QS012, synchronous database calls on an asynchronous path
+
+`CapturedCommand.IsAsync` has been recorded since the first capture layer and no rule read it. Scanning Jellyfin made the gap visible: `BaseItemRepository` is synchronous throughout, roughly thirty commands across seven scenarios, and QueryShape said nothing about it. Section 5's table has no rule for this, so this ADR adds one.
+
+The pathology is not "synchronous EF Core". A console tool, a migration, a synchronous test are all fine. It is a synchronous database call on a path that is asynchronous for a reason: in an ASP.NET Core request the thread is a thread-pool thread serving other requests, and blocking it on network I/O costs a thread for the duration of the query. Under load that is thread-pool starvation, and it does not show up as a slow query — the query is as fast as ever.
+
+Detection therefore needs proof that the surrounding path is asynchronous, not a guess. A scope carries it: `QueryShapeScope.AsyncHostAnnotation` (`host.async` = `true`) is set by `app.UseQueryShape()`, because an ASP.NET Core request pipeline is asynchronous by construction. Any other host — a message consumer, a background service — opts in by annotating its own scope. Nothing is inferred from the thread, the synchronization context or the presence of a test framework: a scope that has not said it is asynchronous produces no finding, so unit tests, console applications and synchronous batch jobs stay silent.
+
+Severity is Warning. The evidence is a fact (the command executed through EF Core's synchronous path inside an asynchronous scope), and the cost depends on load and thread-pool configuration, which QueryShape does not measure. The rule reports one finding per shape and call site with the count, not one per execution: a synchronous N+1 is one finding here and one QS001.
+
+No unified diff. EF Core's expression tree stops before the terminal materializer, so QueryShape can see that a command ran synchronously but not whether the source says `ToList()`, `First()`, `Count()` or `SaveChanges()`. Rewriting also has to make the enclosing method `async` and `await` the call, which is a change no line-level patch can make safely. The fix carries before/after guidance and a manual step, and `Fix.IsPartial` marks it as incomplete, which is what that flag is for.

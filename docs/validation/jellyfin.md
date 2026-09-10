@@ -74,6 +74,15 @@ scope, the call site, and whether the splitting behavior was chosen there or inh
 collection includes join. Whether to split these queries is an upstream judgement call about round trips
 versus rows; this is not a bug report.
 
+## What the harness cannot claim
+
+`BaseItemRepository` is synchronous throughout — `GetItems`, `GetItemList`, `GetGenres` and the rest have no async
+overloads — and every one of the 30-odd captured commands ran on EF Core's synchronous path. QS012 reports none of
+them, correctly: it fires only for a scope whose host declared itself asynchronous, and this harness calls the
+repository directly rather than through Jellyfin's API layer. In a running server those calls sit inside async
+ASP.NET Core requests, where they would block a pooled thread; measuring that needs a harness that drives the HTTP
+endpoints, which this one does not.
+
 ## No false positives in the silent scenarios
 
 `library-page-random` and `library-page-rich-random` take the split path and stay silent; `library-ids`

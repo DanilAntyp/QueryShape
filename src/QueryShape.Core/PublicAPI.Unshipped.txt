@@ -539,6 +539,12 @@ QueryShape.Rules.RowLimitingWithoutOrderByRule.DefaultSeverity.get -> QueryShape
 QueryShape.Rules.RowLimitingWithoutOrderByRule.Id.get -> string!
 QueryShape.Rules.RowLimitingWithoutOrderByRule.Name.get -> string!
 QueryShape.Rules.RowLimitingWithoutOrderByRule.RowLimitingWithoutOrderByRule() -> void
+QueryShape.Rules.SynchronousQueryRule
+QueryShape.Rules.SynchronousQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
+QueryShape.Rules.SynchronousQueryRule.DefaultSeverity.get -> QueryShape.Severity
+QueryShape.Rules.SynchronousQueryRule.Id.get -> string!
+QueryShape.Rules.SynchronousQueryRule.Name.get -> string!
+QueryShape.Rules.SynchronousQueryRule.SynchronousQueryRule() -> void
 QueryShape.Rules.TrackingOnReadOnlyQueryRule
 QueryShape.Rules.TrackingOnReadOnlyQueryRule.Analyze(QueryShape.QueryShapeScope! scope) -> System.Collections.Generic.IEnumerable<QueryShape.Diagnosis!>!
 QueryShape.Rules.TrackingOnReadOnlyQueryRule.DefaultSeverity.get -> QueryShape.Severity
@@ -567,6 +573,7 @@ QueryShape.Severity.Error = 2 -> QueryShape.Severity
 QueryShape.Severity.Info = 0 -> QueryShape.Severity
 QueryShape.Severity.Warning = 1 -> QueryShape.Severity
 const QueryShape.Normalization.Fingerprint.Length = 12 -> int
+const QueryShape.QueryShapeScope.AsyncHostAnnotation = "host.async" -> string!
 const QueryShape.QueryShapeScope.OverflowRuleId = "QS_OVERFLOW" -> string!
 const QueryShape.Reporting.ScopeReport.CurrentVersion = 1 -> int
 const QueryShape.Reporting.ScopeReport.DirectoryEnvironmentVariable = "QUERYSHAPE_REPORT_DIR" -> string!
@@ -579,6 +586,7 @@ const QueryShape.Rules.NPlusOneRule.RuleId = "QS001" -> string!
 const QueryShape.Rules.QueryInLoopRule.RuleId = "QS009" -> string!
 const QueryShape.Rules.RawSqlConcatenationRule.RuleId = "QS010" -> string!
 const QueryShape.Rules.RowLimitingWithoutOrderByRule.RuleId = "QS011" -> string!
+const QueryShape.Rules.SynchronousQueryRule.RuleId = "QS012" -> string!
 const QueryShape.Rules.TrackingOnReadOnlyQueryRule.RuleId = "QS005" -> string!
 const QueryShape.Rules.UnboundedResultSetRule.RuleId = "QS004" -> string!
 override QueryShape.CallSite.Equals(object? obj) -> bool

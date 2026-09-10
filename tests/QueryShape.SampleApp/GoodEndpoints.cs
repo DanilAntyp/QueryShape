@@ -73,5 +73,11 @@ public static class GoodEndpoints
 
             return Results.Ok(result);
         });
+
+        app.MapGet("/good/sync-query", async (ShopDbContext db) =>
+        {
+            var customers = await db.Customers.AsNoTracking().Where(c => c.Country == "DE").ToListAsync();
+            return Results.Ok(customers.Select(c => new { c.Id, c.Name }));
+        });
     }
 }

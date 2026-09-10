@@ -62,6 +62,8 @@ public sealed class QueryShapeMiddleware
         }
 
         using var scope = QueryShapeScope.Begin(context.Request.Method + " " + path, _options);
+        // The request pipeline is asynchronous by construction, and its thread is a pooled one: a synchronous query here blocks it (QS012).
+        scope.Annotate(QueryShapeScope.AsyncHostAnnotation, "true");
         context.Items[typeof(QueryShapeScope)] = scope;
 
         if (_middlewareOptions.EmitResponseHeader)

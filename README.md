@@ -214,6 +214,7 @@ dotnet queryshape report --project tests/Shop.Tests --fail-on warning --acceptan
 | Data growth | Unbounded results, Cartesian explosion, split-query candidates, large `Contains` inputs |
 | Query correctness risks | Pagination without ordering, client-side evaluation patterns, raw SQL concatenation risks |
 | Tracking | Tracked reads with no save observed in the measured scope |
+| Thread use | Synchronous queries and saves on a request path that declared itself asynchronous |
 | Regression contracts | Query snapshots, command and returned-row budgets, explicit result/state comparison |
 
 [Browse every rule →](docs/rules)
