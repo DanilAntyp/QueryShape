@@ -212,6 +212,7 @@ internal sealed class ExpressionCorrelator
     /// <summary>
     /// EF Core names SQL parameters after the expression's query parameters (<c>@__id_0</c> in EF Core 8, <c>@id</c> in EF Core 10) or derives them from one
     /// (a collection expanded to <c>@ids1</c>, <c>@ids2</c>...), so a command from this compilation has at least one name equal to or starting with an expected one.
+    /// A provider may also prefix the name it sends — Oracle binds <c>customer_Id</c> as <c>:p_customer_Id</c> — so a name ending with an expected one counts too.
     /// </summary>
     private static bool SharesAParameterName(IReadOnlyList<string> expected, DbParameterCollection parameters)
     {
@@ -220,7 +221,7 @@ internal sealed class ExpressionCorrelator
             var name = p.ParameterName.TrimStart('@', ':', '$', '?');
             foreach (var e in expected)
             {
-                if (name.StartsWith(e, StringComparison.Ordinal))
+                if (name.StartsWith(e, StringComparison.Ordinal) || name.EndsWith(e, StringComparison.Ordinal))
                 {
                     return true;
                 }

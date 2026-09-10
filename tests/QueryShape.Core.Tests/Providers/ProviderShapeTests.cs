@@ -70,7 +70,7 @@ public sealed class ProviderShapeTests(Xunit.Abstractions.ITestOutputHelper outp
         var builder = new DbContextOptionsBuilder<ShopContext>()
             .UseMySQL(connection)
             .UseQueryShape(options);
-        await RunAsync(builder.Options, options, expectedShapeStart: null);
+        await RunAsync(builder.Options, options, expectedShapeStart: "SELECT `t0`.`Id`, `t0`.`CustomerId`, `t0`.`PlacedAt`, `t0`.`Total` FROM `Orders` AS `t0` WHERE `t0`.`CustomerId` = @p0");
     }
 
     private async Task RunAsync(DbContextOptions<ShopContext> dbOptions, QueryShapeOptions options, string? expectedShapeStart)

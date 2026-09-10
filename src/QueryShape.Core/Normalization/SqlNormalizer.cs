@@ -287,8 +287,9 @@ public static partial class SqlNormalizer
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();
 
-    // "@name" parameters (SQL Server, SQLite, Npgsql, MySQL); "@@" server variables are left alone.
-    [GeneratedRegex(@"(?<![@\w])@(?<name>\w+)")]
+    // "@name" parameters (SQL Server, SQLite, Npgsql, MySQL) and ":name" bind variables (Oracle).
+    // "@@" server variables and PostgreSQL's "::" casts are left alone; string literals are already tokenized out, so a time such as '12:30' cannot reach this.
+    [GeneratedRegex(@"(?<![@:\w])(?:@|:(?!:))(?<name>\w+)")]
     private static partial Regex Parameter();
 
     // "FROM [Customers] AS [c]", "FROM [dbo].[Customers] AS [c]", "JOIN "Orders" AS o", ") AS [t0]", "APPLY (...) AS [t]"

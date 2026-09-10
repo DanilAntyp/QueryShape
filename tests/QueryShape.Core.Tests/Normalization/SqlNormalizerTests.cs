@@ -38,6 +38,32 @@ public class SqlNormalizerTests
     }
 
     [Fact]
+    public void Canonicalizes_oracle_bind_variables_like_every_other_parameter()
+    {
+        // EF Core derives parameter names from the C# expression, and Oracle prefixes them: renaming a variable must not change the shape (ADR-0006).
+        var byCustomer = SqlNormalizer.Shape("SELECT \"o\".\"Id\" FROM \"Orders\" \"o\" WHERE \"o\".\"CustomerId\" = :p_customer_Id");
+        var byOwner = SqlNormalizer.Shape("SELECT \"o\".\"Id\" FROM \"Orders\" \"o\" WHERE \"o\".\"CustomerId\" = :p_owner_Id");
+
+        byCustomer.Should().Contain("@p0").And.NotContain(":p_customer_Id");
+        byOwner.Should().Be(byCustomer);
+    }
+
+    [Fact]
+    public void Two_oracle_binds_are_numbered_in_order_and_reused_consistently()
+    {
+        SqlNormalizer.Shape("SELECT * FROM \"T\" WHERE \"A\" = :p_a AND \"B\" = :p_b AND \"C\" = :p_a")
+            .Should().Be("SELECT * FROM \"T\" WHERE \"A\" = @p0 AND \"B\" = @p1 AND \"C\" = @p0");
+    }
+
+    [Fact]
+    public void Postgres_casts_and_server_variables_are_not_parameters()
+    {
+        SqlNormalizer.Shape("SELECT (t.\"Total\")::text FROM \"Orders\" t WHERE t.\"Id\" = @id")
+            .Should().Contain("::text").And.Contain("@p0");
+        SqlNormalizer.Shape("SELECT @@version").Should().Be("SELECT @@version");
+    }
+
+    [Fact]
     public void Canonicalizes_aliases_positionally_for_each_quote_style()
     {
         SqlNormalizer.Shape("SELECT [o].[Id], [c].[Name] FROM [Orders] AS [o] INNER JOIN [Customers] AS [c] ON [o].[CustomerId] = [c].[Id]")
