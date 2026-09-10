@@ -67,10 +67,20 @@ public class ProviderOverheadBenchmarks
     [Benchmark(Baseline = true)]
     public Task<int> EfCoreOnly() => ReadAsync(_plain);
 
+    /// <summary>Capture and the scope's bookkeeping. Rules do not run here: a scope analyses on dispose only when a listener or a report directory asks it to.</summary>
+    [Benchmark]
+    public async Task<int> Capture()
+    {
+        using var scope = QueryShapeScope.Begin("provider-benchmark", _options);
+        return await ReadAsync(_captured);
+    }
+
+    /// <summary>What a scope costs when something consumes its diagnoses: an OpenTelemetry listener, a test, or QUERYSHAPE_REPORT_DIR.</summary>
     [Benchmark]
     public async Task<int> CaptureAndAnalyze()
     {
         using var scope = QueryShapeScope.Begin("provider-benchmark", _options);
-        return await ReadAsync(_captured);
+        var rows = await ReadAsync(_captured);
+        return rows + scope.Analyze().Count;
     }
 }
