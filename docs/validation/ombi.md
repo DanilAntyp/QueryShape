@@ -4,7 +4,7 @@ Ran the original `PlexServerContentRepository`, `ExternalSqliteContext`, entity 
 [Ombi](https://github.com/Ombi-app/Ombi/tree/c56440986e06012fcb57b66c3b892b94b03040a5) on 2026-09-10. Commit:
 `c56440986e06012fcb57b66c3b892b94b03040a5` (v4.60.16), EF Core 8.0.5, in-memory SQLite. The checkout remained unchanged.
 
-**All four scenarios passed**, each run twice. Capture was complete in all eight scopes.
+**All four scenarios passed**, each run twice. Capture was complete in all eight scopes. The same harness passed on the hosted Linux runner with the real .NET 8 runtime ([run 34548187494](https://github.com/DanilAntyp/QueryShape/actions/runs/34548187494)), which is where the net8.0 target runs unrolled — locally it rolls forward to .NET 10.
 
 | Scope | Upstream call | Commands | Rows | Finding |
 |---|---|---:|---:|---|

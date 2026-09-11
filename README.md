@@ -82,7 +82,7 @@ curl -i http://localhost:5077/good/n-plus-one
 
 Actual upstream service code. Pinned revisions. Reproducible harnesses. Synthetic datasets, with the adaptations and measurement limits documented.
 
-**[Hosted validation: all 24 application tests passed →](https://github.com/DanilAntyp/QueryShape/actions/runs/34411411094)** Scope reports and test results are attached to the run.
+**[Hosted validation: all 28 application tests passed →](https://github.com/DanilAntyp/QueryShape/actions/runs/34548187494)** Scope reports and test results are attached to the run.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/DanilAntyp/QueryShape/main/docs/assets/real-world-results.svg" alt="eShopOnWeb catalog lookup trial: at sizes 10, 100, and 501, commands stayed at 4 while returned rows increased from 25 to 205 to 1,007." width="100%">
@@ -113,7 +113,7 @@ A deliberately incorrect candidate dropped contributors without phone numbers. Q
 
 ### Ombi
 
-**4 harness tests passed** against the real `PlexServerContentRepository` on EF Core 8, SQLite-native, using Ombi's own migrations.
+**4 harness tests passed** against the real `PlexServerContentRepository` on EF Core 8, on the hosted .NET 8 runtime, SQLite-native, using Ombi's own migrations.
 
 | Actual operation | What QueryShape recorded | Why it matters |
 |---|---|---|
