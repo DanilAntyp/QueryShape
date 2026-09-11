@@ -82,7 +82,7 @@ curl -i http://localhost:5077/good/n-plus-one
 
 Actual upstream service code. Pinned revisions. Reproducible harnesses. Synthetic datasets, with the adaptations and measurement limits documented.
 
-**[Hosted validation: all 28 application tests passed →](https://github.com/DanilAntyp/QueryShape/actions/runs/34548187494)** Scope reports and test results are attached to the run.
+**[Hosted validation: all 33 application tests passed →](https://github.com/DanilAntyp/QueryShape/actions/runs/34550615354)** Scope reports and test results are attached to the run.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/DanilAntyp/QueryShape/main/docs/assets/real-world-results.svg" alt="eShopOnWeb catalog lookup trial: at sizes 10, 100, and 501, commands stayed at 4 while returned rows increased from 25 to 205 to 1,007." width="100%">

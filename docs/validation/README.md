@@ -4,7 +4,7 @@ The current corpus covers four external application repositories, plus deliberat
 
 To rerun the pinned external applications on Linux with native .NET 8 and .NET 10 runtimes, use the repository's **Real application validation** workflow (`workflow_dispatch`). Each application uploads scope reports and TRX results. The harness READMEs also provide local commands.
 
-[Hosted application run on 2026-09-11](https://github.com/DanilAntyp/QueryShape/actions/runs/34548187494): all 28 application tests passed against QueryShape commit `196d126` — 15 eShopOnWeb and 4 Ombi on native .NET 8, 2 CleanArchitecture and 7 Jellyfin on .NET 10. All four jobs uploaded their scope reports and TRX results. ([Earlier runs: 2026-09-10 without Ombi](https://github.com/DanilAntyp/QueryShape/actions/runs/34411411094), [2026-09-08 without Jellyfin](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529).)
+[Hosted application run on 2026-09-11](https://github.com/DanilAntyp/QueryShape/actions/runs/34550615354): all 33 application tests passed against QueryShape commit `f768a6e` — 15 eShopOnWeb and 4 Ombi on native .NET 8, 2 CleanArchitecture and 12 Jellyfin on .NET 10, the last including five that drive Jellyfin's real HTTP API through its own server host. All four jobs uploaded their scope reports and TRX results. ([Earlier: 2026-09-10 without the API tests](https://github.com/DanilAntyp/QueryShape/actions/runs/34548187494), [2026-09-08 without Jellyfin](https://github.com/DanilAntyp/QueryShape/actions/runs/34278103529).)
 
 | Corpus | What is exercised | Boundaries |
 |---|---|---|
