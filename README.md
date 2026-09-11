@@ -134,6 +134,7 @@ A deliberately incorrect candidate dropped contributors without phone numbers. Q
 | `GetLatestItemList(movies)` | **QS006** at `LoadLatestByIds`: 108 rows for 12 items | The same include set is reached by a second path. |
 | Upstream's own random-sort `AsSplitQuery` branch, same fan-out | **360 rows across 7 commands**, no finding | Bounds the row cost of the alternative, using upstream code. |
 | `GetItemIdsList`, `GetGenres` | silent; **QS003 did not fire** on the `AsEnumerable()` deserialization boundaries | Deliberate client-side work was not reported as client-side evaluation. |
+| Jellyfin's real HTTP API, authenticated, in its own test host | **QS002 + QS008 + QS012:** `UserManager.GetUserById` returns **312 rows for one user**, three times per request | The auth path every request goes through. Middleware scope, `X-QueryShape` header and OpenTelemetry span events verified on the same requests. |
 
 This pattern is deliberate upstream: Jellyfin globally ignores EF Core's own `MultipleCollectionIncludeWarning`, and uses `AsSplitQuery()` where it wants splitting. What QueryShape adds is the measured multiplier, the call site, and whether single-query loading was chosen there or inherited from the context — at both flagged sites it is inherited. Splitting trades rows for round trips, so the decision stays upstream's; this is not a bug report.
 

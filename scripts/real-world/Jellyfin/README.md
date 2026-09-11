@@ -41,5 +41,12 @@ Scenarios, each run twice so the second run sees EF's compiled-query cache warm:
 
 CI runs this harness through the **Real application validation** workflow (`workflow_dispatch`), which pins the revision above and uploads scope reports and TRX results.
 
-These tests cover repository queries against SQLite with synthetic data. They do not measure HTTP
-endpoints, real library sizes or distributions, provider execution plans, or latency.
+`ApiTests` adds the other half: it boots Jellyfin's real server in memory through upstream's
+`JellyfinApplicationFactory`, attaches QueryShape the way a consumer does — `ConfigureDbContext<JellyfinDbContext>`
+for capture, an `IStartupFilter` for `app.UseQueryShape()`, the OpenTelemetry listener on the same options — and
+drives authenticated requests through routing and the controllers. It needs xUnit v3, which is why this project uses
+it: upstream's factory is a v3 test project and one assembly cannot hold both versions.
+
+These tests cover repository queries and API requests against SQLite with synthetic data. A freshly set-up server has
+no media library, so the HTTP scenarios exercise the authentication and user paths rather than the item query. They do
+not measure real library sizes or distributions, provider execution plans, or latency.

@@ -20,7 +20,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using QueryShape;
 using Xunit;
-using Xunit.Abstractions;
 using JellyfinUser = Jellyfin.Database.Implementations.Entities.User;
 
 // Real upstream repository, entity mappings and SQLite provider; only the data and the wiring live here.

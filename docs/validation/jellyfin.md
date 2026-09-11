@@ -74,14 +74,39 @@ scope, the call site, and whether the splitting behavior was chosen there or inh
 collection includes join. Whether to split these queries is an upstream judgement call about round trips
 versus rows; this is not a bug report.
 
-## What the harness cannot claim
+## Through the HTTP API
 
-`BaseItemRepository` is synchronous throughout — `GetItems`, `GetItemList`, `GetGenres` and the rest have no async
-overloads — and every one of the 30-odd captured commands ran on EF Core's synchronous path. QS012 reports none of
-them, correctly: it fires only for a scope whose host declared itself asynchronous, and this harness calls the
-repository directly rather than through Jellyfin's API layer. In a running server those calls sit inside async
-ASP.NET Core requests, where they would block a pooled thread; measuring that needs a harness that drives the HTTP
-endpoints, which this one does not.
+A second harness boots Jellyfin's real server in memory through its own `JellyfinApplicationFactory`, with QueryShape
+attached the way a consumer attaches it: `ConfigureDbContext<JellyfinDbContext>(o => o.UseQueryShape(options))` reaches
+the registration Jellyfin owns, an `IStartupFilter` inserts `app.UseQueryShape()` into a pipeline defined by someone
+else's `Startup`, and the OpenTelemetry listener is added to the same options. Requests are authenticated through
+upstream's `AuthHelper`.
+
+| Request | Commands | Rows | Findings |
+|---|---:|---:|---|
+| `GET /System/Info/Public` | 1 | 312 | QS002 Error, QS012 Warning |
+| `GET /Users/Me` | 3 | 936 | QS002 Error, QS008 Warning, QS012 Warning |
+| `GET /Items` | 3 | 936 | QS002 Error, QS008 Warning, QS012 Warning |
+
+Every one of those findings is the same query: `UserManager.GetUserById` (`UserManager.cs:131`) loads a user with
+`AsSingleQuery()` and four includes — `Permissions`, `Preferences`, `AccessSchedules`, `ProfileImage` — and with
+Jellyfin's default permission and preference rows that is **312 rows to materialize one `User`**. Two requests run it
+**three times with identical parameters** (QS008), so a single API call reads 936 rows of user data. The
+`AsSingleQuery()` here is explicit, so QueryShape reports it as a decision rather than an oversight.
+
+QS012 fires on this path, which the repository harness could not show: the user lookup is synchronous inside an
+asynchronous request, so it blocks a pooled thread. That is the rule's intended subject, measured on real application
+code rather than on our sample.
+
+The request pipeline and the telemetry are verified in the same run: the scope is named after the route template
+(`GET /Users/Me`), the middleware's `X-QueryShape` header reports `3 queries; QS002 Error, QS008 Warning, QS012
+Warning`, and the ASP.NET request span carries `queryshape.query_count`, `queryshape.diagnosis_count`,
+`queryshape.max_severity`, three `queryshape.query` events and three `queryshape.diagnosis` events. No competing span
+is created: Microsoft.Data.Sqlite emits no database span, so commands become events on the request span (ADR-0007).
+
+What this harness does not reach is the item query itself: a freshly set-up server has no media library, so
+`GET /Items` returns nothing and the `BaseItemRepository` findings above come from the repository harness instead.
+Together they cover both halves; neither covers a populated production library.
 
 ## No false positives in the silent scenarios
 

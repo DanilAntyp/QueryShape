@@ -100,7 +100,9 @@ public sealed class QueryShapeMiddleware
             // Routing ran inside the pipeline: name the scope by the route template before it is disposed (reported, exported).
             if (context.GetEndpoint() is RouteEndpoint { RoutePattern.RawText: { } template })
             {
-                scope.Name = context.Request.Method + " " + template;
+                // Attribute routing writes templates without a leading slash ("Users/Me"), minimal APIs with one.
+                // Scope names group reports and telemetry, so they must not depend on which style an app uses.
+                scope.Name = context.Request.Method + " " + (template.StartsWith('/') ? template : "/" + template);
             }
         }
     }

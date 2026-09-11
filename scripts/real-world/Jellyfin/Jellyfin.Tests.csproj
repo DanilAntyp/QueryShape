@@ -2,6 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
+    <!-- Upstream's integration-test factory is xUnit v3, and one assembly cannot hold both versions. -->
+    <TestFramework>xunit.v3</TestFramework>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS8618;CA1707</NoWarn>
@@ -11,11 +14,20 @@
     <ProjectReference Include="../../../src/QueryShape.Testing/QueryShape.Testing.csproj" />
     <ProjectReference Include="$(JellyfinRoot)/Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="$(JellyfinRoot)/Emby.Server.Implementations/Emby.Server.Implementations.csproj" />
+    <!-- Upstream's own integration-test factory boots the real server in memory; reusing it keeps the HTTP harness honest. -->
+    <ProjectReference Include="$(JellyfinRoot)/tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj" />
+    <ProjectReference Include="../../../src/QueryShape.AspNetCore/QueryShape.AspNetCore.csproj" />
+    <ProjectReference Include="../../../src/QueryShape.OpenTelemetry/QueryShape.OpenTelemetry.csproj" />
     <ProjectReference Include="$(JellyfinRoot)/src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

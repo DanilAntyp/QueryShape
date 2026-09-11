@@ -98,6 +98,7 @@ public class BadEndpointTests(SampleAppFixture app, ITestOutputHelper output)
 
         var entry = app.Listener.Completed.Reverse().First(e => e.Scope.Name!.StartsWith("GET /good/customer/", StringComparison.Ordinal));
         entry.Scope.Name.Should().Be("GET /good/customer/{id:int}", "one name per route keeps reports and telemetry low-cardinality");
+        entry.Scope.Name.Should().StartWith("GET /", "attribute routing writes templates without a leading slash; scope names must not depend on the routing style");
         entry.Scope.CommandCount.Should().Be(1);
     }
 
